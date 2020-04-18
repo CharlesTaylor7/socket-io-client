@@ -1,0 +1,26 @@
+# GHCJS
+*.js_o
+*.js_hi
+*.jsexe/
+
+# build output
+/public/build/
+
+# VSCode
+*.vscode/
+
+# node
+/.cache/
+/node_modules/
+
+# vim
+*.swp
+
+# reflex logs
+*.log
+
+# stack
+*.stack-work
+
+# cabal
+/dist-newstyle
