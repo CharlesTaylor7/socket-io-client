@@ -1,1 +1,1 @@
-# generals-bricks
+# generals-ui

@@ -1,6 +1,6 @@
-name:                generals-bricks
+name:                generals-ui
 version:             0.1.0.0
-github:              "CharlesTaylor7/generals-bricks"
+github:              "CharlesTaylor7/generals-ui"
 license:             BSD3
 author:              "Charles Taylor"
 maintainer:          "charlestaylor95@gmail.com"
@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/Char
 
 dependencies:
 - base >= 4.7 && < 5
+- brick
 
 library:
   source-dirs: src
