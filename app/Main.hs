@@ -1,9 +1,15 @@
 module Main where
 
-import Brick
+import Control.Monad
+import Control.Monad.IO.Class
+import Data.IORef
+import Graphics.UI.Gtk hiding (Action, backspace)
 
-ui :: Widget ()
-ui = str "Hello, world!"
 
 main :: IO ()
-main = simpleMain ui
+main = do
+  void initGUI          -- (1)
+  window <- windowNew   -- (2)
+                        -- (3)
+  widgetShowAll window  -- (4)
+  mainGUI               -- (5)
