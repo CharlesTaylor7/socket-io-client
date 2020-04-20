@@ -1,5 +1,6 @@
 .stack-work/
 *~
-
 *.js_o
 *.js_hi
+*.jsexe/
+*.vscode/
