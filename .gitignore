@@ -9,4 +9,4 @@
 # node
 .cache/
 node_modules/
-js/dist.js
+public/dist.js
