@@ -1,1 +1,2 @@
-ghcjs -o build $1
+ghcjs -o js/hs app/Main.hs
+npx parcel js/index.html

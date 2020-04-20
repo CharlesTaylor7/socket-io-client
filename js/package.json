@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "watch": "npx parcel index.html"
+  },
   "dependencies": {
     "socket.io-client": "^2.3.0"
   }

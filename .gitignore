@@ -4,3 +4,7 @@
 *.js_hi
 *.jsexe/
 *.vscode/
+
+.cache/
+node_modules/
+dist/
