@@ -1,3 +1,1 @@
-import newSocket from 'socket.io-client'
-
-window.newSocket = newSocket
+window.newSocket = require('socket.io-client')

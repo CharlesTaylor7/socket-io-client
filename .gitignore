@@ -1,10 +1,12 @@
-.stack-work/
-*~
+# GHCJS
 *.js_o
 *.js_hi
 *.jsexe/
+
+# VSCode
 *.vscode/
 
+# node
 .cache/
 node_modules/
-dist/
+js/dist.js

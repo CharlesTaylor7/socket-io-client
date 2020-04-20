@@ -1,2 +1,1 @@
-ghcjs -o js/hs app/Main.hs
-npx parcel js/index.html
+ghcjs -o public/hs app/*.hs
