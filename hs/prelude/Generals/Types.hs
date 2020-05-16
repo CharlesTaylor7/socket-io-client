@@ -1,20 +1,18 @@
-{-# Language TemplateHaskell #-}
-{-# Language OverloadedStrings #-}
-{-# Language GeneralizedNewtypeDeriving #-}
-module Frontend.Types.Internal where
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+module Types where
 
-import Relude(Map, Text)
-import Control.Monad.Fix (MonadFix)
-import Language.Javascript.JSaddle (MonadJSM)
-import Control.Lens
-import Control.Monad.IO.Class (MonadIO)
-import Reflex.Dom
+import Imports
 
-import Obelisk.Route
-import Obelisk.Route.Frontend
-import Obelisk.Frontend
+newtype GameConfig = GameConfig [BotName]
+  deriving (Show)
 
-import Common.Types
+newtype BotName = BotName Text
+  deriving (Show)
+
+newtype Id = Id Int
+  deriving (Show)
 
 data Dimensions = Dimensions
   { _height :: Int
@@ -35,6 +33,11 @@ newtype CSSClass = Class { unClass :: Text }
 
 newtype DOMNode = Node { unNode :: Text }
   deriving (Eq, Show)
+
+
+makePrisms ''Id
+makePrisms ''BotName
+makePrisms ''GameConfig
 
 makeLenses ''Dimensions
 makeLenses ''StyleInfo

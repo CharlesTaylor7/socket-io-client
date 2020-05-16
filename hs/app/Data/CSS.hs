@@ -3,11 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Data.CSS where
 
-import Control.Lens
-import Data.Text.Lens (packed)
-import Data.Default
-import Relude (Text, Map)
-import Frontend.Types
+import Imports
 
 class ToText a where
   toText :: a -> Text

@@ -7,15 +7,17 @@
 
 module Js.SocketIO where
 
-import Relude
 import qualified Data.Text as T
 import Language.Javascript.JSaddle hiding (eval)
 import qualified Language.Javascript.JSaddle as JSaddle
+import Data.JSString
 
 import Data.String.Interpolate (i)
 import Data.String.Interpolate.Conversion (Interpolatable)
 
 import Js.Utils
+
+import Frontend.Imports hiding (Event, (#))
 
 deriving instance MakeArgs JSString
 

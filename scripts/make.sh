@@ -1,1 +1,2 @@
-ghcjs -o public/hs app/**/*.hs
+# ghcjs -o public/hs app/**/*.hs
+cabal build --ghcjs
