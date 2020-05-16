@@ -20,12 +20,29 @@ source-repository head
 library
   other-modules:
       Paths_generals_ui
+    , Common.Imports
+    , Common.Types
+    , Frontend.Imports
+    , Frontend.Imports.TH
+    , Frontend.Types
+    , Frontend.Types.Constraints
+    , Frontend.Types.Internal
+    , Js.Generals
+    , Js.SocketIO
+    , Js.Utils
+    , Page.Replay
+    , SocketIO
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      base
     , reflex
     , reflex-dom
+    , jsaddle
+    , lens
+    , relude
+    , string-interpolate
+    , aeson
   default-language: Haskell2010
 
 executable generals-ui-exe
@@ -40,6 +57,11 @@ executable generals-ui-exe
     , generals-ui
     , reflex
     , reflex-dom
+    , jsaddle
+    , lens
+    , relude
+    , string-interpolate
+    , aeson
   default-language: Haskell2010
 
 test-suite generals-ui-test

@@ -9,9 +9,6 @@ module Frontend.Imports
   , module Control.Monad.IO.Class
   , module Reflex.Dom
   , module Reflex.Dom.Location
-  , module Obelisk.Route
-  , module Obelisk.Route.Frontend
-  , module Obelisk.Frontend
   , module Data.Default
   , module Language.Javascript.JSaddle
   , module Network.URI
@@ -24,10 +21,6 @@ import Control.Monad.Fix (MonadFix(..))
 import Control.Monad.IO.Class (MonadIO)
 import Reflex.Dom
 import Reflex.Dom.Location
-
-import Obelisk.Route
-import Obelisk.Route.Frontend
-import Obelisk.Frontend
 
 import Data.Default (Default(..))
 import JSDOM.Types (SerializedScriptValue(..))
