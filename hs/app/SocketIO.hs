@@ -2,6 +2,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 module SocketIO where
 
-import Data.JSString
+import Generals.Imports (IO)
+import Language.Javascript.JSaddle
 
 foreign import javascript unsafe "window.newSocket" newSocket :: JSString -> IO ()

@@ -5,16 +5,14 @@
 
 module Page.Game where
 
-import Reflex.Dom hiding (button)
-
-import Common.Types
-import Frontend.Types
+import Generals.Imports
+import Generals.Types
 import Data.Dom (button)
 import Page.Game.Grid
 import Js.SocketIO
 import Component.Button.GameEnd
 
-game :: [BotName] -> JS_Widget js t m ()
+game :: [BotName] -> Widget m ()
 game bots = do
   grid
 

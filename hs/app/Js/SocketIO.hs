@@ -1,29 +1,28 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 
 module Js.SocketIO where
 
-import qualified Data.Text as T
 import Language.Javascript.JSaddle hiding (eval)
 import qualified Language.Javascript.JSaddle as JSaddle
-import Data.JSString
 
 import Data.String.Interpolate (i)
 import Data.String.Interpolate.Conversion (Interpolatable)
 
 import Js.Utils
 
-import Frontend.Imports hiding (Event, (#))
+import Generals.Imports hiding (Event, (#))
 
-deriving instance MakeArgs JSString
+-- import Language.Javascript.JSaddle (JSString(..))
+
+-- deriving instance MakeArgs JSString
 
 newtype Socket = Socket Object
 newtype Url = Url Text
-newtype Event = Event JSString
+newtype Event = Event Text
   deriving (ToJSVal, ToJSString)
 
 newtype Handler = Handler Function
@@ -62,7 +61,7 @@ ignoreEvent socket event = noOp >>= changeHandler socket event
 
 setBasicHandlers :: MonadJSM m => Socket -> m ()
 setBasicHandlers socket = do
-  let toEvent = Event . JSString . T.pack
+  let toEvent = Event . toText
   traverse_ (ignoreEvent socket . toEvent) $
     [ "pre_game_start"
     , "notify"

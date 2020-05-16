@@ -1,4 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
@@ -6,14 +5,13 @@
 
 module Js.Generals where
 
-import Common.Imports
+import Generals.Imports
 -- import qualified Data.Text as T
 -- import qualified Data.Text.Encoding as T
 -- import Language.Javascript.JSaddle hiding (eval)
 -- import qualified Language.Javascript.JSaddle as JSaddle
 
 import Data.String.Interpolate (i)
-import Control.Exception (throwIO)
 import Js.Utils
 
 
@@ -39,7 +37,7 @@ download = downloadReplay location
 downloadReplay :: (MonadJSM m) => ReplayLocation -> m Replay
 downloadReplay location = do
   let url = replayUrl location
-  <-
+  undefined
 
 
 replayUrl :: ReplayLocation -> Text

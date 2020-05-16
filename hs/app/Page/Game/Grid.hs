@@ -7,14 +7,12 @@
 
 module Page.Game.Grid where
 
-import Reflex.Dom
-import Relude (for_)
-import Control.Lens
+import Generals.Imports
+import Generals.Types
 
-import Data.CSS (ToText(..))
+import Data.CSS
 import Data.Dom (elStyle, elStyle', elDynStyle, elDynStyle')
 import qualified Data.Dom as Dom
-import Frontend.Types
 
 tileSideLength :: Pixels
 tileSideLength = 40

@@ -4,11 +4,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Data.Dom where
 
-import Relude
-import Reflex.Dom
-import Frontend.Types
+import Generals.Imports
+import Generals.Types
 import Data.CSS (toAttrs)
-import Control.Lens
 
 button :: DomBuilder t m => Text -> Text -> m (Event t ())
 button className display = do

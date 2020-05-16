@@ -7,13 +7,15 @@
 {-# LANGUAGE GADTs #-}
 module Component.Button.GameEnd where
 
+import Generals.Types
+import Generals.Imports hiding (button)
 
 import Data.Dom (button)
-import Data.CSS (ToText(..))
-import Frontend.Types
+import Data.CSS
+
 import Js.Utils (window_confirm)
 
-gameEndButton :: JS_Widget js t m ()
+gameEndButton :: (MonadIO m, DomBuilder t m) => m ()
 gameEndButton = do
   submit <- button "button-end" "End game"
   window_confirm "Are you sure" undefined

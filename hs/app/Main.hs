@@ -4,13 +4,12 @@ module Main
   )
   where
 
-import Reflex.Dom
-import Data.JSString
+import Generals.Imports
 import SocketIO
 
 import Page.Replay
 
 main :: IO ()
-main = do
-  mainWidget $ text "Hello, world!"
+main = mainWidget $ do
+  text "Hello, world!"
   replay

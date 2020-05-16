@@ -17,28 +17,32 @@ source-repository head
 
 library generals-prelude
   default-language: Haskell2010
+  default-extensions: NoImplicitPrelude
   hs-source-dirs:
       hs/prelude
   exposed-modules:
-      Imports
-    , Types
+      Generals.Imports
+    , Generals.Types
   build-depends:
-      base >=4.7 && <5
+      base >= 4.7 && <5.0
+    , relude
     , reflex
     , reflex-dom
     , jsaddle
     , lens
-    , relude
-    , string-interpolate
     , aeson
+    , data-default
 
 executable generals-app
   default-language: Haskell2010
+  default-extensions: NoImplicitPrelude
   main-is: Main.hs
   hs-source-dirs:
     hs/app
   build-depends:
-    generals-prelude
+      generals-prelude
+    , jsaddle
+    , string-interpolate
   other-modules:
       Js.Generals
     , Js.SocketIO
@@ -47,5 +51,8 @@ executable generals-app
     , Page.Setup
     , Page.Replay
     , SocketIO
-
+    , Component.Button.GameEnd
+    , Data.CSS
+    , Data.Dom
+    , Page.Game.Grid
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

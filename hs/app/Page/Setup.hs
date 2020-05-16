@@ -1,4 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -7,20 +6,15 @@
 
 module Page.Setup where
 
-import Relude
-import Data.Map ((!))
-import qualified Data.Map as Map
-import Control.Lens
-
-import Reflex.Dom hiding (Widget, button)
+import Generals.Imports hiding (button)
+import Generals.Types
 
 import Data.Dom (button)
-import Frontend.Types
 
 toOptions :: [Text] -> Map Int Text
-toOptions names = [(0::Int)..] `zip` ("":names) & Map.fromAscList
+toOptions names = [(0::Int)..] `zip` ("":names) & fromList
 
-setup :: JS_Widget js t m ()
+setup :: Widget m ()
 setup = elClass "div" "setup" $ do
   let optionsDyn = constDyn optionsMap
   dropdown1 <- mkDropdown 1 optionsDyn "bot-selector"
@@ -46,3 +40,5 @@ combineDropdowns = traverse . toBehavior
 
 toBehavior :: (Reflex t, Ord k) => Map k v -> Dropdown t k -> Behavior t v
 toBehavior map = fmap (map !) . current . _dropdown_value
+
+map ! i = map ^?! ix i

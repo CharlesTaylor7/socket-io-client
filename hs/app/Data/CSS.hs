@@ -3,14 +3,12 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Data.CSS where
 
-import Imports
+import Generals.Imports
+import Generals.Types
 
-class ToText a where
-  toText :: a -> Text
 
 instance ToText Pixels where
-  toText =
-    view (_Pixels . re _Show . packed . to (<> "px"))
+  toText = view (_Pixels . re _Show . packed . to (<> "px"))
 
 instance Default StyleInfo where
   def = StyleInfo

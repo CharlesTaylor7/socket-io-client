@@ -1,14 +1,12 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 
 module Js.Utils where
 
-import Relude
-import qualified Data.Text as T
+import Generals.Imports
 import Language.Javascript.JSaddle hiding (eval)
 import qualified Language.Javascript.JSaddle as JSaddle
 
