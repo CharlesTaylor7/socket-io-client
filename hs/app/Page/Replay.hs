@@ -11,10 +11,10 @@ import Generals.Types
 import Js.SocketIO (Url(..))
 import qualified Js.SocketIO as SIO
 
-import Js.Generals
+-- import Js.Generals
 
 replay :: Widget m ()
 replay = elClass "div" "replay" $ do
   text "hello!"
-  download
+  -- download
   blank
