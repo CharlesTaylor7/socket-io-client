@@ -5,7 +5,7 @@
 {-# LANGUAGE RecursiveDo #-}
 module Js.Generals where
 
-import Generals.Imports (Widget, Event, newTriggerEventWithOnComplete)
+import Generals.Imports (Widget, Event, newTriggerEvent)
 
 import Js.Imports
 import qualified Js.FFI as FFI
@@ -16,13 +16,13 @@ type Replay =  Text
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = do
   let url = toJSString $ replayUrl location
-  (replayEvent, trigger) <- newTriggerEventWithOnComplete
+  (replayEvent, trigger) <- newTriggerEvent
 
-  rec
-    jsCallback <- liftIO $ asyncCallback1 onDownload
-    let onDownload jsVal = do
-          Just replayText <- fromJSVal jsVal
-          trigger replayText $ releaseCallback jsCallback
+  let onDownload jsVal = do
+        Just replayText <- fromJSVal jsVal
+        trigger replayText
+
+  jsCallback <- liftIO $ asyncCallback1 onDownload
 
   liftIO $ FFI.downloadReplay url jsCallback
 
