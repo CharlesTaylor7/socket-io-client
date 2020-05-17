@@ -1,1 +1,1 @@
-work-on ghcjs "$(pwd)"
+work-on ghcjs "./hs/"

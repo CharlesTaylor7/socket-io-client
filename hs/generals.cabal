@@ -1,9 +1,6 @@
 cabal-version:  1.12
-name:           generals-ui
+name:           generals
 version:        0.0.0.0
-description:    Please see the README on GitHub at <https://github.com/CharlesTaylor7/generals-ui#readme>
-homepage:       https://github.com/CharlesTaylor7/generals-ui#readme
-bug-reports:    https://github.com/CharlesTaylor7/generals-ui/issues
 author:         Charles Taylor
 maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
@@ -12,7 +9,7 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/CharlesTaylor7/generals-ui
+  location: https://github.com/CharlesTaylor7/generals-bot
 
 library reflex-widget
   default-language: Haskell2010
