@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "watch:hs": "onchange -i 'hs/**' --await-write-finish 0 -- ./build-hs.sh",
+    "watch:hs": "onchange -i 'hs/**' --exclude 'hs/dist-newstyle/' --await-write-finish 200 -- ./build-hs.sh",
     "watch:js": "npx watchify js/index.js -o public/js/build/node-deps.js",
     "watch:server": "node server",
     "start": "echo 'To be implemented'"

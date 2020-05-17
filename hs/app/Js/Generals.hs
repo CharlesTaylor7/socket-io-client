@@ -5,7 +5,7 @@
 
 module Js.Generals where
 
-import Generals.Imports (Event, never)
+import Generals.Imports (Event, newTriggerEventWithOnComplete)
 import Reflex.Widget
 import Js.Imports
 import qualified Js.FFI as FFI
