@@ -1,14 +1,32 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
+-- {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE RankNTypes #-}
-
+-- {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecursiveDo #-}
 module Js.Generals where
 
-import Generals.Imports (Event, newTriggerEventWithOnComplete)
-import Reflex.Widget
+import Generals.Imports (Widget, Event, newTriggerEventWithOnComplete)
+
 import Js.Imports
 import qualified Js.FFI as FFI
+
+-- type Replay = Map Text Text
+type Replay =  Text
+
+downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
+downloadReplay location = do
+  let url = toJSString $ replayUrl location
+  (replayEvent, trigger) <- newTriggerEventWithOnComplete
+
+  rec
+    jsCallback <- liftIO $ asyncCallback1 onDownload
+    let onDownload jsVal = do
+          Just replayText <- fromJSVal jsVal
+          trigger replayText $ releaseCallback jsCallback
+
+  liftIO $ FFI.downloadReplay url jsCallback
+
+  pure replayEvent
 
 
 data Server
@@ -20,8 +38,7 @@ data ReplayLocation = ReplayLocation
   , replay_id :: Text
   }
 
--- type Replay = Map Text Text
-type Replay =  Text
+
 
 download :: Widget t m => m (Event t Replay)
 download = downloadReplay location
@@ -31,10 +48,6 @@ download = downloadReplay location
       , server = Server_Main
       }
 
-downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
-downloadReplay location = liftJSM $ do
-  let url = replayUrl location
-  pure never
 
 
 replayUrl :: ReplayLocation -> Text

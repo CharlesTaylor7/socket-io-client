@@ -19,4 +19,5 @@ type Widget t m
   , DomBuilder t m
   , PostBuild t m
   , MonadHold t m
-   )
+  , TriggerEvent t m
+  )
