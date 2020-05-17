@@ -4,6 +4,7 @@
 
 module Js.Generals where
 
+import Generals.Imports (Event)
 import Js.Imports
 import qualified Js.FFI as FFI
 
@@ -28,12 +29,10 @@ download = downloadReplay location
       , server = Server_Main
       }
 
-downloadReplay :: (MonadJSM m) => ReplayLocation -> m Replay
+downloadReplay :: (MonadJSM m) => ReplayLocation -> m (Event t Replay)
 downloadReplay location = liftJSM $ do
   let url = replayUrl location
-  let jsVal = FFI.downloadReplay (toJSString url)
-  replayText <- fromJSValUnchecked jsVal
-  pure replayText
+  pure never
 
 
 replayUrl :: ReplayLocation -> Text
