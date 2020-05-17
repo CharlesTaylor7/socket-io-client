@@ -1,10 +1,9 @@
 {
   "scripts": {
     "build-hs": "cabal build generals-app",
-    "move-hs": "mkdir -p public/hs.jsexe && mv dist-newstyle/build/x86_64-linux/ghcjs-8.6.0.1/generals-ui-0.0.0.0/x/generals-app/build/generals-app/generals-app.jsexe/*.js public/hs.jsexe/",
+    "move-hs": "mkdir -p public/hs.jsexe && cp dist-newstyle/build/x86_64-linux/ghcjs-8.6.0.1/generals-ui-0.0.0.0/x/generals-app/build/generals-app/generals-app.jsexe/*.js public/hs.jsexe/",
     "build": "yarn build-hs && yarn move-hs && npx browserify js/index.js -o public/dist.js",
-    "prestart": "yarn build",
-    "start": "http-server public"
+    "start": "node server"
   },
   "dependencies": {
     "fetch-base64-in-browser": "^1.0.2",
@@ -13,6 +12,6 @@
   },
   "devDependencies": {
     "browserify": "^16.5.1",
-    "http-server": "^0.12.1"
+    "live-server": "^0.12.1"
   }
 }

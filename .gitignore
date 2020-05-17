@@ -7,9 +7,9 @@
 *.vscode/
 
 # node
-.cache/
-node_modules/
-public/dist.js
+/.cache/
+/node_modules/
+/public/dist.js
 
 # cabal
 /dist-newstyle
