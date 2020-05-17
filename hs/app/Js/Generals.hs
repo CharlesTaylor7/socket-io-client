@@ -1,4 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -7,8 +6,6 @@ module Js.Generals where
 
 import Js.Imports
 import qualified Js.FFI as FFI
-
-import Data.String.Interpolate (i)
 
 
 data Server
@@ -34,12 +31,18 @@ download = downloadReplay location
 downloadReplay :: (MonadJSM m) => ReplayLocation -> m Replay
 downloadReplay location = liftJSM $ do
   let url = replayUrl location
-  replayText <- fromJSString <$> FFI.downloadReplay (toJSString url)
+  let jsVal = FFI.downloadReplay (toJSString url)
+  replayText <- fromJSValUnchecked jsVal
   pure replayText
 
 
 replayUrl :: ReplayLocation -> Text
-replayUrl ReplayLocation{..} = [i|https://generalsio-replays-#{urlSuffix server}.s3.amazonaws.com/#{replay_id}.gior|]
+replayUrl ReplayLocation{..}
+  =  "https://generalsio-replays-"
+  <> urlSuffix server
+  <> ".s3.amazonaws.com/"
+  <> replay_id
+  <> ".gior"
 
 urlSuffix :: Server -> Text
 urlSuffix Server_Main = "na"

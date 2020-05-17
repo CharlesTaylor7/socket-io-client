@@ -9,3 +9,4 @@
 
 - npm "start" script to launch 3 watch windows (watch haskell, js, server)
 - separate cabal package into more libraries for better compilation caching
+- cabal trick for custom readme

@@ -9,9 +9,11 @@ import Generals.Imports
 import Generals.Types
 
 import Js.Generals (download)
+import qualified Js.FFI as FFI
 
 replay :: Widget m ()
-replay = elClass "div" "replay" $ do
-  downloaded <- download
-  print downloaded
+replay = elClass "div" "replay" $ liftIO $ do
+  FFI.now  >>= print
+  -- print $ FFI.plus 3
+  -- download >>= print
   blank
