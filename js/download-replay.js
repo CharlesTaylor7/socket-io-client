@@ -1,15 +1,20 @@
 const FetchBase64 = require('fetch-base64-in-browser')
 const LZString = require('lz-string')
 
+const base64Prefix = "data:application/octet-stream;base64,"
+
 const fetchReplay = (url) => new FetchBase64(url)
   .fetchAsData()
-  .then(base64 => {
-    var obj = JSON.parse(
-      LZString.decompressFromUint8Array(
-        new Uint8Array(base64)
-      )
-    );
-    console.log(obj)
+  .then(body => {
+    const bodyPrefix = body.substring(0, base64Prefix.length);
+    if (bodyPrefix !== base64Prefix) {
+      throw Error("Body not base 64")
+    }
+
+    const base64 = body.substring(bodyPrefix.length);
+    const decompressed = LZString.decompressFromBase64(base64);
+    var obj = JSON.parse(decompressed);
+    return obj;
   })
   .catch(console.error)
 
