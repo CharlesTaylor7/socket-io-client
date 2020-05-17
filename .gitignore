@@ -3,13 +3,16 @@
 *.js_hi
 *.jsexe/
 
+# build folders
+/public/js/ghcjs/build/
+/public/js/build/
+
 # VSCode
 *.vscode/
 
 # node
 /.cache/
 /node_modules/
-/public/dist.js
 
 # cabal
 /dist-newstyle
