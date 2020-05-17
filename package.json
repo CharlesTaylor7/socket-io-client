@@ -3,7 +3,8 @@
     "build:hs": "cabal build generals-app && mkdir -p public/hs.jsexe && cp dist-newstyle/build/x86_64-linux/ghcjs-8.6.0.1/generals-ui-0.0.0.0/x/generals-app/build/generals-app/generals-app.jsexe/*.js public/hs.jsexe/",
     "watch:hs": "onchange 'hs/**' -- yarn build:hs",
     "watch:js": "npx watchify js/index.js -o public/dist.js",
-    "start": "yarn watch:hs & yarn watch:js & node server"
+    "watch:server": "node server",
+    "start": "echo 'To be implemented'"
   },
   "dependencies": {
     "fetch-base64-in-browser": "^1.0.2",

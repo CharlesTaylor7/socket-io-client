@@ -11,6 +11,6 @@ import Page.Replay
 
 main :: IO ()
 main = mainWidget $ do
-  text "Hello, world!"
+  -- text "Hello, world!"
   text "Hello, Friend!"
   -- replay
