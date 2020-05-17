@@ -21,7 +21,7 @@ data ReplayLocation = ReplayLocation
 -- type Replay = Map Text Text
 type Replay = Text
 
-download :: MonadJSM m => m Replay
+download :: MonadJSM m => m (Event t Replay)
 download = downloadReplay location
   where
     location = ReplayLocation
