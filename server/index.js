@@ -6,4 +6,5 @@ require("live-server").start({
   file: "index.html",
   wait: 1000,
   logLevel: 2,
+  watch: 'public/',
 });
