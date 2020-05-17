@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Reflex.Widget
   ( Widget
   )
@@ -20,4 +21,6 @@ type Widget t m
   , PostBuild t m
   , MonadHold t m
   , TriggerEvent t m
+  , PerformEvent t m
+  , MonadIO (Performable m)
   )

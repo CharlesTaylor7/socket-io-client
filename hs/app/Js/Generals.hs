@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
--- {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
--- {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecursiveDo #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module Js.Generals where
 
-import Generals.Imports (Widget, Event, newTriggerEvent)
+import Generals.Imports (Widget, Event, newTriggerEvent, performEvent_, ffor)
 
 import Js.Imports
 import qualified Js.FFI as FFI
@@ -16,15 +16,22 @@ type Replay =  Text
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = do
   let url = toJSString $ replayUrl location
+
   (replayEvent, trigger) <- newTriggerEvent
 
-  let onDownload jsVal = do
-        Just replayText <- fromJSVal jsVal
-        trigger replayText
+  -- callback marshals jsval to text & triggers event
+  jsCallback <- liftIO . asyncCallback1 $
+    \jsVal -> do
+      Just replayText <- fromJSVal jsVal
+      trigger replayText
 
-  jsCallback <- liftIO $ asyncCallback1 onDownload
-
+  -- execute download
   liftIO $ FFI.downloadReplay url jsCallback
+
+  -- release js callback after download completes
+  performEvent_ $
+    replayEvent <&> \_ -> liftIO $
+      releaseCallback jsCallback
 
   pure replayEvent
 
@@ -47,8 +54,6 @@ download = downloadReplay location
       { replay_id = "HOVnMO6cL"
       , server = Server_Main
       }
-
-
 
 replayUrl :: ReplayLocation -> Text
 replayUrl ReplayLocation{..}
