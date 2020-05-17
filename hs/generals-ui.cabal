@@ -8,7 +8,6 @@ author:         Charles Taylor
 maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
 
 source-repository head
@@ -18,7 +17,7 @@ source-repository head
 library reflex-widget
   default-language: Haskell2010
   hs-source-dirs:
-      hs/reflex-widget
+      reflex-widget
   exposed-modules:
       Reflex.Widget
   build-depends:
@@ -30,7 +29,7 @@ library generals-prelude
   default-language: Haskell2010
   default-extensions: NoImplicitPrelude
   hs-source-dirs:
-      hs/prelude
+      prelude
   exposed-modules:
       Generals.Imports
     , Generals.Types
@@ -50,7 +49,7 @@ executable generals-app
   default-extensions: NoImplicitPrelude
   main-is: Main.hs
   hs-source-dirs:
-    hs/app
+    app
   build-depends:
       generals-prelude
     , reflex-widget
