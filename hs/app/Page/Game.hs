@@ -12,7 +12,7 @@ import Page.Game.Grid
 import Js.SocketIO
 import Component.Button.GameEnd
 
-game :: [BotName] -> Widget m ()
+game :: Widget t m => [BotName] -> m ()
 game bots = do
   grid
 

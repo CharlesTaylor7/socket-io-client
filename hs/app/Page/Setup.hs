@@ -14,7 +14,7 @@ import Data.Dom (button)
 toOptions :: [Text] -> Map Int Text
 toOptions names = [(0::Int)..] `zip` ("":names) & fromList
 
-setup :: Widget m ()
+setup :: Widget t m => m ()
 setup = elClass "div" "setup" $ do
   let optionsDyn = constDyn optionsMap
   dropdown1 <- mkDropdown 1 optionsDyn "bot-selector"

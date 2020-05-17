@@ -1,20 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Generals.Types where
 
 import Generals.Imports
-
-type Widget m a
-  = forall t.
-  ( MonadIO m
-  , MonadFix m
-  , Reflex t
-  , DomBuilder t m
-  , PostBuild t m
-  , MonadHold t m
-  )
-  => m a
 
 newtype GameConfig = GameConfig [BotName]
   deriving (Show)

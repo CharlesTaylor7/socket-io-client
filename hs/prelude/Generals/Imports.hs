@@ -1,5 +1,6 @@
 module Generals.Imports
   ( module Relude
+  , module Reflex.Widget
   , module Control.Lens
   , module Data.Text.Lens
   , module Control.Exception
@@ -11,6 +12,7 @@ module Generals.Imports
   , module Language.Javascript.JSaddle
   ) where
 
+import Reflex.Widget
 import Relude hiding (uncons, (??), Alt, mapMaybe, fail)
 import Control.Lens hiding (element)
 import Data.Text.Lens hiding (text)

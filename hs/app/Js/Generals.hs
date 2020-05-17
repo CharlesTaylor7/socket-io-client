@@ -1,10 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Js.Generals where
 
-import Generals.Imports (Event)
+import Generals.Imports (Event, never)
+import Reflex.Widget
 import Js.Imports
 import qualified Js.FFI as FFI
 
@@ -19,9 +21,9 @@ data ReplayLocation = ReplayLocation
   }
 
 -- type Replay = Map Text Text
-type Replay = Text
+type Replay =  Text
 
-download :: MonadJSM m => m (Event t Replay)
+download :: Widget t m => m (Event t Replay)
 download = downloadReplay location
   where
     location = ReplayLocation
@@ -29,7 +31,7 @@ download = downloadReplay location
       , server = Server_Main
       }
 
-downloadReplay :: (MonadJSM m) => ReplayLocation -> m (Event t Replay)
+downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = liftJSM $ do
   let url = replayUrl location
   pure never
