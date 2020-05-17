@@ -8,9 +8,10 @@ module Page.Replay where
 import Generals.Imports
 import Generals.Types
 
+import Js.Generals (download)
 
 replay :: Widget m ()
 replay = elClass "div" "replay" $ do
-  text "hello!"
-  -- download
+  downloaded <- download
+  print downloaded
   blank

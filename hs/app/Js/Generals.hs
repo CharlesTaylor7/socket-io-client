@@ -32,9 +32,9 @@ download = downloadReplay location
       }
 
 downloadReplay :: (MonadJSM m) => ReplayLocation -> m Replay
-downloadReplay location = do
+downloadReplay location = liftJSM $ do
   let url = replayUrl location
-  JSString replayText <- FFI.downloadReplay $ JSString url
+  replayText <- fromJSString <$> FFI.downloadReplay (toJSString url)
   pure replayText
 
 
