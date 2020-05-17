@@ -43,16 +43,7 @@ executable generals-app
       generals-prelude
     , jsaddle
     , string-interpolate
+    , relude
   other-modules:
-      Js.Generals
-    , Js.SocketIO
-    , Js.Utils
-    , Page.Game
-    , Page.Setup
-    , Page.Replay
-    , SocketIO
-    , Component.Button.GameEnd
-    , Data.CSS
-    , Data.Dom
-    , Page.Game.Grid
+    Page.Replay
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

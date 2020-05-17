@@ -3,7 +3,7 @@ const LZString = require('lz-string')
 
 const base64Prefix = "data:application/octet-stream;base64,"
 
-const fetchReplay = (url) => new FetchBase64(url)
+const downloadReplay = (url) => new FetchBase64(url)
   .fetchAsData()
   .then(body => {
     const bodyPrefix = body.substring(0, base64Prefix.length);
@@ -13,9 +13,8 @@ const fetchReplay = (url) => new FetchBase64(url)
 
     const base64 = body.substring(bodyPrefix.length);
     const decompressed = LZString.decompressFromBase64(base64);
-    var obj = JSON.parse(decompressed);
-    return obj;
+    return decompressed;
   })
   .catch(console.error)
 
-module.exports = fetchReplay
+module.exports = downloadReplay;

@@ -5,14 +5,10 @@
 
 module Js.Generals where
 
-import Generals.Imports
--- import qualified Data.Text as T
--- import qualified Data.Text.Encoding as T
--- import Language.Javascript.JSaddle hiding (eval)
--- import qualified Language.Javascript.JSaddle as JSaddle
+import Js.Imports
+import qualified Js.FFI as FFI
 
 import Data.String.Interpolate (i)
-import Js.Utils
 
 
 data Server
@@ -24,7 +20,8 @@ data ReplayLocation = ReplayLocation
   , replay_id :: Text
   }
 
-type Replay = Map Text Text
+-- type Replay = Map Text Text
+type Replay = Text
 
 download :: MonadJSM m => m Replay
 download = downloadReplay location
@@ -37,7 +34,8 @@ download = downloadReplay location
 downloadReplay :: (MonadJSM m) => ReplayLocation -> m Replay
 downloadReplay location = do
   let url = replayUrl location
-  undefined
+  JSString replayText <- FFI.downloadReplay $ JSString url
+  pure replayText
 
 
 replayUrl :: ReplayLocation -> Text
