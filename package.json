@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "cabal build generals-app && cp -r dist-newstyle/build/x86_64-linux/ghcjs-8.6.0.1/generals-ui-0.0.0.0/x/generals-app/build/generals-app/generals-app.jsexe public/hs.jsexe && npx browserify js/index.js -o public/dist.js",
+    "move-hs": "mkdir -p public/hs.jsexe && mv dist-newstyle/build/x86_64-linux/ghcjs-8.6.0.1/generals-ui-0.0.0.0/x/generals-app/build/generals-app/generals-app.jsexe/*.js public/hs.jsexe/",
+    "build": "cabal build generals-app && yarn move-hs && npx browserify js/index.js -o public/dist.js",
     "prestart": "yarn build",
     "start": "http-server public"
   },
