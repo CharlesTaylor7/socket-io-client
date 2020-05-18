@@ -12,6 +12,8 @@ source-repository head
 
 common common
   default-language: Haskell2010
+  ghc-options:
+    -j2 +RTS -A128m -n2m -qg -RTS
 
 library reflex-imports
   import: common
