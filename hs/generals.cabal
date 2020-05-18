@@ -62,5 +62,7 @@ executable generals-app
     , Page.Replay.Types
     , Component.Grid
     , Data.CSS
+    , Data.CSS.Types
     , Data.Dom
+    , Data.Dom.Types
     , Types

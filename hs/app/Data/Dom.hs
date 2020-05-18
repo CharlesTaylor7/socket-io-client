@@ -5,8 +5,11 @@
 module Data.Dom where
 
 import Reflex
-import Types
+
 import Data.CSS (toAttrs)
+import Data.CSS.Types
+import Data.Dom.Types
+
 
 button :: DomBuilder t m => Text -> Text -> m (Event t ())
 button className display = do

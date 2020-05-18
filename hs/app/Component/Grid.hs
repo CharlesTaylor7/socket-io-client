@@ -10,7 +10,7 @@ module Component.Grid where
 import Reflex
 import Types
 
-import Data.CSS
+import Data.CSS.Types
 import Data.Dom (elStyle, elStyle', elDynStyle, elDynStyle')
 import qualified Data.Dom as Dom
 

@@ -3,10 +3,9 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Data.CSS where
 
+import Data.CSS.Types
 
-import Types
-
-
+-- instances
 instance ToText Pixels where
   toText = view (_Pixels . re _Show . packed . to (<> "px"))
 
