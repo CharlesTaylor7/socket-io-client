@@ -7,8 +7,8 @@
 
 module Component.Grid where
 
-import Generals.Imports
-import Generals.Types
+import Reflex
+import Types
 
 import Data.CSS
 import Data.Dom (elStyle, elStyle', elDynStyle, elDynStyle')

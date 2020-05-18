@@ -1,11 +1,5 @@
-module Js.Imports
-  ( module Relude
-  , module GHCJS.Foreign.Callback
-  , module GHCJS.Types
-  , module Language.Javascript.JSaddle
-  ) where
+module Js.Imports (module X) where
 
-import Relude
-import GHCJS.Foreign.Callback
-import GHCJS.Types
-import Language.Javascript.JSaddle hiding (JSException )
+import GHCJS.Foreign.Callback as X
+import GHCJS.Types as X
+import Language.Javascript.JSaddle  as X hiding (JSException )

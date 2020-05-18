@@ -4,8 +4,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Data.Dom where
 
-import Generals.Imports
-import Generals.Types
+import Reflex
+import Types
 import Data.CSS (toAttrs)
 
 button :: DomBuilder t m => Text -> Text -> m (Event t ())

@@ -1,8 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Generals.Types where
+module Types where
 
-import Generals.Imports
 
 newtype GameConfig = GameConfig [BotName]
   deriving (Show)

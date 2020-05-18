@@ -11,8 +11,8 @@ module Page.Replay.Types
   )
   where
 
-import Generals.Imports hiding (Value)
-import Generals.Types (Dimensions(..))
+--  hiding (Value)
+import Types (Dimensions(..))
 
 import Data.Aeson hiding ((.:), decode)
 import qualified Data.Aeson as Json

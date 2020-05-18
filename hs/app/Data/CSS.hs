@@ -3,8 +3,8 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Data.CSS where
 
-import Generals.Imports
-import Generals.Types
+
+import Types
 
 
 instance ToText Pixels where

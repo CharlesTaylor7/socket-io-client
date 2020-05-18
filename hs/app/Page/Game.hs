@@ -5,8 +5,8 @@
 
 module Page.Game where
 
-import Generals.Imports
-import Generals.Types
+
+import Types
 import Data.Dom (button)
 import Component.Grid
 import Js.SocketIO

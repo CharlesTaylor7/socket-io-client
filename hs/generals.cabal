@@ -1,21 +1,25 @@
-cabal-version:  1.12
+cabal-version:  2.2
 name:           generals
 version:        0.0.0.0
 author:         Charles Taylor
 maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
-license:        BSD3
 build-type:     Simple
 
 source-repository head
   type: git
   location: https://github.com/CharlesTaylor7/generals-bot
 
-library reflex-widget
+common common
   default-language: Haskell2010
+
+library reflex-imports
+  import: common
   hs-source-dirs:
-      reflex-widget
+      reflex-imports
   exposed-modules:
+      Reflex
+  other-modules:
       Reflex.Widget
   build-depends:
       base >= 4.7 && <5.0
@@ -23,38 +27,28 @@ library reflex-widget
     , reflex-dom
 
 library generals-prelude
-  default-language: Haskell2010
-  default-extensions: NoImplicitPrelude
+  import: common
   hs-source-dirs:
       prelude
   exposed-modules:
-      Generals.Imports
-    , Generals.Types
+      Prelude
   build-depends:
       base >= 4.7 && <5.0
-    , reflex-widget
     , relude
     , lens
-    , aeson
     , data-default
-    , reflex
-    , reflex-dom
-    , jsaddle
 
 executable generals-app
-  default-language: Haskell2010
-  default-extensions: NoImplicitPrelude
+  import: common
   main-is: Main.hs
   hs-source-dirs:
     app
   build-depends:
       generals-prelude
-    , reflex-widget
+    , reflex-imports
     , ghcjs-base
     , jsaddle
-    , relude
     , aeson
-    , attoparsec
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   other-modules:
       Js.FFI
@@ -66,3 +60,4 @@ executable generals-app
     , Component.Grid
     , Data.CSS
     , Data.Dom
+    , Types

@@ -7,7 +7,6 @@ module Reflex.Widget
   )
   where
 
-import Relude
 import Reflex.Dom hiding (Widget)
 import Control.Monad.Fix (MonadFix)
 import Control.Monad.IO.Class (MonadIO)

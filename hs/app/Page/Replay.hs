@@ -6,8 +6,8 @@
 {-# LANGUAGE RecursiveDo #-}
 module Page.Replay where
 
-import Generals.Imports
-import Generals.Types
+import Reflex
+import Types
 
 import Page.Replay.Types
 import Page.Replay.Internals (download)

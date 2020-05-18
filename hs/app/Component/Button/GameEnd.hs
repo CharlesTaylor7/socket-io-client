@@ -7,8 +7,8 @@
 {-# LANGUAGE GADTs #-}
 module Component.Button.GameEnd where
 
-import Generals.Types
-import Generals.Imports hiding (button)
+import Types
+ hiding (button)
 
 import Data.Dom (button)
 import Data.CSS

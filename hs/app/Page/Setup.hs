@@ -6,8 +6,8 @@
 
 module Page.Setup where
 
-import Generals.Imports hiding (button)
-import Generals.Types
+ hiding (button)
+import Types
 
 import Data.Dom (button)
 

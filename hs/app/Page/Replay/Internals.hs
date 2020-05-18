@@ -5,8 +5,7 @@
 
 module Page.Replay.Internals where
 
-
-import Generals.Imports (Widget, Event, newTriggerEvent, performEvent_, ffor)
+import Reflex
 
 import Page.Replay.Orphans
 import Page.Replay.Types
