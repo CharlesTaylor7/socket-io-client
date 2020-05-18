@@ -7,8 +7,8 @@ module Page.Replay.Internals where
 
 import Reflex
 
-import Page.Replay.Orphans
 import Page.Replay.Types
+import Page.Replay.Decode
 
 import Js.Imports
 import qualified Js.FFI as FFI
@@ -36,15 +36,6 @@ downloadReplay location = do
 
   pure $ replayEvent <&> decode
 
-
-data Server
-  = Server_Main
-  | Server_Bot
-
-data ReplayLocation = ReplayLocation
-  { server :: Server
-  , replay_id :: Text
-  }
 
 download :: Widget t m => m (Event t Replay)
 download = downloadReplay location
