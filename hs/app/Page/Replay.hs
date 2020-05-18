@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -8,11 +9,15 @@ module Page.Replay where
 import Generals.Imports
 import Generals.Types
 
-import Js.Generals (download)
-import qualified Js.FFI as FFI
+import Page.Replay.Types
+import Page.Replay.Internals (download)
+
+import Component.Grid
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  download >>= holdDyn "awaiting download" >>= display
+  downloadEvent <- download
+  widgetHold blank $ ffor downloadEvent $ \Replay{..} -> do
+    grid dimensions
 
   blank

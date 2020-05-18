@@ -8,7 +8,7 @@ module Page.Game where
 import Generals.Imports
 import Generals.Types
 import Data.Dom (button)
-import Page.Game.Grid
+import Component.Grid
 import Js.SocketIO
 import Component.Button.GameEnd
 

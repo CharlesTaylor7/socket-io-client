@@ -13,10 +13,9 @@ module Generals.Imports
   ) where
 
 import Reflex.Widget
-import Relude hiding (uncons, (??), Alt, mapMaybe, fail)
+import Relude hiding (uncons, (??), Alt, mapMaybe)
 import Control.Lens hiding (element)
 import Data.Text.Lens hiding (text)
-
 import Control.Exception (throwIO)
 
 import Control.Monad.Fix (MonadFix(..))

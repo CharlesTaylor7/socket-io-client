@@ -5,7 +5,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Page.Game.Grid where
+module Component.Grid where
 
 import Generals.Imports
 import Generals.Types
@@ -14,17 +14,9 @@ import Data.CSS
 import Data.Dom (elStyle, elStyle', elDynStyle, elDynStyle')
 import qualified Data.Dom as Dom
 
-tileSideLength :: Pixels
-tileSideLength = 40
 
-gridWidth :: Pixels
-gridWidth = tileSideLength * (dimensions ^. width . to fromIntegral)
-
-dimensions :: Dimensions
-dimensions = Dimensions { _width = 7, _height = 5}
-
-grid :: (DomBuilder t m) => m ()
-grid =
+grid :: (DomBuilder t m) => Dimensions -> m ()
+grid dimensions =
   elStyle Dom.div gridStyle $
     for_ [1..(dimensions ^. height)] $ \j ->
     elStyle Dom.div rowStyle $
@@ -42,3 +34,9 @@ grid =
         (at "width" ?~ sideLength) .
         (at "height" ?~ sideLength)
     sideLength = toText tileSideLength
+
+    tileSideLength :: Pixels
+    tileSideLength = 40
+
+    gridWidth :: Pixels
+    gridWidth = tileSideLength * (dimensions ^. width . to fromIntegral)

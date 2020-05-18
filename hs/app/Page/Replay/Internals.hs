@@ -3,15 +3,17 @@
 {-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Js.Generals where
+module Page.Replay.Internals where
+
 
 import Generals.Imports (Widget, Event, newTriggerEvent, performEvent_, ffor)
+
+import Page.Replay.Orphans
+import Page.Replay.Types
 
 import Js.Imports
 import qualified Js.FFI as FFI
 
--- type Replay = Map Text Text
-type Replay =  Text
 
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = do
@@ -33,7 +35,7 @@ downloadReplay location = do
     replayEvent <&> \_ -> liftIO $
       releaseCallback jsCallback
 
-  pure replayEvent
+  pure $ replayEvent <&> decode
 
 
 data Server
@@ -44,8 +46,6 @@ data ReplayLocation = ReplayLocation
   { server :: Server
   , replay_id :: Text
   }
-
-
 
 download :: Widget t m => m (Event t Replay)
 download = downloadReplay location

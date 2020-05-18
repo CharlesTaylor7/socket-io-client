@@ -1,0 +1,22 @@
+.grid {
+  color: black;
+  background: rgb(97, 120, 194);
+  border-radius: 4px;
+  font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
+  margin: 10vh auto;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.tile {
+  border: 1px solid black;
+}
+
+.button-end {
+  margin: 0 auto;
+}

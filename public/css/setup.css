@@ -1,0 +1,12 @@
+.setup {
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  margin: 40px auto;
+}
+
+.bot-selector {
+}
+
+.button-start {
+}

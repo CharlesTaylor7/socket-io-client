@@ -14,10 +14,13 @@ newtype Id = Id Int
   deriving (Show)
 
 data Dimensions = Dimensions
-  { _height :: Int
-  , _width :: Int
+  { _width  :: Int
+  , _height :: Int
   }
   deriving (Eq, Show)
+
+instance Default Dimensions where
+  def = Dimensions {}
 
 data StyleInfo = StyleInfo
   { _inlineStyle :: Map Text Text
