@@ -1,8 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
-module Main
-  ( main
-  )
-  where
+module Main (main) where
 
 import Reflex
 import Page.Replay

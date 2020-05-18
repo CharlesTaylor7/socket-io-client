@@ -1,10 +1,3 @@
--- {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE NamedFieldPuns #-}
--- {-# LANGUAGE ExplicitForAll #-}
--- {-# LANGUAGE FlexibleContexts #-}
--- {-# LANGUAGE TypeFamilies #-}
--- {-# LANGUAGE RecursiveDo #-}
--- {-# LANGUAGE DeriveGeneric #-}
 module Page.Replay.Decode
   ( decode
   )
