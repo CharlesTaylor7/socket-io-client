@@ -60,11 +60,12 @@ executable generals-app
     , Js.Imports
     , Page.Replay
     , Page.Replay.Decode
-    , Page.Replay.Internals
+    , Page.Replay.Download
     , Page.Replay.Types
     , Component.Grid
     , Data.CSS
     , Data.CSS.Types
     , Data.Dom
+    , Data.Dom.Internals
     , Data.Dom.Types
     , Types

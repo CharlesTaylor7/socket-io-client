@@ -2,7 +2,7 @@
 {-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Page.Replay.Internals where
+module Page.Replay.Download where
 
 import Reflex
 

@@ -18,10 +18,6 @@ data Dimensions = Dimensions
   }
   deriving (Eq, Show)
 
-instance Default Dimensions where
-  def = Dimensions {}
-
-
 makePrisms ''Id
 makePrisms ''BotName
 makePrisms ''GameConfig
