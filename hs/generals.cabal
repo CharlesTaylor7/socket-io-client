@@ -16,7 +16,7 @@ common common
       OverloadedStrings
   ghc-options:
       -Werror=missing-home-modules
-      -j2 +RTS -A128m -n2m -qg -RTS
+      -O0 -j2 +RTS -A128m -n2m -qg -RTS
 
 library reflex-imports
   import: common
