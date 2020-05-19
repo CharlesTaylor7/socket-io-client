@@ -4,7 +4,7 @@ require("live-server").start({
   root: "public",
   open: false,
   file: "index.html",
-  wait: 400,
+  wait: 40,
   logLevel: 2,
   watch: 'public/',
   ignore: 'replays/'
