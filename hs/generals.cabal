@@ -14,6 +14,8 @@ common common
   default-language: Haskell2010
   default-extensions:
       OverloadedStrings
+    , FlexibleContexts
+    , ScopedTypeVariables
   ghc-options:
       -Werror=missing-home-modules
       -O0 -j2 +RTS -A128m -n2m -qg -RTS
@@ -25,7 +27,8 @@ library reflex-imports
   exposed-modules:
       Reflex
   other-modules:
-      Reflex.Widget
+      Reflex.Element
+    , Reflex.Widget
   build-depends:
       base >= 4.7 && <5.0
     , relude

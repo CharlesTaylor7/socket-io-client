@@ -2,10 +2,11 @@
 module Js.FFI where
 
 import Js.Imports
+import Page.Replay.Types (Url)
 
 foreign import javascript unsafe
   "window.downloadReplay($1, $2)"
-  downloadReplay :: JSString -> Callback a -> IO ()
+  downloadReplay :: Url -> Callback a -> IO ()
 
 foreign import javascript unsafe
   "window.newSocket($1)"

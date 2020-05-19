@@ -5,11 +5,9 @@
 {-# LANGUAGE RecursiveDo #-}
 module Page.Replay where
 
--- import Types
+import Reflex
 
-import Reflex hiding (button)
-
-import Data.Dom (button)
+import Data.Dom
 
 import Page.Replay.Types
 import Page.Replay.Download (download)
@@ -18,9 +16,23 @@ import Component.Grid
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  button _ _ _
-  downloadEvent <- download
-  widgetHold blank $ ffor downloadEvent $ \Replay{..} -> do
-    grid dimensions
+  (event, triggerEvent) <- newTriggerEvent
+  let trigger = liftIO . triggerEvent
+  srcDyn <- holdDyn (Url "") event
 
-  blank
+  iframe srcDyn
+  trigger $ Url "https://generalsio-replays-na.s3.amazonaws.com/HOVnMO6cL.gior"
+  fileUploader
+
+fileUploader :: Widget t m => m ()
+fileUploader = elAttr "input" ("type" =: "file") blank
+
+
+
+iframe :: Widget t m => Dynamic t Url -> m ()
+iframe srcDyn = elDynAttr
+    "iframe"
+    (srcDyn <&> \(Url src) -> baseAttrs & at "src" ?~ src)
+    blank
+    where
+      baseAttrs = "style" =:   "display:none"

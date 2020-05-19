@@ -1,5 +1,4 @@
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 module Data.Dom.Internals where
 
 import Reflex hiding (button)
@@ -30,7 +29,7 @@ elStyle' :: forall t m a . DomBuilder t m
         => DOMNode
         -> StyleInfo
         -> m a
-        -> m (Element EventResult (DomBuilderSpace m) t, a)
+        -> m (Element t m, a)
 elStyle' (Node name) (toAttrs -> attrs) =
   elAttr' name attrs
 
@@ -46,7 +45,7 @@ elDynStyle' :: forall t m a . (DomBuilder t m, PostBuild t m)
             => DOMNode
             -> Dynamic t StyleInfo
             -> m a
-            -> m (Element EventResult (DomBuilderSpace m) t, a)
+            -> m (Element t m, a)
 elDynStyle' (Node name) (fmap toAttrs -> dynAttrs) =
   elDynAttr' name dynAttrs
 

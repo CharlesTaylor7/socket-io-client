@@ -13,6 +13,8 @@ data ReplayLocation = ReplayLocation
   , replay_id :: Text
   }
 
+newtype Url = Url Text
+
 data Replay = Replay
   { id :: Text
   , dimensions :: Dimensions

@@ -6,7 +6,7 @@ import Control.Monad.Fix as X (MonadFix(..))
 import Control.Monad.IO.Class as X (MonadIO)
 
 -- relude
-import Relude as X hiding (uncons, (??), Alt, mapMaybe)
+import Relude as X hiding (uncons, (??), Alt, mapMaybe, id)
 
 -- lens
 import Control.Lens as X hiding (element)
