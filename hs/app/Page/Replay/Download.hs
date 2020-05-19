@@ -33,10 +33,13 @@ promiseToEvent promise = do
   -- bind callback to promise
   liftIO $ FFI.promise_then promise jsCallback
 
-  -- release js callback after download completes
-  doneEvent <-performEvent $
+  -- get the underlying value of the jsVal via performEvent & FromJSVal typeclass
+  -- FromJSVall requires monadic context, hence why this isn't just fmap
+  doneEvent <- performEvent $
     event <&> \jsVal -> liftIO $ do
+      -- release js callback
       releaseCallback jsCallback
+      -- convert js reference to haskell data type
       fromJSValUnchecked jsVal
 
   pure doneEvent
