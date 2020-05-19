@@ -4,15 +4,15 @@ module Js.FFI where
 import Js.Imports
 import Page.Replay.Types (Url)
 
-newtype Promise = Promise JSVal
+newtype Promise a = Promise JSVal
 
 foreign import javascript unsafe
   "$1.then($2)"
-  promise_then :: Promise -> Callback a -> IO ()
+  promise_then :: Promise a -> Callback callback -> IO ()
 
 foreign import javascript unsafe
   "window.downloadReplay($1)"
-  downloadReplay :: Url -> IO Promise
+  downloadReplay :: Url -> IO (Promise Text)
 
 foreign import javascript unsafe
   "window.newSocket($1)"

@@ -13,7 +13,6 @@ import Js.Utils
 import qualified Js.FFI as FFI
 
 
-
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = do
   let url = replayUrl location

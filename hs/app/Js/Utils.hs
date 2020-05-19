@@ -14,7 +14,7 @@ type ToEvent_Constraints t m =
   , MonadIO m
   , TriggerEvent t m
   )
-promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => FFI.Promise -> m (Event t a)
+promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => FFI.Promise a -> m (Event t a)
 promiseToEvent promise = do
   (event, trigger) <- newTriggerEvent
 
