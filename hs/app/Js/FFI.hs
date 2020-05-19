@@ -7,8 +7,8 @@ import Page.Replay.Types (Url)
 newtype Promise = Promise JSVal
 
 foreign import javascript unsafe
-  "window.downloadReplay($1, $2)"
-  downloadReplay :: Url -> Callback a -> IO ()
+  "window.downloadReplay($1)"
+  downloadReplay :: Url -> IO Promise
 
 foreign import javascript unsafe
   "window.newSocket($1)"

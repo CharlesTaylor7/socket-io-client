@@ -23,7 +23,7 @@ type ToEvent_Constraints t m =
   , MonadIO m
   , TriggerEvent t m
   )
-promiseToEvent :: (ToEvent_Constraints t m) => FFI.Promise -> m (Event t JSVal)
+promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => FFI.Promise -> m (Event t a)
 promiseToEvent promise = do
   (event, trigger) <- newTriggerEvent
 
@@ -34,33 +34,19 @@ promiseToEvent promise = do
   liftIO $ FFI.promise_then promise jsCallback
 
   -- release js callback after download completes
-  performEvent_ $
-    event <&> \_ -> liftIO $
+  doneEvent <-performEvent $
+    event <&> \jsVal -> liftIO $ do
       releaseCallback jsCallback
+      fromJSValUnchecked jsVal
 
-  pure event
+  pure doneEvent
 
 
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = do
   let url = replayUrl location
-
-  (replayEvent, trigger) <- newTriggerEvent
-
-  -- callback marshals jsval to text & triggers event
-  jsCallback <- liftIO . asyncCallback1 $
-    \jsVal -> do
-      Just replayText <- fromJSVal jsVal
-      trigger replayText
-
-  -- execute download
-  liftIO $ FFI.downloadReplay url jsCallback
-
-  -- release js callback after download completes
-  performEvent_ $
-    replayEvent <&> \_ -> liftIO $
-      releaseCallback jsCallback
-
+  promise <- liftIO $ FFI.downloadReplay url
+  replayEvent <- promiseToEvent promise
   pure $ replayEvent <&> decode
 
 
