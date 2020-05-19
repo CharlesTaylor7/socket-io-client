@@ -13,6 +13,24 @@ import Js.Imports
 import qualified Js.FFI as FFI
 
 
+toEvent :: Widget t m => FFI.Promise -> m (Event t JSVal)
+toEvent promise = do
+  (event, trigger) <- newTriggerEvent
+
+  -- callback triggers event
+  jsCallback <- liftIO . asyncCallback1 $ trigger
+
+  -- bind callback to promise
+  liftIO $ FFI.promise_then promise jsCallback
+
+  -- release js callback after download completes
+  performEvent_ $
+    event <&> \_ -> liftIO $
+      releaseCallback jsCallback
+
+  pure event
+
+
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
 downloadReplay location = do
   let url = replayUrl location

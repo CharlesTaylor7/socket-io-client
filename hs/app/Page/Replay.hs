@@ -10,30 +10,19 @@ import Reflex
 import Data.Dom
 
 import Page.Replay.Types
-import Page.Replay.Download (download)
+import Page.Replay.Download (download, toEvent)
 
 import Component.Grid
-import Prelude hiding ((!), (!!))
+import Prelude hiding ((#), (!), (!!))
 
 import Language.Javascript.JSaddle
+import qualified Js.FFI as FFI
+
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
 
-  uploadEl <- fileUploader
-  let inputEvent = domEvent Input uploadEl
-  performEvent_ $
-    inputEvent <&> \_ -> liftIO $ do
-      print "input event fired!"
-      elVal <- toJSVal . _element_raw $ uploadEl
-      stringifiedEl <- fromJSVal elVal
-      print $ (stringifiedEl :: Maybe JSString)
 
-      files <- elVal ! ("files" :: Text)
-      file <- files !! 0
-      file_hs <- fromJSVal file
-
-      print $ (file_hs :: Maybe Text)
   blank
 
 test_download :: Widget t m => m ()
@@ -47,11 +36,32 @@ test_download = do
   blank
 
 
-fileUploader :: Widget t m => m (Element t m)
-fileUploader = do
-  (el, _) <- elAttr' "input" ("type" =: "file" <> "multiple" =: "") blank
-  pure el
+replayUploader :: Widget t m => m (Event t JSVal)
+replayUploader = do
+  (uploadEl, _) <- fileInputElement
 
+  let inputEvent = domEvent Input uploadEl
+  fileContentsEvent <- performEvent $
+    inputEvent <&> \_ -> do
+      print "input event fired!"
+      file_contents <- liftIO $ do
+        elVal <- toJSVal . _element_raw $ uploadEl
+        files <- elVal ! ("files" :: Text)
+        file <- files !! 0
+        file # ("text" :: Text) $ ()
+
+      toEvent $ FFI.Promise file_contents
+
+  behavior <- hold never fileContentsEvent
+  pure $ switch behavior
+  where
+    fileInputElement = elAttr'
+      "input"
+      (  "type" =: "file"
+      <> "multiple" =: ""
+      <> "accept" =: ".gior"
+      )
+      blank
 
 iframe :: Widget t m => Dynamic t Url -> m ()
 iframe srcDyn = elDynAttr
@@ -59,4 +69,4 @@ iframe srcDyn = elDynAttr
     (srcDyn <&> \(Url src) -> baseAttrs & at "src" ?~ src)
     blank
     where
-      baseAttrs = "style" =:   "display:none"
+      baseAttrs = "style" =: "display:none"
