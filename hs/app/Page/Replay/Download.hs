@@ -10,6 +10,9 @@ import Page.Replay.Decode
 import Js.Imports
 import Js.Utils
 
+import Js.Types
+
+
 import qualified Js.FFI as FFI
 
 

@@ -7,11 +7,11 @@
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <link rel="stylesheet" type="text/css" href="css/setup.css">
     <!-- cached runtime -->
-    <script src="js/ghcjs/rts.js"></script>
-    <script src="js/ghcjs/lib.js"></script>
+    <script src="js/static/ghcjs/rts.js"></script>
+    <script src="js/static/ghcjs/lib.js"></script>
     <!-- build output -->
     <script src="js/build/node-deps.js"></script>
-    <script src="js/ghcjs/build/out.js"></script>
+    <script src="js/build/ghcjs/out.js"></script>
   </head>
   <body>
   </body>
@@ -21,7 +21,13 @@
       .then(body => body.text())
       .then(version => console.log('version:', version))
   </script>
-
+  <script>
+    if('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('./service-worker.js')
+        .then(() =>  console.log("Service Worker Registered"))
+    }
+  </script>
     <!-- cached runmain -->
-  <script src="js/ghcjs/runmain.js" defer></script>
+  <script src="js/static/ghcjs/runmain.js" defer></script>
 </html>

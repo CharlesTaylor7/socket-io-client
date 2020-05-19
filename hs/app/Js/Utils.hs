@@ -8,11 +8,10 @@ import qualified Js.FFI as FFI
 
 type ToEvent_Constraints t m =
   ( Reflex t
-  , Monad m
-  , MonadIO (Performable m)
   , PerformEvent t m
-  , MonadIO m
   , TriggerEvent t m
+  , MonadIO m
+  , MonadIO (Performable m)
   )
 promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => FFI.Promise a -> m (Event t a)
 promiseToEvent promise = do

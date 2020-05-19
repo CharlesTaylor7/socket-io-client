@@ -2,7 +2,8 @@
 module Js.FFI where
 
 import Js.Imports
-import Page.Replay.Types (Url)
+import Js.Types (Url)
+
 
 newtype Promise a = Promise JSVal
 

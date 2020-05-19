@@ -1,5 +1,7 @@
 module Prelude (module X) where
 
+import Extra as X
+
 -- base
 import Control.Exception as X (throwIO)
 import Control.Monad.Fix as X (MonadFix(..))

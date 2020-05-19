@@ -15,11 +15,6 @@ data ReplayLocation = ReplayLocation
   , replay_id :: Text
   }
 
-newtype Url = Url Text
-
-instance Default Url where
-  def = Url ""
-
 data Replay = Replay
   { id :: Text
   , dimensions :: Dimensions
