@@ -3,9 +3,10 @@
 *.js_hi
 *.jsexe/
 
-# build folders
+# build output
 /public/js/ghcjs/build/
 /public/js/build/
+/public/version.txt
 
 # VSCode
 *.vscode/

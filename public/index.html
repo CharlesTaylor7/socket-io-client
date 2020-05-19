@@ -12,10 +12,16 @@
     <!-- build output -->
     <script src="js/build/node-deps.js"></script>
     <script src="js/ghcjs/build/out.js"></script>
-
   </head>
   <body>
   </body>
+  <script>
+    // log build uuid
+    fetch('./version.txt')
+      .then(body => body.text())
+      .then(version => console.log('version:', version))
+  </script>
+
     <!-- cached runmain -->
   <script src="js/ghcjs/runmain.js" defer></script>
 </html>
