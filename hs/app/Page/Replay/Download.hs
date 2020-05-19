@@ -1,7 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE ConstraintKinds #-}
-
 module Page.Replay.Download where
 
 import Reflex
@@ -10,39 +8,10 @@ import Page.Replay.Types
 import Page.Replay.Decode
 
 import Js.Imports
+import Js.Utils
+
 import qualified Js.FFI as FFI
 
-
--- toEvent :: FFI.Promise -> Spider_Widget (Event Spider JSVal)
-
-type ToEvent_Constraints t m =
-  ( Reflex t
-  , Monad m
-  , MonadIO (Performable m)
-  , PerformEvent t m
-  , MonadIO m
-  , TriggerEvent t m
-  )
-promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => FFI.Promise -> m (Event t a)
-promiseToEvent promise = do
-  (event, trigger) <- newTriggerEvent
-
-  -- callback triggers event
-  jsCallback <- liftIO . asyncCallback1 $ trigger
-
-  -- bind callback to promise
-  liftIO $ FFI.promise_then promise jsCallback
-
-  -- get the underlying value of the jsVal via performEvent & FromJSVal typeclass
-  -- FromJSVall requires monadic context, hence why this isn't just fmap
-  doneEvent <- performEvent $
-    event <&> \jsVal -> liftIO $ do
-      -- release js callback
-      releaseCallback jsCallback
-      -- convert js reference to haskell data type
-      fromJSValUnchecked jsVal
-
-  pure doneEvent
 
 
 downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)

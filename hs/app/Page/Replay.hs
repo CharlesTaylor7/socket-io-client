@@ -10,7 +10,8 @@ import Reflex
 import Data.Dom
 
 import Page.Replay.Types
-import Page.Replay.Download (download, promiseToEvent)
+import Page.Replay.Download (download)
+import Js.Utils
 
 import Component.Grid
 import Prelude hiding ((#), (!), (!!))

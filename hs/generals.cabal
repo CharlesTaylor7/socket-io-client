@@ -63,6 +63,7 @@ executable generals-app
   other-modules:
       Js.FFI
     , Js.Imports
+    , Js.Utils
     , Page.Replay
     , Page.Replay.Decode
     , Page.Replay.Download
