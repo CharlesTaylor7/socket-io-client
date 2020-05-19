@@ -10,7 +10,7 @@ import Reflex
 import Data.Dom
 
 import Page.Replay.Types
-import Page.Replay.Download (download, toEvent)
+import Page.Replay.Download (download, promiseToEvent)
 
 import Component.Grid
 import Prelude hiding ((#), (!), (!!))
@@ -21,7 +21,6 @@ import qualified Js.FFI as FFI
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-
 
   blank
 
@@ -40,20 +39,19 @@ replayUploader :: Widget t m => m (Event t JSVal)
 replayUploader = do
   (uploadEl, _) <- fileInputElement
 
-  let inputEvent = domEvent Input uploadEl
   fileContentsEvent <- performEvent $
-    inputEvent <&> \_ -> do
+    domEvent Input uploadEl <&> \_ -> liftIO $ do
       print "input event fired!"
-      file_contents <- liftIO $ do
-        elVal <- toJSVal . _element_raw $ uploadEl
-        files <- elVal ! ("files" :: Text)
-        file <- files !! 0
-        file # ("text" :: Text) $ ()
+      elVal <- toJSVal . _element_raw $ uploadEl
+      files <- elVal ! ("files" :: Text)
+      file <- files !! 0
+      contents <- (file # ("text" :: Text) $ ())
+      pure $ FFI.Promise contents
 
-      toEvent $ FFI.Promise file_contents
+  dynOfEvents <- widgetHold (pure never) $
+    ffor fileContentsEvent promiseToEvent
+  pure $ switchDyn dynOfEvents
 
-  behavior <- hold never fileContentsEvent
-  pure $ switch behavior
   where
     fileInputElement = elAttr'
       "input"

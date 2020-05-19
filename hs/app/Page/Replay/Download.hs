@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 module Page.Replay.Download where
 
@@ -13,8 +13,18 @@ import Js.Imports
 import qualified Js.FFI as FFI
 
 
-toEvent :: Widget t m => FFI.Promise -> m (Event t JSVal)
-toEvent promise = do
+-- toEvent :: FFI.Promise -> Spider_Widget (Event Spider JSVal)
+
+type ToEvent_Constraints t m =
+  ( Reflex t
+  , Monad m
+  , MonadIO (Performable m)
+  , PerformEvent t m
+  , MonadIO m
+  , TriggerEvent t m
+  )
+promiseToEvent :: (ToEvent_Constraints t m) => FFI.Promise -> m (Event t JSVal)
+promiseToEvent promise = do
   (event, trigger) <- newTriggerEvent
 
   -- callback triggers event
