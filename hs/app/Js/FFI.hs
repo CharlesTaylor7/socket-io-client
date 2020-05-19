@@ -16,9 +16,8 @@ foreign import javascript unsafe
   console_log :: JSVal -> IO ()
 
 foreign import javascript unsafe
-  "fetch($1).then(body => body.text())"
+  "fetch($1).then(function(body) { return body.text() })"
   fetch_bodytext :: Url -> IO (Promise Text)
-
 
 -- external dependencies
 foreign import javascript unsafe
