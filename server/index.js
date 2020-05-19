@@ -7,4 +7,5 @@ require("live-server").start({
   wait: 1000,
   logLevel: 2,
   watch: 'public/',
+  ignore: 'replays/'
 });

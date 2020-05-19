@@ -20,6 +20,7 @@ common common
     , ConstraintKinds
   ghc-options:
       -Werror=missing-home-modules
+      -fprint-potential-instances
       -O0 -j2 +RTS -A128m -n2m -qg -RTS
 
 library reflex-imports
@@ -31,11 +32,13 @@ library reflex-imports
   other-modules:
       Reflex.Element
     , Reflex.Widget
+    , Reflex.Utils
   build-depends:
       base >= 4.7 && <5.0
     , relude
     , reflex-dom
     , ghcjs-dom
+    , data-default
 library generals-prelude
   import: common
   hs-source-dirs:
