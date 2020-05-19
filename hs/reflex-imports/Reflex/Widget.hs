@@ -10,6 +10,7 @@ module Reflex.Widget
 import Reflex.Dom hiding (Widget)
 import Control.Monad.Fix (MonadFix)
 import Control.Monad.IO.Class (MonadIO)
+import qualified GHCJS.DOM.Types as DOM
 
 type Widget t m
   =
@@ -22,4 +23,5 @@ type Widget t m
   , TriggerEvent t m
   , PerformEvent t m
   , MonadIO (Performable m)
+  , RawElement (DomBuilderSpace m) ~ DOM.Element
   )
