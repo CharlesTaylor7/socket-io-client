@@ -17,6 +17,7 @@ common common
     , ScopedTypeVariables
     , FlexibleContexts
     , TypeFamilies
+    , ConstraintKinds
   ghc-options:
       -Werror=missing-home-modules
       -O0 -j2 +RTS -A128m -n2m -qg -RTS
@@ -59,6 +60,7 @@ executable generals-app
     , ghcjs-dom
     , jsaddle
     , aeson
+    , data-default
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   other-modules:
       Js.FFI
@@ -74,4 +76,5 @@ executable generals-app
     , Data.Dom
     , Data.Dom.Internals
     , Data.Dom.Types
+    , Data.Default.Orphans
     , Types

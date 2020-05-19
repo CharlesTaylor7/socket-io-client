@@ -11,6 +11,3 @@ import Relude as X hiding (uncons, (??), Alt, mapMaybe, id)
 -- lens
 import Control.Lens as X hiding (element)
 import Data.Text.Lens as X hiding (text)
-
--- data-default
-import Data.Default as X (Default(..))

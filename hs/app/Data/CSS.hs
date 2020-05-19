@@ -3,6 +3,7 @@
 module Data.CSS where
 
 import Data.CSS.Types
+import Data.Default (Default(..))
 
 -- instances
 instance ToText Pixels where

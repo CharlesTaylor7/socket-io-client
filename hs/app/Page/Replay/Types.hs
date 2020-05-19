@@ -3,6 +3,8 @@ module Page.Replay.Types where
 
 import Types (Dimensions(..))
 import Data.Aeson (Array(..))
+import Data.Default (Default(..))
+
 
 data Server
   = Server_Main
@@ -14,6 +16,9 @@ data ReplayLocation = ReplayLocation
   }
 
 newtype Url = Url Text
+
+instance Default Url where
+  def = Url ""
 
 data Replay = Replay
   { id :: Text
