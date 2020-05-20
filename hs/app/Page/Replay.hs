@@ -33,7 +33,7 @@ replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
   replayEvent <- download
 
-  widgetHold_ blank $ replayEvent <&> (display . constDyn . initialMap)
+  widgetHold_ blank $ replayEvent <&> (grid . initialMap)
   blank
 
 download :: Widget t m => m (Event t Replay)
@@ -51,18 +51,18 @@ initialMap Replay{..} = Generals.Map
   where
     toCoord index =
       let (j, i) = index `divMod` (dimensions ^. width)
-      in (i, j)
+      in (i+1, j+1)
 
     mountainsMap = fromList $
-      [ (toCoord x, Mountain)
-      | x <- mountains
+      [ (toCoord index, Mountain)
+      | index <- mountains
       ]
     citiesMap = fromList $
       [ (toCoord index, City (Army Neutral size))
       | (index, size) <- zip cities cityArmies
       ]
     clearMap = fromList $
-      [((i-1, j-1), def)
+      [((i, j), def)
       | i <- [1..dimensions ^. width]
       , j <- [1..dimensions ^. height]
       ]

@@ -17,13 +17,21 @@ import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 grid :: (DomBuilder t m) => Generals.Map -> m ()
-grid (Generals.Map {..}) =
+grid Generals.Map {..} =
   elStyle Dom.div gridStyle $
     for_ [1..(dimensions ^. height)] $ \j ->
     elStyle Dom.div rowStyle $
       for_ [1..(dimensions ^. width)] $ \i ->
-      elStyle Dom.div tileStyle $ pure ()
+      tile i j
   where
+    tile i j = elStyle Dom.div tileStyle $
+      case cells ^? ix (i, j) of
+        Nothing -> text "??"
+        Just (Clear army) -> text $ show $ size army
+        Just (City army) -> text $ show $ size army
+        Just Mountain -> text "M"
+
+
     gridStyle = def
       & cssClass . _Class .~ "grid"
       & inlineStyle . at "width" ?~ toText gridWidth
