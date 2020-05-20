@@ -23,15 +23,6 @@ downloadReplay location = do
   replayEvent <- promiseToEvent promise
   pure $ replayEvent <&> decode
 
-
-download :: Widget t m => m (Event t Replay)
-download = downloadReplay location
-  where
-    location = ReplayLocation
-      { replay_id = "HOVnMO6cL"
-      , server = Server_Main
-      }
-
 replayUrl :: ReplayLocation -> Url
 replayUrl ReplayLocation{..}
   = Url $

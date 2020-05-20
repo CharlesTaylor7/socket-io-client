@@ -13,9 +13,11 @@ import Data.CSS.Types
 import Data.Dom (elStyle, elStyle', elDynStyle, elDynStyle')
 import qualified Data.Dom as Dom
 
+import Generals.Map.Types hiding (Map)
+import qualified Generals.Map.Types as Generals
 
-grid :: (DomBuilder t m) => Dimensions -> m ()
-grid dimensions =
+grid :: (DomBuilder t m) => Generals.Map -> m ()
+grid (Generals.Map {..}) =
   elStyle Dom.div gridStyle $
     for_ [1..(dimensions ^. height)] $ \j ->
     elStyle Dom.div rowStyle $

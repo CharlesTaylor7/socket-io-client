@@ -19,6 +19,7 @@ common common
     , TypeFamilies
     , ConstraintKinds
     , RecordWildCards
+    , NamedFieldPuns
   ghc-options:
       -Werror=missing-home-modules
       -fprint-potential-instances
@@ -67,6 +68,7 @@ executable generals-app
     , jsaddle
     , aeson
     , data-default
+    , vector
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   other-modules:
       Types
@@ -74,6 +76,7 @@ executable generals-app
     , Page.Replay.Decode
     , Page.Replay.Download
     , Page.Replay.Types
+    , Generals.Map.Types
     , Component.Grid
     , Component.FileUpload
     , Component.FileDownload

@@ -5,6 +5,8 @@ import Types (Dimensions(..))
 import Data.Aeson (Array(..))
 import Data.Default (Default(..))
 
+import Data.Vector
+
 
 data Server
   = Server_Main
@@ -19,10 +21,12 @@ data Replay = Replay
   { id :: Text
   , dimensions :: Dimensions
   , usernames :: Array
-  , cities :: Array
-  , cityArmies :: Array
-  , generals :: Array
-  , mountains :: Array
+
+  , cities :: [Int]
+  , cityArmies :: [Int]
+  , generals :: Vector Int
+  , mountains :: [Int]
+
   , moves :: Array
   , afks :: Array
   , teams :: Maybe Array
