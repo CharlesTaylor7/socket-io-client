@@ -26,12 +26,10 @@ import Data.Default.Orphans
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  fileUpload def
-  test_download
+  replayEvent <- download
+  widgetHold_ blank $ replayEvent <&> showReplay
   blank
 
 
-test_download :: Widget t m => m ()
-test_download = do
-  urlDyn <- onceDyn $ Url "https://generalsio-replays-na.s3.amazonaws.com/HOVnMO6cL.gior"
-  fileDownload urlDyn
+showReplay :: Widget t m => Replay -> m ()
+showReplay Replay {..} = text $ show generals
