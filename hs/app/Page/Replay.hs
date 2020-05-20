@@ -46,7 +46,7 @@ download = downloadReplay ReplayLocation
 initialMap :: Replay -> Generals.Map
 initialMap Replay{..} = Generals.Map
   { dimensions
-  , cells = mountainsMap <> citiesMap <> clearMap
+  , cells = mountainsMap <> citiesMap <> generalsMap <> clearMap
   }
   where
     toCoord index =
@@ -60,6 +60,10 @@ initialMap Replay{..} = Generals.Map
     citiesMap = fromList $
       [ (toCoord index, City (Army Neutral size))
       | (index, size) <- zip cities cityArmies
+      ]
+    generalsMap = fromList $
+      [ (toCoord index, General $ Army (Player id) 1)
+      | (index, id) <- zip generals [0..]
       ]
     clearMap = fromList $
       [((i, j), def)

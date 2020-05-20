@@ -24,7 +24,7 @@ data Replay = Replay
 
   , cities :: [Int]
   , cityArmies :: [Int]
-  , generals :: Vector Int
+  , generals :: [Int]
   , mountains :: [Int]
 
   , moves :: Array

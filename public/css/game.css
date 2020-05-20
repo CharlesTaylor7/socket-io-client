@@ -14,8 +14,33 @@
 }
 
 .tile {
+  display: flex;
+  flex-direction: row;
   border: 1px solid black;
+  /* text-align: center; */
+  justify-content: center;
+  align-items: center;
 }
+
+.city {
+  border: 1px solid black;
+  border-radius: 50%;
+  padding: 2px;
+  /* width: 50%;
+  height: 50%;
+  margin: 25% auto; */
+}
+
+div[class^="general-"] {
+  border: 1px solid orange;
+  border-radius: 50%;
+  padding: 3px;
+  /* width: 50%;
+  height: 50%;
+  margin: 25% auto; */
+}
+
+
 
 .button-end {
   margin: 0 auto;
