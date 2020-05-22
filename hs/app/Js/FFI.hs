@@ -13,6 +13,10 @@ foreign import javascript unsafe
   promise_then :: Promise a -> Callback callback -> IO ()
 
 foreign import javascript unsafe
+  "document.addEventListener('keydown', $1)"
+  registerOnKeydown :: Callback (JSVal -> IO ()) -> IO ()
+
+foreign import javascript unsafe
   "console.log($1)"
   console_log :: JSVal -> IO ()
 

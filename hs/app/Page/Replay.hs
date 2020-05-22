@@ -37,16 +37,26 @@ replay = elClass "div" "replay" $ do
 
 gameReplay :: Widget t m => Replay -> m ()
 gameReplay replay = do
-  rec
-    map <- toMap replay keyCommandEvent
-    gridElement <- grid map
+  (rawEvent, trigger) <- newTriggerEvent
 
-    let keydownEvent = domEvent Keydown gridElement
-    let keyCommandEvent = mapMaybe toCommand keydownEvent
-  blank
+  jsCallback <- liftIO $ asyncCallback1 trigger
+  liftIO $ FFI.registerOnKeydown jsCallback
 
-toCommand :: Word -> Maybe KeyboardCommand
-toCommand = undefined
+  keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
+  map <- toMap replay keyEvent
+  void $ grid map
+
+toKey :: MonadIO m => JSVal -> m KeyCode
+toKey jsval = liftIO $ do
+  keyCode <- jsval ! ("keyCode" :: Text)
+  fromJSValUnchecked keyCode
+
+toCommand :: KeyCode -> Maybe Command
+toCommand code =
+  case keyCodeLookup code of
+    ArrowLeft  -> Just Backwards
+    ArrowRight -> Just Forwards
+    _          -> Nothing
 
 download :: Widget t m => m (Event t Replay)
 download = downloadReplay ReplayLocation
@@ -54,9 +64,10 @@ download = downloadReplay ReplayLocation
   , server = Server_Main
   }
 
-data KeyboardCommand
-  = BackKey
-  | ForwardKey
+data Command
+  = Backwards
+  | Forwards
+  deriving (Show)
 
 data Cache = Cache
   { currentIndex :: Int
@@ -69,10 +80,9 @@ currentGrid Cache {..} = history ^?! ix currentIndex
 toMap
   :: (Reflex t, MonadFix m, MonadHold t m)
   => Replay
-  -> Event t KeyboardCommand
+  -> Event t Command
   -> m (Generals.Map t)
 toMap Replay{..} commandEvent = do
-  -- foo <- traverse (\tile -> holdDyn tile never) tiles
   let seed = Cache { currentIndex = 0, history = fromList [(0, tiles)]}
   dynGrid <- fmap currentGrid <$> foldDyn reducer seed commandEvent
 
@@ -81,8 +91,8 @@ toMap Replay{..} commandEvent = do
     , _tiles = dynGrid
     }
   where
-    reducer :: KeyboardCommand -> Cache -> Cache
-    reducer command cache = undefined
+    reducer :: Command -> Cache -> Cache
+    reducer command cache = cache
 
     toCoord index =
       let (j, i) = index `divMod` (dimensions ^. width)
