@@ -25,6 +25,7 @@ common common
   ghc-options:
       -Werror=missing-home-modules
       -fprint-potential-instances
+      -fwarn-incomplete-patterns
       -O0 -j2 +RTS -A128m -n2m -qg -RTS
 
 library reflex-imports

@@ -32,19 +32,27 @@ import Types (width, height)
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
   replayEvent <- download
-
-  widgetHold blank $ replayEvent <&> \replay -> do
-    map <- toMap replay never
-    void $ grid map
+  widgetHold blank $ replayEvent <&> gameReplay
   blank
 
+gameReplay :: Widget t m => Replay -> m ()
+gameReplay replay = do
+  rec
+    map <- toMap replay keyCommandEvent
+    gridElement <- grid map
+
+    let keydownEvent = domEvent Keydown gridElement
+    let keyCommandEvent = mapMaybe toCommand keydownEvent
+  blank
+
+toCommand :: Word -> Maybe KeyboardCommand
+toCommand = undefined
 
 download :: Widget t m => m (Event t Replay)
 download = downloadReplay ReplayLocation
   { replay_id = "HOVnMO6cL"
   , server = Server_Main
   }
-
 
 data KeyboardCommand
   = BackKey
