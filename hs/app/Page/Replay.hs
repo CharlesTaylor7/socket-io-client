@@ -33,8 +33,11 @@ replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
   replayEvent <- download
 
-  widgetHold_ blank $ replayEvent <&> (grid . initialMap)
+  widgetHold blank $ replayEvent <&> \replay -> do
+    map <- toMap replay
+    void $ grid map
   blank
+
 
 download :: Widget t m => m (Event t Replay)
 download = downloadReplay ReplayLocation
@@ -43,8 +46,16 @@ download = downloadReplay ReplayLocation
   }
 
 
-initialMap :: Replay -> Generals.Map
-initialMap Replay{..} = Generals.Map { dimensions, tiles }
+toMap
+  :: (Reflex t, MonadHold t m)
+  => Replay
+  -> m (Generals.Map t)
+toMap Replay{..} = do
+  foo <- traverse (\tile -> holdDyn tile never) tiles
+  pure $ Generals.Map
+    { _dimensions = dimensions
+    , _tiles = foo
+    }
   where
     toCoord index =
       let (j, i) = index `divMod` (dimensions ^. width)

@@ -4,6 +4,7 @@ module Generals.Map.Types.Definitions where
 import Prelude hiding (Map)
 import qualified Prelude as Containers
 
+import Reflex
 import Data.Default
 
 import Types
@@ -40,13 +41,13 @@ instance Default Army where
     , _size = 0
     }
 
-data Map = Map
-  { tiles :: Containers.Map (Int, Int) Tile
-  , dimensions :: Dimensions
+data Map t = Map
+  { _tiles :: Containers.Map (Int, Int) (Dynamic t Tile)
+  , _dimensions :: Dimensions
   }
-  deriving (Show)
 
 
 makePrisms ''Owner
 makePrisms ''Tile
 makeLenses ''Army
+makeLenses ''Map

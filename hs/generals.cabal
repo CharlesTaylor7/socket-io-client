@@ -20,6 +20,7 @@ common common
     , ConstraintKinds
     , RecordWildCards
     , NamedFieldPuns
+    , ViewPatterns
   ghc-options:
       -Werror=missing-home-modules
       -fprint-potential-instances

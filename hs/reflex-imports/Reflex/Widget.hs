@@ -19,6 +19,7 @@ type Widget t m
   , Reflex t
   , DomBuilder t m
   , PostBuild t m
+  , NotReady t m
   , MonadHold t m
   , TriggerEvent t m
   , PerformEvent t m
