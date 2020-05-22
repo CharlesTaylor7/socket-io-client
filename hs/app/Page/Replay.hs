@@ -34,7 +34,7 @@ replay = elClass "div" "replay" $ do
   replayEvent <- download
 
   widgetHold blank $ replayEvent <&> \replay -> do
-    map <- toMap replay
+    map <- toMap replay never
     void $ grid map
   blank
 
@@ -46,17 +46,36 @@ download = downloadReplay ReplayLocation
   }
 
 
+data KeyboardCommand
+  = BackKey
+  | ForwardKey
+
+data Cache = Cache
+  { currentIndex :: Int
+  , history :: Map Int Grid
+  }
+
+currentGrid :: Cache -> Grid
+currentGrid Cache {..} = history ^?! ix currentIndex
+
 toMap
-  :: (Reflex t, MonadHold t m)
+  :: (Reflex t, MonadFix m, MonadHold t m)
   => Replay
+  -> Event t KeyboardCommand
   -> m (Generals.Map t)
-toMap Replay{..} = do
-  foo <- traverse (\tile -> holdDyn tile never) tiles
+toMap Replay{..} commandEvent = do
+  -- foo <- traverse (\tile -> holdDyn tile never) tiles
+  let seed = Cache { currentIndex = 0, history = fromList [(0, tiles)]}
+  dynGrid <- fmap currentGrid <$> foldDyn reducer seed commandEvent
+
   pure $ Generals.Map
     { _dimensions = dimensions
-    , _tiles = foo
+    , _tiles = dynGrid
     }
   where
+    reducer :: KeyboardCommand -> Cache -> Cache
+    reducer command cache = undefined
+
     toCoord index =
       let (j, i) = index `divMod` (dimensions ^. width)
       in (i+1, j+1)

@@ -21,6 +21,7 @@ common common
     , RecordWildCards
     , NamedFieldPuns
     , ViewPatterns
+    , TypeApplications
   ghc-options:
       -Werror=missing-home-modules
       -fprint-potential-instances

@@ -34,7 +34,7 @@ grid map = do
     for_ [1..(map ^. dimensions . height)] $ \j ->
     elStyle Dom.div rowStyle $
       for_ [1..(map ^. dimensions . width)] $ \i ->
-      tileElement (sequenceA (map ^? tiles . ix (i, j)))
+      tileElement (map ^. tiles <&> preview (ix (i, j)))
   notReadyUntil postBuild
   pure element
 

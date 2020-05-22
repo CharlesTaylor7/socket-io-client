@@ -41,8 +41,10 @@ instance Default Army where
     , _size = 0
     }
 
+type Grid = Containers.Map (Int, Int) Tile
+
 data Map t = Map
-  { _tiles :: Containers.Map (Int, Int) (Dynamic t Tile)
+  { _tiles :: Dynamic t Grid
   , _dimensions :: Dimensions
   }
 
