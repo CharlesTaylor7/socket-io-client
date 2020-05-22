@@ -77,6 +77,8 @@ executable generals-app
     , Page.Replay.Download
     , Page.Replay.Types
     , Generals.Map.Types
+    , Generals.Map.Types.Definitions
+    , Generals.Map.Types.Optics
     , Component.Grid
     , Component.FileUpload
     , Component.FileDownload

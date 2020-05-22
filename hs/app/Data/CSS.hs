@@ -16,6 +16,8 @@ instance Default StyleInfo where
     }
 
 instance Semigroup CSSClass where
+  Class "" <> a = a
+  a <> Class "" = a
   Class a <> Class b = Class $ a <> " " <> b
 
 instance Monoid CSSClass where

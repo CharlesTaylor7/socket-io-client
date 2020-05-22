@@ -44,25 +44,24 @@ download = downloadReplay ReplayLocation
 
 
 initialMap :: Replay -> Generals.Map
-initialMap Replay{..} = Generals.Map
-  { dimensions
-  , cells = mountainsMap <> citiesMap <> generalsMap <> clearMap
-  }
+initialMap Replay{..} = Generals.Map { dimensions, tiles }
   where
     toCoord index =
       let (j, i) = index `divMod` (dimensions ^. width)
       in (i+1, j+1)
+
+    tiles = mountainsMap <> citiesMap <> generalsMap <> clearMap
 
     mountainsMap = fromList $
       [ (toCoord index, Mountain)
       | index <- mountains
       ]
     citiesMap = fromList $
-      [ (toCoord index, City (Army Neutral size))
+      [ (toCoord index, City (Neutral `Army` size))
       | (index, size) <- zip cities cityArmies
       ]
     generalsMap = fromList $
-      [ (toCoord index, General $ Army (Player id) 1)
+      [ (toCoord index, General $ (Player id) `Army` 0)
       | (index, id) <- zip generals [0..]
       ]
     clearMap = fromList $
