@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache
+import Page.Replay.Cache (commandReducer, newCache)
 import Page.Replay.Download
 import Page.Replay.Types
 

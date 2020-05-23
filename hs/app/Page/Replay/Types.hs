@@ -48,7 +48,6 @@ data Move = Move
   }
   deriving (Eq, Show, Generic)
 
-
 data Command
   = Backwards
   | Forwards
@@ -61,7 +60,13 @@ data Cache = Cache
   }
   deriving (Show)
 
-type Turn = [Move]
+data Move' = Move'
+  { startTile    :: (Int, Int)
+  , endTile      :: (Int, Int)
+  , onlyMoveHalf :: Bool
+  }
+
+type Turn = NonEmpty Move'
 
 data Turns = Turns
   { maxTurn :: Int
