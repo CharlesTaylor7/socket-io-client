@@ -87,7 +87,7 @@ toMap replay@Replay{..} commandEvent = do
       | index <- mountains
       ]
     citiesMap = fromList $
-      [ (toCoord index, City (Neutral `Army` size))
+      [ (toCoord index, City (Neutral `Army` fromIntegral size))
       | (index, size) <- zip cities cityArmies
       ]
     generalsMap = fromList $
