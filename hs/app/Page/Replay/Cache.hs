@@ -46,10 +46,10 @@ clamp min max x
   | x > max   = max
   | otherwise = x
 
-commandReducer :: Replay -> Command -> Cache -> Cache
-commandReducer replay@Replay{..} command cache =
+
+commandReducer :: Turns -> Command -> Cache -> Cache
+commandReducer Turns{..} command cache =
   let
-    Turns {..} = toTurns replay
     (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 maxTurn . (+ (update command))
     nextGrid =
@@ -57,12 +57,13 @@ commandReducer replay@Replay{..} command cache =
         Just turn -> turnReducer turn
         Nothing -> identity
   in
-    -- the cache already has the index
+    -- the cache already has the turn index
     if is _Just $ cache' ^. history . at turnIndex
     then cache'
     else cache'
       & history . at turnIndex
       ?~ nextGrid (currentGrid cache)
+
 
 turnReducer :: Turn -> Grid -> Grid
 turnReducer turn grid = foldl' (flip moveReducer) grid turn

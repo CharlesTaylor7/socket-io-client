@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache (commandReducer, newCache, currentGrid)
+import Page.Replay.Cache (commandReducer, newCache, currentGrid, toTurns)
 import Page.Replay.Download
 import Page.Replay.Types
 
@@ -68,7 +68,8 @@ toMap
   -> m (Generals.Map t)
 toMap replay@Replay{..} commandEvent = do
   let seed = newCache tiles
-  dynCache <- foldDyn (commandReducer replay) seed commandEvent
+  let turns = toTurns replay
+  dynCache <- foldDyn (commandReducer turns) seed commandEvent
   display (dynCache <&> \cache ->
       "turn: " <> cache^.currentIndex.re _Show
     )
