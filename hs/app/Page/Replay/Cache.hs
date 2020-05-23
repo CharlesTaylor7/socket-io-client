@@ -70,5 +70,8 @@ turnReducer turn grid = foldl' (flip moveReducer) grid turn
 moveReducer :: Move' -> Grid -> Grid
 moveReducer Move' {..} grid =
   let
-  in grid
-    & identity
+    (startArmy, grid') = grid
+      & singular (ix startTile . _Army . size) <<.~ 1
+  in
+    grid'
+    & singular (ix endTile . _Army . size) .~ 2

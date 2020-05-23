@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache (commandReducer, newCache)
+import Page.Replay.Cache (commandReducer, newCache, currentGrid)
 import Page.Replay.Download
 import Page.Replay.Types
 
@@ -43,8 +43,7 @@ gameReplay replay = do
 
   keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
   map <- toMap replay keyEvent
-  -- void $ grid map
-  pure undefined
+  void $ grid map
 
 
 toKey :: MonadIO m => JSVal -> m KeyCode
@@ -65,10 +64,6 @@ download = downloadReplay ReplayLocation
   , server = Server_Main
   }
 
-unsafeFromJust :: Maybe a -> a
-unsafeFromJust (Just a) = a
-unsafeFromJust Nothing  = error "<unsafeFromJust>"
-
 toMap
   :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m, PostBuild t m, DomBuilder t m)
   => Replay
@@ -78,17 +73,13 @@ toMap replay@Replay{..} commandEvent = do
   let seed = newCache tiles
   dynCache <- foldDyn (commandReducer replay) seed commandEvent
   display (dynCache <&> \cache ->
-    "keys: " <>
-    (cache^.history.ifolded.asIndex.re _Show) <>
-    " currentKey: " <>
-    (cache^.currentIndex.re _Show)
+      "turn: " <> cache^.currentIndex.re _Show
     )
-  pure undefined
-  -- let dynGrid = (unsafeFromJust . currentGrid) <$> dynCache
-  -- pure $ Generals.Map
-  --   { _dimensions = dimensions
-  --   , _tiles = dynGrid
-  --   }
+  let dynGrid = currentGrid <$> dynCache
+  pure $ Generals.Map
+    { _dimensions = dimensions
+    , _tiles = dynGrid
+    }
   where
     toCoord = view $ coordinated (dimensions ^. width)
 
