@@ -71,9 +71,13 @@ moveReducer :: Move' -> Grid -> Grid
 moveReducer Move' {..} grid =
   let
     unsafeArmySizeLens coords = singular (ix coords . _Army . size)
+    unsafePlayerIdLens coords = singular (ix coords . _Army . owner . _Player)
+
     (tileArmySize, grid') = grid
-      & unsafeArmySizeLens
+      & unsafeArmySizeLens startTile
       <<%~ if onlyHalf then (`div` 2) else const 1
+
+    attackingPlayerId = grid ^. unsafePlayerIdLens startTile
 
     movingArmySize = tileArmySize &
       if onlyHalf
@@ -81,5 +85,5 @@ moveReducer Move' {..} grid =
       else subtract 1
   in
     grid'
-    & singular (unsafeArmySizeLens)
-    +~ movingArmySize
+    & unsafeArmySizeLens endTile +~ movingArmySize
+    & unsafePlayerIdLens endTile .~ attackingPlayerId
