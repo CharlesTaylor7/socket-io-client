@@ -33,9 +33,9 @@ toTurns Replay {..} = Turns (map `maxKeyOr` 0) map
 
 convertMove :: Int -> Move -> Move'
 convertMove rowLength Move {..} = Move'
-  { startTile    = toCoords startTileIndex
-  , endTile      = toCoords endTileIndex
-  , onlyMoveHalf = is50
+  { startTile = toCoords startTileIndex
+  , endTile   = toCoords endTileIndex
+  , onlyHalf  = is50
   }
   where
     toCoords = view $ coordinated rowLength
@@ -70,8 +70,16 @@ turnReducer turn grid = foldl' (flip moveReducer) grid turn
 moveReducer :: Move' -> Grid -> Grid
 moveReducer Move' {..} grid =
   let
-    (startArmy, grid') = grid
-      & singular (ix startTile . _Army . size) <<.~ 1
+    unsafeArmySizeLens coords = singular (ix coords . _Army . size)
+    (tileArmySize, grid') = grid
+      & unsafeArmySizeLens
+      <<%~ if onlyHalf then (`div` 2) else const 1
+
+    movingArmySize = tileArmySize &
+      if onlyHalf
+      then uncurry (+) . (`divMod` 2)
+      else subtract 1
   in
     grid'
-    & singular (ix endTile . _Army . size) .~ 2
+    & singular (unsafeArmySizeLens)
+    +~ movingArmySize

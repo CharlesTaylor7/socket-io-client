@@ -30,7 +30,10 @@ import qualified Generals.Map.Types as Generals
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  replayEvent <- download
+  replayEvent <- downloadReplay ReplayLocation
+    { replay_id = "HOVnMO6cL"
+    , server = Server_Main
+    }
   widgetHold blank $ replayEvent <&> gameReplay
   blank
 
@@ -54,15 +57,9 @@ toKey jsval = liftIO $ do
 toCommand :: KeyCode -> Maybe Command
 toCommand code =
   case keyCodeLookup code of
-    ArrowLeft  -> Just Backwards
-    ArrowRight -> Just Forwards
+    KeyJ  -> Just Backwards
+    KeyL -> Just Forwards
     _          -> Nothing
-
-download :: Widget t m => m (Event t Replay)
-download = downloadReplay ReplayLocation
-  { replay_id = "HOVnMO6cL"
-  , server = Server_Main
-  }
 
 toMap
   :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m, PostBuild t m, DomBuilder t m)
@@ -94,7 +91,7 @@ toMap replay@Replay{..} commandEvent = do
       | (index, size) <- zip cities cityArmies
       ]
     generalsMap = fromList $
-      [ (toCoord index, General $ (Player id) `Army` 0)
+      [ (toCoord index, General $ Player id `Army` 1)
       | (index, id) <- zip generals [0..]
       ]
     clearMap = fromList $

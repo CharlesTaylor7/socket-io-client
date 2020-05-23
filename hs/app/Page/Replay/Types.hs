@@ -61,9 +61,9 @@ data Cache = Cache
   deriving (Show)
 
 data Move' = Move'
-  { startTile    :: (Int, Int)
-  , endTile      :: (Int, Int)
-  , onlyMoveHalf :: Bool
+  { startTile :: (Int, Int)
+  , endTile   :: (Int, Int)
+  , onlyHalf  :: Bool
   }
 
 type Turn = NonEmpty Move'
