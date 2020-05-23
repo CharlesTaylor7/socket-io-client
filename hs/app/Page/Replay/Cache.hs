@@ -15,8 +15,8 @@ maxKeyOr :: Ord k => Map k a -> k -> k
 maxKeyOr map def = maybe def identity $
   map ^? to lookupMax . _Just . _1
 
-currentGrid :: Cache -> Maybe Grid
-currentGrid Cache {..} = _history ^. at _currentIndex
+currentGrid :: Cache -> Grid
+currentGrid Cache {..} = _history ^?! ix _currentIndex
 
 update Forwards = 1
 update Backwards = -1
@@ -39,18 +39,19 @@ commandReducer :: Replay -> Command -> Cache -> Cache
 commandReducer Replay{..} command cache =
   let
     Turns{..} = toTurns moves
-    (index, cache') = cache
+    (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 maxTurn . (+ (update command))
+    nextGrid =
+      case turnsMap ^. at turnIndex of
+        Just turn -> turnReducer turn
+        Nothing -> identity
   in
     -- the cache already has the index
-    if is _Just $ cache' ^. history . at index
+    if is _Just $ cache' ^. history . at turnIndex
     then cache'
-    else
-      case lookup ^. at index of
-        Nothing -> cache'
-        Just turn -> cache'
-          & history . at index
-          ?~ turnReducer turn (cache' ^?! history . ix index)
+    else cache'
+      & history . at turnIndex
+      ?~ nextGrid (currentGrid cache)
 
 coordinated :: Int -> Iso' Int (Int, Int)
 coordinated rowLength = iso to from

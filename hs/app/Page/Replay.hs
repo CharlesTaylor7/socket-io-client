@@ -43,7 +43,9 @@ gameReplay replay = do
 
   keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
   map <- toMap replay keyEvent
-  void $ grid map
+  -- void $ grid map
+  pure undefined
+
 
 toKey :: MonadIO m => JSVal -> m KeyCode
 toKey jsval = liftIO $ do
@@ -74,13 +76,19 @@ toMap
   -> m (Generals.Map t)
 toMap replay@Replay{..} commandEvent = do
   let seed = newCache tiles
-
-  dynGrid <- (fmap (unsafeFromJust . currentGrid)) <$> foldDyn (commandReducer replay) seed commandEvent
-
-  pure $ Generals.Map
-    { _dimensions = dimensions
-    , _tiles = dynGrid
-    }
+  dynCache <- foldDyn (commandReducer replay) seed commandEvent
+  display (dynCache <&> \cache ->
+    "keys: " <>
+    (cache^.history.ifolded.asIndex.re _Show) <>
+    " currentKey: " <>
+    (cache^.currentIndex.re _Show)
+    )
+  pure undefined
+  -- let dynGrid = (unsafeFromJust . currentGrid) <$> dynCache
+  -- pure $ Generals.Map
+  --   { _dimensions = dimensions
+  --   , _tiles = dynGrid
+  --   }
   where
     toCoord = view $ coordinated (dimensions ^. width)
 

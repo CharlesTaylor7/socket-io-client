@@ -59,12 +59,13 @@ data Cache = Cache
   { _currentIndex :: Int
   , _history :: Map Int Grid
   }
+  deriving (Show)
 
 type Turn = [Move]
 
 data Turns = Turns
   { maxTurn :: Int
-  , lookup :: Map Int Turn
+  , turnsMap :: Map Int Turn
   }
 
 
