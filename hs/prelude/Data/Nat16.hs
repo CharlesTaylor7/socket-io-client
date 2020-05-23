@@ -7,7 +7,7 @@ import Relude
 
 
 newtype Nat16 = Nat16 Word16
-  deriving newtype (Eq, Ord, Enum, Bounded)
+  deriving newtype (Eq, Ord, Enum, Bounded, Show, Read, Integral, Real)
 
 maxWord16 :: Integer
 maxWord16 = fromIntegral (maxBound :: Word16)
