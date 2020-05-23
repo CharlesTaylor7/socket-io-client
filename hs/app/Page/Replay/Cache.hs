@@ -70,20 +70,18 @@ turnReducer turn grid = foldl' (flip moveReducer) grid turn
 moveReducer :: Move' -> Grid -> Grid
 moveReducer Move' {..} grid =
   let
-    unsafeArmySizeLens coords = singular (ix coords . _Army . size)
-    unsafePlayerIdLens coords = singular (ix coords . _Army . owner . _Player)
+    unsafeArmyLens coords = singular (ix coords . _Army)
 
-    (tileArmySize, grid') = grid
-      & unsafeArmySizeLens startTile
-      <<%~ if onlyHalf then (`div` 2) else const 1
+    (tileArmy, grid') = grid
+      & unsafeArmyLens startTile
+      <<%~ over size (if onlyHalf then (`div` 2) else const 1)
 
-    attackingPlayerId = grid ^. unsafePlayerIdLens startTile
-
-    movingArmySize = tileArmySize &
+    attackingPlayer = tileArmy ^. owner
+    attackingArmySize = tileArmy ^. size &
       if onlyHalf
       then uncurry (+) . (`divMod` 2)
       else subtract 1
+
   in
     grid'
-    & unsafeArmySizeLens endTile +~ movingArmySize
-    & unsafePlayerIdLens endTile .~ attackingPlayerId
+    & unsafeArmyLens endTile .~ attackingPlayer `Army` attackingArmySize
