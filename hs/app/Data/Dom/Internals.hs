@@ -1,4 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
 module Data.Dom.Internals where
 
 import Reflex hiding (button)

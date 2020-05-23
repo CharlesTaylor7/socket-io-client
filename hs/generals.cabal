@@ -13,19 +13,22 @@ source-repository head
 common common
   default-language: Haskell2010
   default-extensions:
-      OverloadedStrings
-    , ScopedTypeVariables
+    -- required to make type aliases for reflex constraints
+      RankNTypes
     , FlexibleContexts
     , TypeFamilies
     , ConstraintKinds
-    , RecordWildCards
-    , NamedFieldPuns
-    , ViewPatterns
-    , TypeApplications
+    -- deriving extensions
     , DeriveGeneric
-    , DerivingStrategies
     , DerivingVia
     , GeneralizedNewtypeDeriving
+    -- nice to have
+    , OverloadedStrings
+    , ViewPatterns
+    , TypeApplications
+    -- records
+    , RecordWildCards
+    , NamedFieldPuns
   ghc-options:
       -Werror=missing-home-modules
       -fprint-potential-instances
@@ -48,19 +51,17 @@ library reflex-imports
     , reflex-dom
     , ghcjs-dom
     , data-default
+
 library generals-prelude
   import: common
   hs-source-dirs:
       prelude
   exposed-modules:
       Prelude
-  other-modules:
-      Extra
   build-depends:
       base >= 4.7 && <5.0
     , relude
     , lens
-    , data-default
 
 executable generals-app
   import: common
@@ -76,10 +77,12 @@ executable generals-app
     , aeson
     , data-default
     , vector
+    , containers
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   other-modules:
       Types
     , Page.Replay
+    , Page.Replay.Cache
     , Page.Replay.Decode
     , Page.Replay.Download
     , Page.Replay.Types

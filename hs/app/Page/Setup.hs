@@ -1,8 +1,3 @@
-{-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE RecursiveDo #-}
-
 module Page.Setup where
 
  hiding (button)

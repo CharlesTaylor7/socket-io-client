@@ -1,5 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE PatternSynonyms #-}
 module Data.CSS where
 
 import Data.CSS.Types

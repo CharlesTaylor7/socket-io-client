@@ -1,15 +1,12 @@
-{-# LANGUAGE RecordWildCards #-}
-
-{-# LANGUAGE RecursiveDo #-}
 module Page.Replay where
 
 import Reflex
 
 import Data.Dom
 
-import Page.Replay.Types
+import Page.Replay.Cache
 import Page.Replay.Download
-import Js.Utils
+import Page.Replay.Types
 
 import Component.Grid
 import Component.FileUpload
@@ -19,15 +16,17 @@ import Prelude hiding ((#), (!), (!!))
 
 import Js.Imports
 import Js.Types
+import Js.Utils
 import qualified Js.FFI as FFI
 
 import Data.Default
 import Data.Default.Orphans
 
+import Types (width, height)
+
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
-import Types (width, height)
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
@@ -64,36 +63,9 @@ download = downloadReplay ReplayLocation
   , server = Server_Main
   }
 
-data Command
-  = Backwards
-  | Forwards
-  deriving (Show)
-
-data Cache = Cache
-  { currentIndex :: Int
-  , history :: Map Int Grid
-  }
-
-currentGrid :: Cache -> Grid
-currentGrid Cache {..} = history ^?! ix currentIndex
-
-reducer :: Replay -> Command -> Cache -> Cache
-reducer Replay{..} command cache@Cache{..} = Cache
-  { currentIndex = newIndex
-  , history =
-    if is _Just (history ^? ix newIndex)
-    then history
-    else history
-      & at newIndex ?~ step (currentGrid cache)
-  }
-  where
-    newIndex = update command + currentIndex
-    update Forwards = 1
-    update Backwards = -1
-
-    step :: Grid -> Grid
-    step grid = undefined
-
+unsafeFromJust :: Maybe a -> a
+unsafeFromJust (Just a) = a
+unsafeFromJust Nothing  = error "<unsafeFromJust>"
 
 toMap
   :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m, PostBuild t m, DomBuilder t m)
@@ -101,18 +73,16 @@ toMap
   -> Event t Command
   -> m (Generals.Map t)
 toMap replay@Replay{..} commandEvent = do
-  let seed = Cache { currentIndex = 0, history = fromList [(0, tiles)]}
-  display $ constDyn (moves ^.. taking 10 folded)
-  dynGrid <- fmap currentGrid <$> foldDyn (reducer replay) seed commandEvent
+  let seed = newCache tiles
+
+  dynGrid <- (fmap (unsafeFromJust . currentGrid)) <$> foldDyn (commandReducer replay) seed commandEvent
 
   pure $ Generals.Map
     { _dimensions = dimensions
     , _tiles = dynGrid
     }
   where
-    toCoord index =
-      let (j, i) = index `divMod` (dimensions ^. width)
-      in (i+1, j+1)
+    toCoord = view $ coordinated (dimensions ^. width)
 
     tiles = mountainsMap <> citiesMap <> generalsMap <> clearMap
 

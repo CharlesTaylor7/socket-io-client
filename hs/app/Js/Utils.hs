@@ -1,4 +1,3 @@
-{-# LANGUAGE ConstraintKinds #-}
 module Js.Utils where
 
 import Reflex
