@@ -17,6 +17,19 @@ decode text =
     Right r -> r
   where bs = encodeUtf8 text
 
+instance FromJSON Move where
+  parseJSON = withArray "Move" $
+    \v -> Move
+      <$> v .@ 0
+      <*> v .@ 1
+      <*> v .@ 2
+      <*> (truthy <$> v .@ 3)
+      <*> v .@ 4
+    where
+      truthy :: Int -> Bool
+      truthy = (/= 0)
+
+
 instance FromJSON Replay where
   parseJSON = withArray "Replay" parseReplay
 

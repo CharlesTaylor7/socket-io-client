@@ -22,6 +22,10 @@ common common
     , NamedFieldPuns
     , ViewPatterns
     , TypeApplications
+    , DeriveGeneric
+    , DerivingStrategies
+    , DerivingVia
+    , GeneralizedNewtypeDeriving
   ghc-options:
       -Werror=missing-home-modules
       -fprint-potential-instances

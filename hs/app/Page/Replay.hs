@@ -77,23 +77,39 @@ data Cache = Cache
 currentGrid :: Cache -> Grid
 currentGrid Cache {..} = history ^?! ix currentIndex
 
+reducer :: Replay -> Command -> Cache -> Cache
+reducer Replay{..} command cache@Cache{..} = Cache
+  { currentIndex = newIndex
+  , history =
+    if is _Just (history ^? ix newIndex)
+    then history
+    else history
+      & at newIndex ?~ step (currentGrid cache)
+  }
+  where
+    newIndex = update command + currentIndex
+    update Forwards = 1
+    update Backwards = -1
+
+    step :: Grid -> Grid
+    step grid = undefined
+
+
 toMap
-  :: (Reflex t, MonadFix m, MonadHold t m)
+  :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m, PostBuild t m, DomBuilder t m)
   => Replay
   -> Event t Command
   -> m (Generals.Map t)
-toMap Replay{..} commandEvent = do
+toMap replay@Replay{..} commandEvent = do
   let seed = Cache { currentIndex = 0, history = fromList [(0, tiles)]}
-  dynGrid <- fmap currentGrid <$> foldDyn reducer seed commandEvent
+  display $ constDyn (moves ^.. taking 10 folded)
+  dynGrid <- fmap currentGrid <$> foldDyn (reducer replay) seed commandEvent
 
   pure $ Generals.Map
     { _dimensions = dimensions
     , _tiles = dynGrid
     }
   where
-    reducer :: Command -> Cache -> Cache
-    reducer command cache = cache
-
     toCoord index =
       let (j, i) = index `divMod` (dimensions ^. width)
       in (i+1, j+1)
