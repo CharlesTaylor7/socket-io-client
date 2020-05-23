@@ -31,7 +31,6 @@ common common
     , NamedFieldPuns
   ghc-options:
       -Werror=missing-home-modules
-      -fprint-potential-instances
       -fwarn-incomplete-patterns
       -O0 -j2 +RTS -A128m -n2m -qg -RTS
 
@@ -58,6 +57,7 @@ library generals-prelude
       prelude
   exposed-modules:
       Prelude
+    , Data.Nat16
   build-depends:
       base >= 4.7 && <5.0
     , relude

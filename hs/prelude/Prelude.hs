@@ -1,5 +1,8 @@
 module Prelude (module X) where
 
+-- custom
+import Data.Nat16 as X
+
 -- base
 import Control.Exception as X (throwIO)
 import Control.Monad.Fix as X (MonadFix(..))
