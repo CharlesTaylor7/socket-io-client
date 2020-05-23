@@ -5,9 +5,11 @@ module Data.Nat16 (Nat16) where
 
 import Relude
 
+import Data.Default
+
 
 newtype Nat16 = Nat16 Word16
-  deriving newtype (Eq, Ord, Enum, Bounded, Show, Read, Integral, Real)
+  deriving newtype (Eq, Ord, Enum, Bounded, Show, Read, Integral, Real, Default)
 
 maxWord16 :: Integer
 maxWord16 = fromIntegral (maxBound :: Word16)

@@ -62,6 +62,7 @@ library generals-prelude
       base >= 4.7 && <5.0
     , relude
     , lens
+    , data-default
 
 executable generals-app
   import: common
