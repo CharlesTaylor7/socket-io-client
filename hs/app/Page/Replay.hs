@@ -71,7 +71,7 @@ toMap
 toMap replay@Replay{..} commandEvent = do
   let seed = newCache tiles
   let turns = toTurns replay
-  dynCache <- foldDyn (commandReducer turns) seed commandEvent
+  dynCache <- foldDyn (commandReducer (replay, turns)) seed commandEvent
   display (dynCache <&> \cache ->
       "turn: " <> cache^.currentIndex.re _Show
     )

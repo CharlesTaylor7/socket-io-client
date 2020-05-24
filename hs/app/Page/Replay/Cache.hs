@@ -47,26 +47,42 @@ clamp min max x
   | otherwise = x
 
 
-commandReducer :: Turns -> Command -> Cache -> Cache
-commandReducer Turns{..} command cache =
-  let
+commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
+commandReducer (Replay {..}, Turns{..}) command cache =
+  -- the cache already has the turn index
+  if is _Just $ cache' ^. history . at turnIndex
+  then cache'
+  else cache'
+    & history . at turnIndex
+    ?~ nextGrid (currentGrid cache)
+  where
     (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 maxTurn . (+ (update command))
-    nextGrid =
-      case turnsMap ^. at turnIndex of
-        Just turn -> turnReducer turn
-        Nothing -> identity
-  in
-    -- the cache already has the turn index
-    if is _Just $ cache' ^. history . at turnIndex
-    then cache'
-    else cache'
-      & history . at turnIndex
-      ?~ nextGrid (currentGrid cache)
+
+    nextGrid = cityGrowth . makeMoves
+
+    makeMoves = maybe identity turnReducer $ turnsMap ^. at turnIndex
+
+    cityGrowth = undefined
+
 
 
 turnReducer :: Turn -> Grid -> Grid
 turnReducer turn grid = foldl' (flip moveReducer) grid turn
+
+
+leaveArmySize :: Integral n => Bool -> n -> n
+leaveArmySize onlyHalf =
+  if onlyHalf
+  then (`div` 2)
+  else const 1
+
+
+moveArmySize :: Integral n => Bool -> n -> n
+moveArmySize onlyHalf =
+  if onlyHalf
+  then uncurry (+) . (`divMod` 2)
+  else subtract 1
 
 moveReducer :: Move' -> Grid -> Grid
 moveReducer Move' {..} grid =
@@ -75,13 +91,11 @@ moveReducer Move' {..} grid =
 
     (tileArmy, grid') = grid
       & unsafeArmyLens startTile
-      <<%~ over size (if onlyHalf then (`div` 2) else const 1)
+      <<%~ over size (leaveArmySize onlyHalf)
 
     attackingPlayer = tileArmy ^. owner
-    attackingArmySize = tileArmy ^. size &
-      if onlyHalf
-      then uncurry (+) . (`divMod` 2)
-      else subtract 1
+    attackingArmySize = tileArmy ^. size & moveArmySize onlyHalf
+
 
   in
     grid'
