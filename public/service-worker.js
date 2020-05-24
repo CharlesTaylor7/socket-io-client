@@ -1,4 +1,4 @@
-self.addEventListener('install', event => {
+self.addEventListener('install', event =>
   event.waitUntil(
     caches.open('static-assets')
       .then(cache => cache.addAll([
@@ -6,8 +6,7 @@ self.addEventListener('install', event => {
         '/js/static/ghcjs/rts.js',
         '/js/static/ghcjs/runmain.js',
       ]))
-  );
- }
+  )
 );
 
 const replayStorageRegex = /https:\/\/generalsio-replays-(na|bot)\.s3\.amazonaws\.com\/\w+\.gior/
