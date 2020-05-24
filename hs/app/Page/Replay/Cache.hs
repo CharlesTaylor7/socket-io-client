@@ -49,6 +49,9 @@ clamp min max x
 increment :: (Int, Int) -> Grid -> Grid
 increment i = ix i . _Army . size +~ 1
 
+match :: Traversal' s a -> Traversal' s s
+match matcher = filtered $ is _Just . firstOf matcher
+
 commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
 commandReducer (Replay {..}, Turns{..}) command cache =
   -- the cache already has the turn index
@@ -66,16 +69,24 @@ commandReducer (Replay {..}, Turns{..}) command cache =
 
     mapWidth = dimensions ^. width
 
+    makeMoves :: Grid -> Grid
     makeMoves = maybe identity turnReducer $ turnsMap ^. at turnIndex
 
-    cityGrowth = appEndo $
-       (generals <> cities) ^.
-       folded . coordinated mapWidth . to increment . _Unwrapped
 
+    cityGrowth :: Grid -> Grid
+    cityGrowth =
+      traversed .
+      failing _City _General .
+      match (owner . _Player) .
+      size +~ 1
+
+
+    tileGrowth :: Grid -> Grid
     tileGrowth =
       if turnIndex `mod` 50 == 0
       then traversed . _Clear . size +~ 1
       else identity
+
 
 turnReducer :: Turn -> Grid -> Grid
 turnReducer turn grid = foldl' (flip moveReducer) grid turn
