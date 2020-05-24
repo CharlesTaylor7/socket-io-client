@@ -46,6 +46,8 @@ clamp min max x
   | x > max   = max
   | otherwise = x
 
+increment :: (Int, Int) -> Grid -> Grid
+increment i = ix i . _Army . size +~ 1
 
 commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
 commandReducer (Replay {..}, Turns{..}) command cache =
@@ -59,13 +61,21 @@ commandReducer (Replay {..}, Turns{..}) command cache =
     (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 maxTurn . (+ (update command))
 
-    nextGrid = cityGrowth . makeMoves
+    nextGrid :: Grid -> Grid
+    nextGrid = cityGrowth . tileGrowth . makeMoves
+
+    mapWidth = dimensions ^. width
 
     makeMoves = maybe identity turnReducer $ turnsMap ^. at turnIndex
 
-    cityGrowth = undefined
+    cityGrowth = appEndo $
+       (generals <> cities) ^.
+       folded . coordinated mapWidth . to increment . _Unwrapped
 
-
+    tileGrowth =
+      if turnIndex `mod` 50 == 0
+      then traversed . _Clear . size +~ 1
+      else identity
 
 turnReducer :: Turn -> Grid -> Grid
 turnReducer turn grid = foldl' (flip moveReducer) grid turn

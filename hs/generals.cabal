@@ -19,6 +19,7 @@ common common
     , TypeFamilies
     , ConstraintKinds
     -- deriving extensions
+    , StandaloneDeriving
     , DeriveGeneric
     , DerivingVia
     , GeneralizedNewtypeDeriving

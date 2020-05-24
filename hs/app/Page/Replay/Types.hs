@@ -35,9 +35,10 @@ data Replay = Replay
   , teams :: Maybe Array
   , mapTitle :: Maybe Text
   }
-  deriving (Eq, Show)
+  deriving (Show)
 
--- type Grid = Containers.Map (Int, Int) Tile
+instance Eq Replay where
+  (==) = (==) `on` id
 
 data Move = Move
   { playerIndex :: Int
