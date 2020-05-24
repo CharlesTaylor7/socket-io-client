@@ -23,13 +23,14 @@ common common
     , DeriveGeneric
     , DerivingVia
     , GeneralizedNewtypeDeriving
+    -- required for overloaded fields & lens
+    , DuplicateRecordFields
+    , MultiParamTypeClasses
+    , FunctionalDependencies
     -- nice to have
     , OverloadedStrings
     , ViewPatterns
     , TypeApplications
-    -- records
-    , RecordWildCards
-    , NamedFieldPuns
   ghc-options:
       -Werror=missing-home-modules
       -fwarn-incomplete-patterns
@@ -60,9 +61,9 @@ library generals-prelude
       Prelude
     , Data.Nat16
   build-depends:
-      base >= 4.7 && <5.0
+      base >= 4.7 && < 5.0
     , relude
-    , lens
+    , lens >= 4.18 && < 5.0
     , data-default
 
 executable generals-app

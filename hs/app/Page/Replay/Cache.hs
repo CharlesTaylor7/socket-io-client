@@ -16,29 +16,29 @@ maxKeyOr map def = maybe def identity $
   map ^? to lookupMax . _Just . _1
 
 currentGrid :: Cache -> Grid
-currentGrid Cache {..} = _history ^?! ix _currentIndex
+currentGrid cache = cache ^?! history . ix (cache ^. currentIndex)
 
 update Forwards = 1
 update Backwards = -1
 
 toTurns :: Replay -> Turns
-toTurns Replay {..} = Turns (map `maxKeyOr` 0) map
+toTurns replay = Turns (map `maxKeyOr` 0) map
   where
     map = fromList $
       [ (turnIndex, moves')
-      | moveGroup <- groupWith turn moves
-      , let turnIndex = moveGroup & head & turn
-      , let moves' = moveGroup <&> convertMove (dimensions ^. width)
+      | moveGroup <- groupWith (view turn) (replay ^. moves)
+      , let turnIndex = moveGroup ^. head1 . turn
+      , let moves' = moveGroup <&> convertMove (replay ^. mapWidth)
       ]
 
 convertMove :: Int -> Move -> Move'
-convertMove rowLength Move {..} = Move'
-  { startTile = toCoords startTileIndex
-  , endTile   = toCoords endTileIndex
-  , onlyHalf  = is50
+convertMove rowLength move = Move'
+  { _startTile = move ^. startTileIndex . coords
+  , _endTile   = move ^. endTileIndex . coords
+  , _onlyHalf  = move ^. is50
   }
   where
-    toCoords = view $ coordinated rowLength
+    coords = coordinated rowLength
 
 clamp :: Ord a => a -> a -> a -> a
 clamp min max x
@@ -53,7 +53,7 @@ match :: Traversal' s a -> Traversal' s s
 match matcher = filtered $ is _Just . firstOf matcher
 
 commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
-commandReducer (Replay {..}, Turns{..}) command cache =
+commandReducer (replay, turns) command cache =
   -- the cache already has the turn index
   if is _Just $ cache' ^. history . at turnIndex
   then cache'
@@ -61,16 +61,16 @@ commandReducer (Replay {..}, Turns{..}) command cache =
     & history . at turnIndex
     ?~ nextGrid (currentGrid cache)
   where
+
     (turnIndex, cache') = cache
-      & currentIndex <%~ clamp 0 maxTurn . (+ (update command))
+      & currentIndex <%~ clamp 0 (turns^.maxTurn) . (+ (update command))
+      :: (Int, Cache)
 
     nextGrid :: Grid -> Grid
     nextGrid = cityGrowth . tileGrowth . makeMoves
 
-    mapWidth = dimensions ^. width
-
     makeMoves :: Grid -> Grid
-    makeMoves = maybe identity turnReducer $ turnsMap ^. at turnIndex
+    makeMoves = maybe identity turnReducer $ turns ^. lookup . at turnIndex
 
     cityGrowth :: Grid -> Grid
     cityGrowth =
@@ -108,18 +108,19 @@ moveArmySize onlyHalf =
   else subtract 1
 
 moveReducer :: Move' -> Grid -> Grid
-moveReducer Move' {..} grid =
+moveReducer move grid =
   let
     unsafeArmyLens coords = singular (ix coords . _Army)
 
     (tileArmy, grid') = grid
-      & unsafeArmyLens startTile
-      <<%~ over size (leaveArmySize onlyHalf)
+      & unsafeArmyLens (move ^. startTile)
+      <<%~ over size (leaveArmySize $ move ^. onlyHalf)
+      :: (Army, Grid)
 
     attackingPlayer = tileArmy ^. owner
-    attackingArmySize = tileArmy ^. size & moveArmySize onlyHalf
-
+    attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
 
   in
     grid'
-    & unsafeArmyLens endTile .~ attackingPlayer `Army` attackingArmySize
+    & unsafeArmyLens (move ^. endTile)
+    .~ attackingPlayer `Army` attackingArmySize

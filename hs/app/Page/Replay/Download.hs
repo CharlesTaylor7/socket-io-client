@@ -22,12 +22,12 @@ downloadReplay location = do
   pure $ replayEvent <&> decode
 
 replayUrl :: ReplayLocation -> Url
-replayUrl ReplayLocation{..}
+replayUrl replay
   = Url $
      "https://generalsio-replays-"
-  <> urlSuffix server
+  <> replay ^. server . to urlSuffix
   <> ".s3.amazonaws.com/"
-  <> replay_id
+  <> replay ^. id
   <> ".gior"
 
 urlSuffix :: Server -> Text

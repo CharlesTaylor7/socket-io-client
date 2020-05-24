@@ -36,7 +36,8 @@ instance FromJSON Replay where
 parseReplay :: Array -> Parser Replay
 parseReplay v = Replay
   <$> id
-  <*> dimensions
+  <*> mapWidth
+  <*> mapHeight
   <*> usernames
   <*> cities
   <*> cityArmies
@@ -47,11 +48,10 @@ parseReplay v = Replay
   <*> teams
   <*> mapTitle
   where
-    dimensions = Dimensions <$> width <*> height
     -- fields
     id = v .@ 1
-    width = v .@ 2
-    height = v .@ 3
+    mapWidth = v .@ 2
+    mapHeight = v .@ 3
     usernames = v .@ 4
     cities = v .@ 6
     cityArmies = v .@ 7

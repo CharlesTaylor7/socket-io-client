@@ -1,4 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# language TemplateHaskell #-}
+{-# language FlexibleInstances #-}
 module Data.CSS.Types where
 
 data StyleInfo = StyleInfo
@@ -15,6 +16,6 @@ newtype CSSClass = Class { unClass :: Text }
 
 
 
-makeLenses ''StyleInfo
+makeFieldsNoPrefix ''StyleInfo
 makePrisms ''Pixels
 makePrisms ''CSSClass

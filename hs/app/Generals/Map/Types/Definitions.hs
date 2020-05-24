@@ -1,4 +1,5 @@
 {-# language TemplateHaskell #-}
+{-# language FlexibleInstances #-}
 module Generals.Map.Types.Definitions where
 
 import Prelude hiding (Map)
@@ -51,5 +52,5 @@ data Map t = Map
 
 makePrisms ''Owner
 makePrisms ''Tile
-makeLenses ''Army
-makeLenses ''Map
+makeFieldsNoPrefix ''Army
+makeFieldsNoPrefix ''Map

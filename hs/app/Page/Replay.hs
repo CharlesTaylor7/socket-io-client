@@ -22,7 +22,7 @@ import qualified Js.FFI as FFI
 import Data.Default
 import Data.Default.Orphans
 
-import Types (width, height)
+import Types (Dimensions(..))
 
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
@@ -35,8 +35,8 @@ replay = elClass "div" "replay" $ do
   blank
   where
     replayLocation = ReplayLocation
-      { replay_id = "HOVnMO6cL"
-      , server = Server_Main
+      { _id = "HOVnMO6cL"
+      , _server = Server_Main
       }
 
 gameReplay :: Widget t m => Replay -> m ()
@@ -64,11 +64,13 @@ toCommand code =
     _          -> Nothing
 
 toMap
-  :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m, PostBuild t m, DomBuilder t m)
+  :: (Reflex t, MonadFix m, MonadHold t m,
+    -- debug constraints
+    MonadIO m, PostBuild t m, DomBuilder t m)
   => Replay
   -> Event t Command
   -> m (Generals.Map t)
-toMap replay@Replay{..} commandEvent = do
+toMap replay commandEvent = do
   let seed = newCache tiles
   let turns = toTurns replay
   dynCache <- foldDyn (commandReducer (replay, turns)) seed commandEvent
@@ -77,28 +79,32 @@ toMap replay@Replay{..} commandEvent = do
     )
   let dynGrid = currentGrid <$> dynCache
   pure $ Generals.Map
-    { _dimensions = dimensions
-    , _tiles = dynGrid
+    { _tiles = dynGrid
+    , _dimensions = Dimensions
+        { _width  = replay ^. mapWidth
+        , _height = replay ^. mapHeight
+        }
     }
   where
-    toCoord = view $ coordinated (dimensions ^. width)
+    toCoord :: Int -> (Int, Int)
+    toCoord = view $ coordinated (replay ^. mapWidth)
 
     tiles = mountainsMap <> citiesMap <> generalsMap <> clearMap
 
     mountainsMap = fromList $
       [ (toCoord index, Mountain)
-      | index <- mountains
+      | index <- replay ^. mountains
       ]
     citiesMap = fromList $
       [ (toCoord index, City (Neutral `Army` fromIntegral size))
-      | (index, size) <- zip cities cityArmies
+      | (index, size) <- zip (replay ^. cities) (replay ^. cityArmies)
       ]
     generalsMap = fromList $
-      [ (toCoord index, General $ Player id `Army` 1)
-      | (index, id) <- zip generals [0..]
+      [ (toCoord boardIndex, General $ Player playerId `Army` 1)
+      | (playerId, boardIndex) <- replay ^.. generals . folded . withIndex
       ]
     clearMap = fromList $
       [((i, j), def)
-      | i <- [1..dimensions ^. width]
-      , j <- [1..dimensions ^. height]
+      | i <- [1..replay ^. mapWidth]
+      , j <- [1..replay ^. mapHeight]
       ]

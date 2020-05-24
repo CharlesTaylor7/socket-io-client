@@ -1,3 +1,4 @@
+{-# language RecordWildCards #-}
 module Component.FileUpload where
 
 import Prelude hiding ((#))

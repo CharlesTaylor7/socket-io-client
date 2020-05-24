@@ -1,4 +1,6 @@
 {-# language TemplateHaskell #-}
+{-# language FlexibleInstances #-}
+
 module Page.Replay.Types where
 
 import Data.Aeson (Array(..), FromJSON(..))
@@ -15,37 +17,35 @@ data Server
   | Server_Bot
 
 data ReplayLocation = ReplayLocation
-  { server :: Server
-  , replay_id :: Text
+  { _server :: Server
+  , _id :: Text
   }
 
 
 data Replay = Replay
-  { id :: Text
-  , dimensions :: Dimensions
-  , usernames :: Array
+  { _id :: Text
+  , _mapWidth :: Int
+  , _mapHeight :: Int
+  , _usernames :: Array
 
-  , cities :: [Int]
-  , cityArmies :: [Int]
-  , generals :: [Int]
-  , mountains :: [Int]
-  , moves :: [Move]
+  , _cities :: [Int]
+  , _cityArmies :: [Int]
+  , _generals :: [Int]
+  , _mountains :: [Int]
+  , _moves :: [Move]
 
-  , afks :: Array
-  , teams :: Maybe Array
-  , mapTitle :: Maybe Text
+  , _afks :: Array
+  , _teams :: Maybe Array
+  , _mapTitle :: Maybe Text
   }
   deriving (Show)
 
-instance Eq Replay where
-  (==) = (==) `on` id
-
 data Move = Move
-  { playerIndex :: Int
-  , startTileIndex :: Int
-  , endTileIndex :: Int
-  , is50 :: Bool
-  , turn :: Int
+  { _playerIndex :: Int
+  , _startTileIndex :: Int
+  , _endTileIndex :: Int
+  , _is50 :: Bool
+  , _turn :: Int
   }
   deriving (Eq, Show, Generic)
 
@@ -62,17 +62,24 @@ data Cache = Cache
   deriving (Show)
 
 data Move' = Move'
-  { startTile :: (Int, Int)
-  , endTile   :: (Int, Int)
-  , onlyHalf  :: Bool
+  { _startTile :: (Int, Int)
+  , _endTile   :: (Int, Int)
+  , _onlyHalf  :: Bool
   }
 
 type Turn = NonEmpty Move'
 
 data Turns = Turns
-  { maxTurn :: Int
-  , turnsMap :: Map Int Turn
+  { _maxTurn :: Int
+  , _lookup :: Map Int Turn
   }
 
+makePrisms ''Server
+makePrisms ''Command
 
-makeLenses ''Cache
+makeFieldsNoPrefix ''ReplayLocation
+makeFieldsNoPrefix ''Replay
+makeFieldsNoPrefix ''Cache
+makeFieldsNoPrefix ''Move
+makeFieldsNoPrefix ''Move'
+makeFieldsNoPrefix ''Turns

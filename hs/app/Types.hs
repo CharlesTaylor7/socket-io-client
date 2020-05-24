@@ -1,4 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# language TemplateHaskell #-}
+{-# language FlexibleInstances #-}
 module Types where
 
 
@@ -21,4 +22,4 @@ makePrisms ''Id
 makePrisms ''BotName
 makePrisms ''GameConfig
 
-makeLenses ''Dimensions
+makeFieldsNoPrefix ''Dimensions
