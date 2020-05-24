@@ -72,7 +72,6 @@ commandReducer (Replay {..}, Turns{..}) command cache =
     makeMoves :: Grid -> Grid
     makeMoves = maybe identity turnReducer $ turnsMap ^. at turnIndex
 
-
     cityGrowth :: Grid -> Grid
     cityGrowth =
       traversed .
@@ -80,11 +79,14 @@ commandReducer (Replay {..}, Turns{..}) command cache =
       match (owner . _Player) .
       size +~ 1
 
-
     tileGrowth :: Grid -> Grid
     tileGrowth =
       if turnIndex `mod` 50 == 0
-      then traversed . _Clear . size +~ 1
+      then
+        traversed .
+        _Clear .
+        match (owner . _Player) .
+        size +~ 1
       else identity
 
 
