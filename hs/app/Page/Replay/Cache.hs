@@ -3,37 +3,37 @@ module Page.Replay.Cache where
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
-import Data.Map (lookupMax)
+import Data.IntMap (lookupMax)
 
 import Types (Dimensions, width, height)
 
 
 newCache :: Grid -> Cache
-newCache tiles = Cache 0 $ fromList [tiles]
+newCache tiles = Cache
+  { _cache_maxIndex = initialIndex
+  , _cache_zipper = fromList [tiles]
+    & zipper
+    & fromWithin (ix initialIndex)
+  }
+  where initialIndex = 0
 
-maxKeyOr :: Ord k => Map k a -> k -> k
+
+maxKeyOr :: IntMap a -> Int -> Int
 maxKeyOr map def = maybe def identity $
   map ^? to lookupMax . _Just . _1
 
 currentGrid :: Cache -> Grid
-currentGrid cache = cache ^. _Cache . focus
+currentGrid = view $ cache_zipper . focus
 
 toTurns :: Replay -> Turns
 toTurns replay = Turns (map `maxKeyOr` 0) map
   where
+    map :: IntMap (NonEmpty Move)
     map = fromList $
-      [ (turnIndex, moves')
+      [ (turnIndex, moveGroup)
       | moveGroup <- groupWith (view turn) (replay ^. moves)
       , let turnIndex = moveGroup ^. head1 . turn
-      , let moves' = moveGroup <&> convertMove
       ]
-
-convertMove :: Move -> Move'
-convertMove move = Move'
-  { _startTile = move ^. startTileIndex . coerced
-  , _endTile   = move ^. endTileIndex   . coerced
-  , _onlyHalf  = move ^. is50
-  }
 
 clamp :: Ord a => a -> a -> a -> a
 clamp min max x
@@ -51,29 +51,48 @@ increment i = ixGrid i . _Army . size +~ 1
 match :: Traversal' s a -> Traversal' s s
 match matcher = filtered $ is _Just . firstOf matcher
 
+unsafeView = (^?!)
+
 commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
 commandReducer (replay, turns) command cache =
-  let
-    (turnIndex, cache') = cache
-      & currentIndex <%~
-      clamp 0 (turns^.maxTurn)
-    update Forwards = (+ 1)
-    update Backwards = subtract 1
-    update (JumpTo n) = const n
+  case command of
+    Backwards -> cache & cache_zipper %~ tug leftward
+    Forwards ->
+      if turnIndex == cacheBound
+      then cache
+        & cache_maxIndex +~ 1
+        & cache_zipper %~
+            fromWithin (ix (cacheBound + 1)) .
+            (focus %~ cons
+              (nextGrid turns (cacheBound + 1) (currentGrid cache))
+            ) .
+            upward
+      else cache & cache_zipper %~ tug rightward
+    JumpTo n ->
+      if n <= cacheBound
+      then cache
+        & cache_zipper
+        %~ \z -> (moveTo n z) ^?! _Just
+      else
+        let
+          grids :: Seq Grid
+          grids = fromList . tail $
+            scanl
+              (flip $ nextGrid turns)
+              (currentGrid cache)
+              [cacheBound+1..n]
+        in
+          cache
+          & cache_maxIndex .~ n
+          & cache_zipper %~
+            fromWithin (ix n) .
+            (focus <>~ grids) .
+            upward
 
-    cacheBound = (cache ^. history . to length) - 1
+  where
+    turnIndex = cache ^. cache_zipper . to tooth
+    cacheBound = cache ^. cache_maxIndex
 
-    turnDiff = turnIndex - cacheBound
-  in
-    if turnDiff <= 0
-    then cache'
-    else cache'
-      & history <>~ (fromList . tail $
-        scanl
-          (flip $ nextGrid turns)
-          (currentGrid cache)
-          [cacheBound+1..turnDiff]
-      )
 
 nextGrid :: Turns -> Int -> Grid -> Grid
 nextGrid turns turnIndex =
@@ -124,7 +143,7 @@ moveArmySize onlyHalf =
   then uncurry (+) . (`divMod` 2)
   else subtract 1
 
-moveReducer :: Move' -> Grid -> Grid
+moveReducer :: Move -> Grid -> Grid
 moveReducer move grid =
   let
     unsafeArmyLens coords = singular (ixGrid coords . _Army)

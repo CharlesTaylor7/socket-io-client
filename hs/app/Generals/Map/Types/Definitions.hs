@@ -5,6 +5,7 @@ module Generals.Map.Types.Definitions where
 import Prelude hiding (Map)
 import qualified Prelude as Containers
 
+import Data.Aeson (FromJSON(..))
 import Reflex
 import Data.Default
 
@@ -43,7 +44,8 @@ instance Default Army where
     }
 
 newtype GridIndex = GridIndex Int
-  deriving (Eq, Ord)
+  deriving newtype (Eq, Ord, FromJSON)
+  deriving stock (Show)
 
 type Grid = IntMap Tile
 

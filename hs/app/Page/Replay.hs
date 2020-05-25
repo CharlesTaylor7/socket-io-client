@@ -91,7 +91,7 @@ toMap replay commandEvent = do
 
   dynCache <- foldDyn (commandReducer (replay, turns)) seed commandEvent
 
-  let dynTurn = view currentIndex <$> dynCache
+  let dynTurn = view (cache_zipper . to tooth) <$> dynCache
   let dynGrid = currentGrid <$> dynCache
   pure Generals.Map
     { _tiles = dynGrid

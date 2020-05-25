@@ -35,20 +35,6 @@ library reflex-imports
     , lens
     , data-default
 
-library data-zipper
-  import: common
-  hs-source-dirs:
-    data-zipper
-  exposed-modules:
-    Data.Zipper
-  other-modules:
-      Data.Zipper.Definition
-    , Data.Zipper.Operations
-    , Data.Zipper.TH
-  build-depends:
-      relude
-    , lens
-
 library data-nat16
   import: common
   hs-source-dirs:
@@ -58,8 +44,6 @@ library data-nat16
   build-depends:
       relude
     , data-default
-
-
 
 library generals-prelude
   import: common
@@ -71,9 +55,9 @@ library generals-prelude
       base >= 4.7 && < 5.0
     , relude
     , lens >= 4.18 && < 5.0
-    -- , data-default
+    , zippers
+    , data-default
     , data-nat16
-    , data-zipper
 
 executable generals-app
   import: common
@@ -106,10 +90,14 @@ executable generals-app
     , DuplicateRecordFields
     , MultiParamTypeClasses
     , FunctionalDependencies
+    -- required to use zipper type operator
+    , TypeOperators
     -- nice to have
     , OverloadedStrings
     , ViewPatterns
     , TypeApplications
+    -- for performance
+    , StrictData
   other-modules:
       Types
     , Page.Replay

@@ -17,8 +17,8 @@ import Control.Lens.Extras as X (is)
 import Data.Text.Lens as X hiding (text)
 import Numeric.Lens as X
 
+-- zippers
+import Control.Zipper as X
+
 -- data-nat16
 import Data.Nat16 as X
-
--- data-zipper
-import Data.Zipper as X

@@ -42,9 +42,9 @@ data Replay = Replay
 
 data Move = Move
   { _playerIndex :: Int
-  , _startTileIndex :: Int
-  , _endTileIndex :: Int
-  , _is50 :: Bool
+  , _startTile :: GridIndex
+  , _endTile :: GridIndex
+  , _onlyHalf :: Bool
   , _turn :: Int
   }
   deriving (Eq, Show, Generic)
@@ -60,27 +60,25 @@ instance Semigroup Command where
   _ <> JumpTo n = JumpTo n
   _ <> latest   = latest
 
-newtype Cache = Cache (Zipper Grid)
 
-data Move' = Move'
-  { _startTile :: GridIndex
-  , _endTile   :: GridIndex
-  , _onlyHalf  :: Bool
+data Cache = Cache
+  { _cache_zipper :: Top :>> Seq Grid :>> Grid
+  , _cache_maxIndex :: Int
   }
 
-type Turn = NonEmpty Move'
+
+type Turn = NonEmpty Move
 
 data Turns = Turns
   { _maxTurn :: Int
-  , _lookup :: Map Int Turn
+  , _lookup :: IntMap Turn
   }
 
 makePrisms ''Server
 makePrisms ''Command
-makePrisms ''Cache
 
+makeLenses ''Cache
 makeFieldsNoPrefix ''ReplayLocation
 makeFieldsNoPrefix ''Replay
 makeFieldsNoPrefix ''Move
-makeFieldsNoPrefix ''Move'
 makeFieldsNoPrefix ''Turns
