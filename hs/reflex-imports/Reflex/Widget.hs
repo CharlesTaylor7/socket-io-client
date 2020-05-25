@@ -1,3 +1,9 @@
+{-# language
+  RankNTypes
+, FlexibleContexts
+, TypeFamilies
+, ConstraintKinds
+#-}
 module Reflex.Widget
   ( Widget
   )

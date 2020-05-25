@@ -16,11 +16,7 @@ maxKeyOr map def = maybe def identity $
   map ^? to lookupMax . _Just . _1
 
 currentGrid :: Cache -> Grid
-currentGrid cache = cache ^?! history . ix (cache ^. currentIndex)
-
-update Forwards = (+ 1)
-update Backwards = subtract 1
-update (JumpTo n) = const n
+currentGrid cache = cache ^. _Cache . focus
 
 toTurns :: Replay -> Turns
 toTurns replay = Turns (map `maxKeyOr` 0) map
@@ -59,7 +55,11 @@ commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
 commandReducer (replay, turns) command cache =
   let
     (turnIndex, cache') = cache
-      & currentIndex <%~ clamp 0 (turns^.maxTurn) . update command
+      & currentIndex <%~
+      clamp 0 (turns^.maxTurn)
+    update Forwards = (+ 1)
+    update Backwards = subtract 1
+    update (JumpTo n) = const n
 
     cacheBound = (cache ^. history . to length) - 1
 
@@ -68,7 +68,7 @@ commandReducer (replay, turns) command cache =
     if turnDiff <= 0
     then cache'
     else cache'
-      & history <>~ (fromList $
+      & history <>~ (fromList . tail $
         scanl
           (flip $ nextGrid turns)
           (currentGrid cache)

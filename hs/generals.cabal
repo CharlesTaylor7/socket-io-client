@@ -12,25 +12,6 @@ source-repository head
 
 common common
   default-language: Haskell2010
-  default-extensions:
-    -- required to make type aliases for reflex constraints
-      RankNTypes
-    , FlexibleContexts
-    , TypeFamilies
-    , ConstraintKinds
-    -- deriving extensions
-    , StandaloneDeriving
-    , DeriveGeneric
-    , DerivingVia
-    , GeneralizedNewtypeDeriving
-    -- required for overloaded fields & lens
-    , DuplicateRecordFields
-    , MultiParamTypeClasses
-    , FunctionalDependencies
-    -- nice to have
-    , OverloadedStrings
-    , ViewPatterns
-    , TypeApplications
   ghc-options:
       -Werror=missing-home-modules
       -fwarn-incomplete-patterns
@@ -54,18 +35,45 @@ library reflex-imports
     , lens
     , data-default
 
+library data-zipper
+  import: common
+  hs-source-dirs:
+    data-zipper
+  exposed-modules:
+    Data.Zipper
+  other-modules:
+      Data.Zipper.Definition
+    , Data.Zipper.Operations
+    , Data.Zipper.TH
+  build-depends:
+      relude
+    , lens
+
+library data-nat16
+  import: common
+  hs-source-dirs:
+    data-nat16
+  exposed-modules:
+    Data.Nat16
+  build-depends:
+      relude
+    , data-default
+
+
+
 library generals-prelude
   import: common
   hs-source-dirs:
       prelude
   exposed-modules:
       Prelude
-    , Data.Nat16
   build-depends:
       base >= 4.7 && < 5.0
     , relude
     , lens >= 4.18 && < 5.0
-    , data-default
+    -- , data-default
+    , data-nat16
+    , data-zipper
 
 executable generals-app
   import: common
@@ -83,6 +91,25 @@ executable generals-app
     , vector
     , containers
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+    -- required to make type aliases for reflex constraints
+      RankNTypes
+    , FlexibleContexts
+    , TypeFamilies
+    , ConstraintKinds
+    -- deriving extensions
+    , StandaloneDeriving
+    , DeriveGeneric
+    , DerivingVia
+    , GeneralizedNewtypeDeriving
+    -- required for overloaded fields & lens
+    , DuplicateRecordFields
+    , MultiParamTypeClasses
+    , FunctionalDependencies
+    -- nice to have
+    , OverloadedStrings
+    , ViewPatterns
+    , TypeApplications
   other-modules:
       Types
     , Page.Replay

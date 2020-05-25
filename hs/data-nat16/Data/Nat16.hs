@@ -1,4 +1,5 @@
 {-# language NoImplicitPrelude #-}
+{-# language OverloadedStrings #-}
 {-# language DerivingStrategies #-}
 {-# language GeneralizedNewtypeDeriving #-}
 module Data.Nat16 (Nat16) where

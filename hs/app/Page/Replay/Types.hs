@@ -60,11 +60,7 @@ instance Semigroup Command where
   _ <> JumpTo n = JumpTo n
   _ <> latest   = latest
 
-data Cache = Cache
-  { _currentIndex :: Int
-  , _history :: Seq Grid
-  }
-  deriving (Show)
+newtype Cache = Cache (Zipper Grid)
 
 data Move' = Move'
   { _startTile :: GridIndex
@@ -81,10 +77,10 @@ data Turns = Turns
 
 makePrisms ''Server
 makePrisms ''Command
+makePrisms ''Cache
 
 makeFieldsNoPrefix ''ReplayLocation
 makeFieldsNoPrefix ''Replay
-makeFieldsNoPrefix ''Cache
 makeFieldsNoPrefix ''Move
 makeFieldsNoPrefix ''Move'
 makeFieldsNoPrefix ''Turns
