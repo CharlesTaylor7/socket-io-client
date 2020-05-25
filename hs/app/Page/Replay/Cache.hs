@@ -84,10 +84,10 @@ commandReducer (replay, turns) command cache =
 
     tileGrowth :: Grid -> Grid
     tileGrowth =
-      if turnIndex `mod` 50 == 0
+      if turnIndex `mod` 50 == 49
       then
         traversed .
-        _Clear .
+        (_Clear `failing` _City `failing` _General) .
         match (owner . _Player) .
         size +~ 1
       else identity
