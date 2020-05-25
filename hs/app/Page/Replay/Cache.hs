@@ -28,17 +28,15 @@ toTurns replay = Turns (map `maxKeyOr` 0) map
       [ (turnIndex, moves')
       | moveGroup <- groupWith (view turn) (replay ^. moves)
       , let turnIndex = moveGroup ^. head1 . turn
-      , let moves' = moveGroup <&> convertMove (replay ^. mapWidth)
+      , let moves' = moveGroup <&> convertMove
       ]
 
-convertMove :: Int -> Move -> Move'
-convertMove rowLength move = Move'
-  { _startTile = move ^. startTileIndex . coords
-  , _endTile   = move ^. endTileIndex . coords
+convertMove :: Move -> Move'
+convertMove move = Move'
+  { _startTile = move ^. startTileIndex . coerced
+  , _endTile   = move ^. endTileIndex   . coerced
   , _onlyHalf  = move ^. is50
   }
-  where
-    coords = coordinated rowLength
 
 clamp :: Ord a => a -> a -> a -> a
 clamp min max x
@@ -46,8 +44,12 @@ clamp min max x
   | x > max   = max
   | otherwise = x
 
-increment :: (Int, Int) -> Grid -> Grid
-increment i = ix i . _Army . size +~ 1
+ixGrid :: GridIndex -> Traversal' Grid Tile
+ixGrid = ix . coerce
+
+
+increment :: GridIndex -> Grid -> Grid
+increment i = ixGrid i . _Army . size +~ 1
 
 match :: Traversal' s a -> Traversal' s s
 match matcher = filtered $ is _Just . firstOf matcher
@@ -110,7 +112,7 @@ moveArmySize onlyHalf =
 moveReducer :: Move' -> Grid -> Grid
 moveReducer move grid =
   let
-    unsafeArmyLens coords = singular (ix coords . _Army)
+    unsafeArmyLens coords = singular (ixGrid coords . _Army)
 
     (tileArmy, grid') = grid
       & unsafeArmyLens (move ^. startTile)

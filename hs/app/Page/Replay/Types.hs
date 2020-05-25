@@ -62,8 +62,8 @@ data Cache = Cache
   deriving (Show)
 
 data Move' = Move'
-  { _startTile :: (Int, Int)
-  , _endTile   :: (Int, Int)
+  { _startTile :: GridIndex
+  , _endTile   :: GridIndex
   , _onlyHalf  :: Bool
   }
 

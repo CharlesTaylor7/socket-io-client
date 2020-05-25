@@ -42,7 +42,10 @@ instance Default Army where
     , _size = 0
     }
 
-type Grid = Containers.Map (Int, Int) Tile
+newtype GridIndex = GridIndex Int
+  deriving (Eq, Ord)
+
+type Grid = IntMap Tile
 
 data Map t = Map
   { _tiles :: Dynamic t Grid
@@ -52,5 +55,7 @@ data Map t = Map
 
 makePrisms ''Owner
 makePrisms ''Tile
+makePrisms ''GridIndex
+
 makeFieldsNoPrefix ''Army
 makeFieldsNoPrefix ''Map

@@ -86,25 +86,25 @@ toMap replay commandEvent = do
         }
     }
   where
-    toCoord :: Int -> (Int, Int)
-    toCoord = view $ coordinated (replay ^. mapWidth)
-
     tiles = mountainsMap <> citiesMap <> generalsMap <> clearMap
 
     mountainsMap = fromList $
-      [ (toCoord index, Mountain)
+      [ (index, Mountain)
       | index <- replay ^. mountains
       ]
+
     citiesMap = fromList $
-      [ (toCoord index, City (Neutral `Army` fromIntegral size))
+      [ (index, City (Neutral `Army` fromIntegral size))
       | (index, size) <- zip (replay ^. cities) (replay ^. cityArmies)
       ]
+
     generalsMap = fromList $
-      [ (toCoord boardIndex, General $ Player playerId `Army` 1)
+      [ (boardIndex, General $ Player playerId `Army` 1)
       | (playerId, boardIndex) <- replay ^.. generals . folded . withIndex
       ]
+
     clearMap = fromList $
-      [((i, j), def)
-      | i <- [1..replay ^. mapWidth]
-      , j <- [1..replay ^. mapHeight]
+      [ (i, def)
+      | i <- [0..numTiles - 1]
       ]
+    numTiles = replay^.mapWidth * replay^.mapHeight
