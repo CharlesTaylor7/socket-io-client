@@ -37,7 +37,7 @@ instance Num Nat16 where
     let
       subtracted = Nat16 $ coerce a - coerce b
     in
-      if subtracted < 0
+      if subtracted > a
       then error "Nat16: underflow"
       else subtracted
   a * b =
