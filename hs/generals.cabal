@@ -51,12 +51,10 @@ library generals-prelude
       prelude
   exposed-modules:
       Prelude
-    , Data.Show.Class
   build-depends:
       base >= 4.7 && < 5.0
     , relude
     , lens >= 4.18 && < 5.0
-    , zippers
     , data-default
     , data-nat16
 
@@ -91,8 +89,6 @@ executable generals-app
     , DuplicateRecordFields
     , MultiParamTypeClasses
     , FunctionalDependencies
-    -- required to use zipper type operator
-    , TypeOperators
     -- nice to have
     , OverloadedStrings
     , ViewPatterns

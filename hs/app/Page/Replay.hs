@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache (commandReducer, newCache, currentGrid, toTurns)
+import Page.Replay.Cache (commandReducer, newCache, currentGrid, toTurns, cache_bound)
 import Page.Replay.Download
 import Page.Replay.Types
 
@@ -60,7 +60,7 @@ gameReplay replay = do
 
   (map, dynCache) <- toMap replay (keyEvent <> inputEvent)
 
-  display dynCache
+  display (dynCache <&> ("bound: " <>) . show . view cache_bound)
   void $ grid map
 
 toAttr :: Text -> AttributeName
@@ -91,7 +91,7 @@ toMap replay commandEvent = do
 
   dynCache <- foldDyn (commandReducer (replay, turns)) seed commandEvent
 
-  let dynTurn = view (cache_zipper . to tooth) <$> dynCache
+  let dynTurn = view cache_index <$> dynCache
   let dynGrid = currentGrid <$> dynCache
   let map = Generals.Map
         { _tiles = dynGrid
