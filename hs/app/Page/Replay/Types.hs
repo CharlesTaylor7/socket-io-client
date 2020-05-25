@@ -62,7 +62,7 @@ instance Semigroup Command where
 
 data Cache = Cache
   { _currentIndex :: Int
-  , _history :: Map Int Grid
+  , _history :: Seq Grid
   }
   deriving (Show)
 

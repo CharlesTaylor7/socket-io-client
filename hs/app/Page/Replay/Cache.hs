@@ -9,7 +9,7 @@ import Types (Dimensions, width, height)
 
 
 newCache :: Grid -> Cache
-newCache tiles = Cache 0 $ fromList [(0, tiles)]
+newCache tiles = Cache 0 $ fromList [tiles]
 
 maxKeyOr :: Ord k => Map k a -> k -> k
 maxKeyOr map def = maybe def identity $
@@ -57,41 +57,56 @@ match matcher = filtered $ is _Just . firstOf matcher
 
 commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
 commandReducer (replay, turns) command cache =
-  -- the cache already has the turn index
-  if is _Just $ cache' ^. history . at turnIndex
-  then cache'
-  else cache'
-    & history . at turnIndex
-    ?~ nextGrid (currentGrid cache)
-  where
+  let
     (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 (turns^.maxTurn) . update command
 
-    nextGrid :: Grid -> Grid
-    nextGrid = cityGrowth . tileGrowth . makeMoves
+    turnDiff =
+      case command of
+        Forwards  -> 1
+        Backwards -> -1
+        JumpTo n  -> n - turnIndex
+  in
+    if turnDiff <= 0
+    then cache'
+    else cache'
+      & history <>~ (fromList $
+        scanl
+          (flip $ nextGrid turns)
+          (currentGrid cache)
+          [turnIndex..turnIndex+turnDiff-1]
+      )
 
-    makeMoves :: Grid -> Grid
-    makeMoves = maybe identity turnReducer $ turns ^. lookup . at turnIndex
+nextGrid :: Turns -> Int -> Grid -> Grid
+nextGrid turns turnIndex =
+  cityGrowth turnIndex .
+  tileGrowth turnIndex .
+  makeMoves turns turnIndex
 
-    cityGrowth :: Grid -> Grid
-    cityGrowth =
-      if turnIndex `mod` 2 == 1
-      then
-        traversed .
-        (_City `failing` _General) .
-        match (owner . _Player) .
-        size +~ 1
-      else identity
+cityGrowth :: Int -> Grid -> Grid
+cityGrowth turnIndex =
+  if turnIndex `mod` 2 == 1
+  then
+    traversed .
+    (_City `failing` _General) .
+    match (owner . _Player) .
+    size +~ 1
+  else identity
 
-    tileGrowth :: Grid -> Grid
-    tileGrowth =
-      if turnIndex `mod` 50 == 49
-      then
-        traversed .
-        (_Clear `failing` _City `failing` _General) .
-        match (owner . _Player) .
-        size +~ 1
-      else identity
+tileGrowth :: Int -> Grid -> Grid
+tileGrowth turnIndex=
+  if turnIndex `mod` 50 == 49
+  then
+    traversed .
+    (_Clear `failing` _City `failing` _General) .
+    match (owner . _Player) .
+    size +~ 1
+  else identity
+
+
+makeMoves :: Turns -> Int -> Grid -> Grid
+makeMoves turns turnIndex = maybe identity turnReducer $
+  turns ^? lookup . ix turnIndex
 
 
 turnReducer :: Turn -> Grid -> Grid

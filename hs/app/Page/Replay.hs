@@ -20,7 +20,6 @@ import Js.Utils
 import qualified Js.FFI as FFI
 
 import Data.Default
-import Data.Default.Orphans
 
 import Types (Dimensions(..))
 
