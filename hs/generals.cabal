@@ -97,8 +97,6 @@ executable generals-app
     , OverloadedStrings
     , ViewPatterns
     , TypeApplications
-    -- for performance
-    , StrictData
   other-modules:
       Types
     , Page.Replay
