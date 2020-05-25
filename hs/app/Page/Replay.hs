@@ -58,9 +58,9 @@ gameReplay replay = do
       (preview (_ShowText . to JumpTo))
       (turnInput ^. inputElement_input)
 
-  map <- toMap replay (keyEvent <> inputEvent)
+  (map, dynCache) <- toMap replay (keyEvent <> inputEvent)
 
-  display (map ^. turn <&> \i -> "turn: " <> show i)
+  display dynCache
   void $ grid map
 
 toAttr :: Text -> AttributeName
@@ -84,7 +84,7 @@ toMap
     MonadIO m, PostBuild t m, DomBuilder t m)
   => Replay
   -> Event t Command
-  -> m (Generals.Map t)
+  -> m (Generals.Map t, Dynamic t Cache)
 toMap replay commandEvent = do
   let seed = newCache tiles
   let turns = toTurns replay
@@ -93,14 +93,15 @@ toMap replay commandEvent = do
 
   let dynTurn = view (cache_zipper . to tooth) <$> dynCache
   let dynGrid = currentGrid <$> dynCache
-  pure Generals.Map
-    { _tiles = dynGrid
-    , _turn = dynTurn
-    , _dimensions = Dimensions
-        { _width  = replay ^. mapWidth
-        , _height = replay ^. mapHeight
+  let map = Generals.Map
+        { _tiles = dynGrid
+        , _turn = dynTurn
+        , _dimensions = Dimensions
+            { _width  = replay ^. mapWidth
+            , _height = replay ^. mapHeight
+            }
         }
-    }
+  pure (map, dynCache)
   where
     tiles = mountainsMap <> citiesMap <> generalsMap <> clearMap
 

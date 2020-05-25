@@ -1,12 +1,15 @@
 {-# language TemplateHaskell #-}
 {-# language FlexibleInstances #-}
-
+{-# language NoImplicitPrelude #-}
 module Page.Replay.Types where
+
+import Prelude hiding (Show(..))
+import Data.Show.Class
 
 import Data.Aeson (Array(..), FromJSON(..))
 import Data.Default (Default(..))
 
-import Data.Vector
+import Data.Vector hiding (foldl')
 
 import Types (Dimensions(..))
 import Generals.Map.Types hiding (Map)
@@ -61,11 +64,16 @@ instance Semigroup Command where
   _ <> latest   = latest
 
 
+instance (Foldable s, Show a) => Show (Zipper' s a) where
+  show zip = foldl' (\a b -> a <> ", " <> Prelude.show b) "" (zip & upward & rezip)
+
+type Zipper' s a = Top :>> s a :>> a
+
 data Cache = Cache
-  { _cache_zipper :: Top :>> Seq Grid :>> Grid
+  { _cache_zipper :: Zipper' Seq Grid
   , _cache_maxIndex :: Int
   }
-
+  deriving (Show)
 
 type Turn = NonEmpty Move
 
