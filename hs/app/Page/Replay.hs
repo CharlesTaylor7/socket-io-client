@@ -47,9 +47,25 @@ gameReplay replay = do
   liftIO $ FFI.registerOnKeydown jsCallback
 
   keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
-  map <- toMap replay keyEvent
+
+  turnInput <- inputElement $ def
+    & inputElementConfig_initialValue .~ "0"
+    & inputElementConfig_elementConfig . elementConfig_initialAttributes
+    %~
+      ( at (toAttr "type") ?~ "text") .
+      ( at (toAttr "pattern") ?~ "[0-9]*")
+  let
+    inputEvent = mapMaybe
+      (preview (_ShowText . to JumpTo))
+      (turnInput ^. inputElement_input)
+
+  map <- toMap replay (keyEvent <> inputEvent)
+
+  display (map ^. turn <&> \i -> "turn: " <> show i)
   void $ grid map
 
+toAttr :: Text -> AttributeName
+toAttr = AttributeName Nothing
 
 toKey :: MonadIO m => JSVal -> m KeyCode
 toKey jsval = liftIO $ do
@@ -59,9 +75,9 @@ toKey jsval = liftIO $ do
 toCommand :: KeyCode -> Maybe Command
 toCommand code =
   case keyCodeLookup code of
-    KeyJ  -> Just Backwards
+    KeyJ -> Just Backwards
     KeyL -> Just Forwards
-    _          -> Nothing
+    _    -> Nothing
 
 toMap
   :: (Reflex t, MonadFix m, MonadHold t m,
@@ -73,13 +89,14 @@ toMap
 toMap replay commandEvent = do
   let seed = newCache tiles
   let turns = toTurns replay
+
   dynCache <- foldDyn (commandReducer (replay, turns)) seed commandEvent
-  display (dynCache <&> \cache ->
-      "turn: " <> cache^.currentIndex.re _Show
-    )
+
+  let dynTurn = view currentIndex <$> dynCache
   let dynGrid = currentGrid <$> dynCache
-  pure $ Generals.Map
+  pure Generals.Map
     { _tiles = dynGrid
+    , _turn = dynTurn
     , _dimensions = Dimensions
         { _width  = replay ^. mapWidth
         , _height = replay ^. mapHeight

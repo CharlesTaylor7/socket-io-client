@@ -18,8 +18,9 @@ maxKeyOr map def = maybe def identity $
 currentGrid :: Cache -> Grid
 currentGrid cache = cache ^?! history . ix (cache ^. currentIndex)
 
-update Forwards = 1
-update Backwards = -1
+update Forwards = (+ 1)
+update Backwards = subtract 1
+update (JumpTo n) = const n
 
 toTurns :: Replay -> Turns
 toTurns replay = Turns (map `maxKeyOr` 0) map
@@ -64,7 +65,7 @@ commandReducer (replay, turns) command cache =
     ?~ nextGrid (currentGrid cache)
   where
     (turnIndex, cache') = cache
-      & currentIndex <%~ clamp 0 (turns^.maxTurn) . (+ (update command))
+      & currentIndex <%~ clamp 0 (turns^.maxTurn) . update command
 
     nextGrid :: Grid -> Grid
     nextGrid = cityGrowth . tileGrowth . makeMoves
@@ -77,7 +78,7 @@ commandReducer (replay, turns) command cache =
       if turnIndex `mod` 2 == 1
       then
         traversed .
-        failing _City _General .
+        (_City `failing` _General) .
         match (owner . _Player) .
         size +~ 1
       else identity

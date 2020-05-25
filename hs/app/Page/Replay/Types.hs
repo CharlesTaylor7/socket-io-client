@@ -52,8 +52,13 @@ data Move = Move
 data Command
   = Backwards
   | Forwards
+  | JumpTo Int
   deriving (Show)
 
+instance Semigroup Command where
+  JumpTo n <> _ = JumpTo n
+  _ <> JumpTo n = JumpTo n
+  _ <> latest   = latest
 
 data Cache = Cache
   { _currentIndex :: Int

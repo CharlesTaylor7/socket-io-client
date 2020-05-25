@@ -44,13 +44,14 @@ library reflex-imports
       Reflex
   other-modules:
       Reflex.Element
-    , Reflex.Widget
+    , Reflex.Optics
     , Reflex.Utils
+    , Reflex.Widget
   build-depends:
       base >= 4.7 && <5.0
-    , relude
     , reflex-dom
     , ghcjs-dom
+    , lens
     , data-default
 
 library generals-prelude
@@ -104,4 +105,3 @@ executable generals-app
     , Data.Dom
     , Data.Dom.Internals
     , Data.Dom.Types
-    , Data.Default.Orphans

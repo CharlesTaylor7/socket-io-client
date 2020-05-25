@@ -48,7 +48,8 @@ newtype GridIndex = GridIndex Int
 type Grid = IntMap Tile
 
 data Map t = Map
-  { _tiles :: Dynamic t Grid
+  { _turn :: Dynamic t Int
+  , _tiles :: Dynamic t Grid
   , _dimensions :: Dimensions
   }
 
