@@ -121,8 +121,23 @@ moveReducer move grid =
 
     attackingPlayer = tileArmy ^. owner
     attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
-
+    attackingArmy = attackingPlayer `Army` attackingArmySize
   in
     grid'
     & unsafeArmyLens (move ^. endTile)
-    .~ attackingPlayer `Army` attackingArmySize
+    %~ attack attackingArmy
+
+
+attack :: Army -> Army -> Army
+attack attacking defending
+  | defending ^. owner == Neutral
+  =  attacking
+
+  | attacking ^. owner == defending ^. owner
+  = defending & size +~ attacking ^. size
+
+  | attacking ^. size > defending ^. size
+  = attacking & size -~ defending ^. size
+
+  | otherwise
+  = defending & size -~ attacking ^. size

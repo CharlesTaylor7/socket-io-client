@@ -25,7 +25,7 @@ instance Default Tile where
 data Owner
   = Neutral
   | Player Int
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance Default Owner where
   def = Neutral
@@ -34,7 +34,7 @@ data Army = Army
   { _owner :: Owner
   , _size :: Int
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance Default Army where
   def = Army
