@@ -32,7 +32,7 @@ instance Default Owner where
 
 data Army = Army
   { _owner :: Owner
-  , _size :: Nat16
+  , _size :: Int
   }
   deriving (Show)
 

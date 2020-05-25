@@ -63,10 +63,8 @@ commandReducer (replay, turns) command cache =
     & history . at turnIndex
     ?~ nextGrid (currentGrid cache)
   where
-
     (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 (turns^.maxTurn) . (+ (update command))
-      :: (Int, Cache)
 
     nextGrid :: Grid -> Grid
     nextGrid = cityGrowth . tileGrowth . makeMoves
@@ -76,10 +74,13 @@ commandReducer (replay, turns) command cache =
 
     cityGrowth :: Grid -> Grid
     cityGrowth =
-      traversed .
-      failing _City _General .
-      match (owner . _Player) .
-      size +~ 1
+      if turnIndex `mod` 2 == 1
+      then
+        traversed .
+        failing _City _General .
+        match (owner . _Player) .
+        size +~ 1
+      else identity
 
     tileGrowth :: Grid -> Grid
     tileGrowth =
@@ -117,7 +118,6 @@ moveReducer move grid =
     (tileArmy, grid') = grid
       & unsafeArmyLens (move ^. startTile)
       <<%~ over size (leaveArmySize $ move ^. onlyHalf)
-      :: (Army, Grid)
 
     attackingPlayer = tileArmy ^. owner
     attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
