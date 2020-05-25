@@ -61,11 +61,9 @@ commandReducer (replay, turns) command cache =
     (turnIndex, cache') = cache
       & currentIndex <%~ clamp 0 (turns^.maxTurn) . update command
 
-    turnDiff =
-      case command of
-        Forwards  -> 1
-        Backwards -> -1
-        JumpTo n  -> n - turnIndex
+    cacheBound = (cache ^. history . to length) - 1
+
+    turnDiff = turnIndex - cacheBound
   in
     if turnDiff <= 0
     then cache'
@@ -74,7 +72,7 @@ commandReducer (replay, turns) command cache =
         scanl
           (flip $ nextGrid turns)
           (currentGrid cache)
-          [turnIndex..turnIndex+turnDiff-1]
+          [cacheBound+1..turnDiff]
       )
 
 nextGrid :: Turns -> Int -> Grid -> Grid
