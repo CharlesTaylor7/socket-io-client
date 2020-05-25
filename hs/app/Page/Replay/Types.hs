@@ -65,7 +65,7 @@ instance Semigroup Command where
 
 
 instance (Foldable s, Show a) => Show (Zipper' s a) where
-  show zip = foldl' (\a b -> a <> ", " <> Prelude.show b) "" (zip & upward & rezip)
+  show zip = foldl' (\a b -> a <> ", " <> "<grid>") "" (zip & upward & rezip)
 
 type Zipper' s a = Top :>> s a :>> a
 
