@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache (commandReducer, newCache, currentGrid)
+import Page.Replay.Cache (toHistory)
 import Page.Replay.Download
 import Page.Replay.Types
 
@@ -77,16 +77,26 @@ toCommand code =
     KeyL -> Just Forwards
     _    -> Nothing
 
+
+commandReducer :: (Int, Int) -> Command -> Int -> Int
+commandReducer (firstTurn, lastTurn) command =
+  case command of
+    Backwards -> max firstTurn . subtract 1
+    Forwards  -> min lastTurn  . (+ 1)
+    JumpTo n  -> const $ max firstTurn $ min lastTurn n
+
 toMap
   :: (Reflex t, MonadFix m, MonadHold t m)
   => Replay
   -> Event t Command
   -> m (Generals.Map t)
 toMap replay commandEvent = do
-  let seed = newCache replay grid
-  dynCache <- foldDyn commandReducer seed commandEvent
-  let dynTurn = view cache_index <$> dynCache
-  let dynGrid = currentGrid <$> dynCache
+  let history = toHistory replay
+  let minTurn = 0
+  let maxTurn = history & length & subtract 1
+  dynTurn <- foldDyn (commandReducer (minTurn, maxTurn)) 0 commandEvent
+
+  let dynGrid = dynTurn <&> (\i -> history ^?! ix i)
   let map = Generals.Map
         { _tiles = dynGrid
         , _turn = dynTurn
@@ -96,26 +106,3 @@ toMap replay commandEvent = do
             }
         }
   pure map
-  where
-    grid = mountainsMap <> citiesMap <> generalsMap <> clearMap
-
-    mountainsMap = fromList $
-      [ (index, Mountain)
-      | index <- replay ^. mountains
-      ]
-
-    citiesMap = fromList $
-      [ (index, City (Neutral `Army` fromIntegral size))
-      | (index, size) <- zip (replay ^. cities) (replay ^. cityArmies)
-      ]
-
-    generalsMap = fromList $
-      [ (boardIndex, General $ Player playerId `Army` 1)
-      | (playerId, boardIndex) <- replay ^.. generals . folded . withIndex
-      ]
-
-    clearMap = fromList $
-      [ (i, def)
-      | i <- [0..numTiles - 1]
-      ]
-    numTiles = replay^.mapWidth * replay^.mapHeight

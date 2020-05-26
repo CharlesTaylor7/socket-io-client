@@ -5,7 +5,6 @@ module Page.Replay.Types where
 import Data.Aeson (Array(..), FromJSON(..))
 import Data.Default (Default(..))
 
-import Data.Vector hiding (foldl')
 
 import Types (Dimensions(..))
 import Generals.Map.Types hiding (Map)
@@ -60,12 +59,6 @@ instance Semigroup Command where
   _ <> latest   = latest
 
 
-data Cache = Cache
-  { _cache_lookup :: Vector Grid
-  , _cache_index :: Int
-  }
-
-
 type Turn = NonEmpty Move
 
 data Turns = Turns
@@ -76,7 +69,6 @@ data Turns = Turns
 makePrisms ''Server
 makePrisms ''Command
 
-makeLenses ''Cache
 makeFieldsNoPrefix ''ReplayLocation
 makeFieldsNoPrefix ''Replay
 makeFieldsNoPrefix ''Move

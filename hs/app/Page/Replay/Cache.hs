@@ -1,42 +1,52 @@
 module Page.Replay.Cache
- ( newCache
- , currentGrid
- , commandReducer
+ ( toHistory
  )
  where
 
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
+import Data.Vector (Vector)
+import Data.Default
 import Data.IntMap (lookupMax)
 
 import Types (Dimensions, width, height)
 
 
-currentGrid :: HasCallStack => Cache -> Grid
-currentGrid cache = cache ^?! cache_lookup . ix (cache ^. cache_index)
 
-
-newCache :: Replay -> Grid -> Cache
-newCache replay grid = Cache
-  { _cache_index = 0
-  , _cache_lookup = fromList $
-      scanl
-        (flip $ nextGrid turns)
-        grid
-        [1 .. turns ^. maxTurn]
-  }
+toHistory :: Replay -> Vector Grid
+toHistory replay = fromList $
+  scanl
+    (flip $ nextGrid turns)
+    grid
+    [1 .. turns ^. maxTurn]
   where
+    grid = initialGrid replay
     turns = toTurns replay
 
-commandReducer :: Command -> Cache -> Cache
-commandReducer command cache =
-  case command of
-    Backwards -> cache & cache_index %~ max 0 . subtract 1
-    Forwards  -> cache & cache_index %~ min lastTurn . (+ 1)
-    JumpTo n  -> cache & cache_index .~ min lastTurn n
+initialGrid :: Replay -> Grid
+initialGrid replay = mountainsMap <> citiesMap <> generalsMap <> clearMap
   where
-    lastTurn = cache ^. cache_lookup . to length
+    mountainsMap = fromList $
+      [ (index, Mountain)
+      | index <- replay ^. mountains
+      ]
+
+    citiesMap = fromList $
+      [ (index, City (Neutral `Army` fromIntegral size))
+      | (index, size) <- zip (replay ^. cities) (replay ^. cityArmies)
+      ]
+
+    generalsMap = fromList $
+      [ (boardIndex, General $ Player playerId `Army` 1)
+      | (playerId, boardIndex) <- replay ^.. generals . folded . withIndex
+      ]
+
+    clearMap = fromList $
+      [ (i, def)
+      | i <- [0..numTiles - 1]
+      ]
+    numTiles = replay^.mapWidth * replay^.mapHeight
 
 
 maxKeyOr :: IntMap a -> Int -> Int
