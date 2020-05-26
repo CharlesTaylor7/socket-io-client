@@ -1,4 +1,9 @@
-module Page.Replay.Cache where
+module Page.Replay.Cache
+ ( newCache
+ , currentGrid
+ , commandReducer
+ )
+ where
 
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
@@ -8,20 +13,36 @@ import Data.IntMap (lookupMax)
 import Types (Dimensions, width, height)
 
 
-newCache :: Grid -> Cache
-newCache tiles = Cache
-  { _cache_index = initialIndex
-  , _cache_lookup = fromList [tiles]
+currentGrid :: HasCallStack => Cache -> Grid
+currentGrid cache = cache ^?! cache_lookup . ix (cache ^. cache_index)
+
+
+newCache :: Replay -> Grid -> Cache
+newCache replay grid = Cache
+  { _cache_index = 0
+  , _cache_lookup = fromList $
+      scanl
+        (flip $ nextGrid turns)
+        grid
+        [1 .. turns ^. maxTurn]
   }
-  where initialIndex = 0
+  where
+    turns = toTurns replay
+
+commandReducer :: Command -> Cache -> Cache
+commandReducer command cache =
+  case command of
+    Backwards -> cache & cache_index %~ max 0 . subtract 1
+    Forwards  -> cache & cache_index %~ min lastTurn . (+ 1)
+    JumpTo n  -> cache & cache_index .~ min lastTurn n
+  where
+    lastTurn = cache ^. cache_lookup . to length
 
 
 maxKeyOr :: IntMap a -> Int -> Int
 maxKeyOr map def = maybe def identity $
   map ^? to lookupMax . _Just . _1
 
-currentGrid :: HasCallStack => Cache -> Grid
-currentGrid cache = cache ^?! cache_lookup . ix (cache ^. cache_index)
 
 toTurns :: Replay -> Turns
 toTurns replay = Turns (map `maxKeyOr` 0) map
@@ -33,11 +54,6 @@ toTurns replay = Turns (map `maxKeyOr` 0) map
       , let turnIndex = moveGroup ^. head1 . turn
       ]
 
-clamp :: Ord a => a -> a -> a -> a
-clamp min max x
-  | x < min   = min
-  | x > max   = max
-  | otherwise = x
 
 ixGrid :: GridIndex -> Traversal' Grid Tile
 ixGrid = ix . coerce
@@ -47,51 +63,6 @@ increment i = ixGrid i . _Army . size +~ 1
 
 match :: Traversal' s a -> Traversal' s s
 match matcher = filtered $ is _Just . firstOf matcher
-
-moveLeft :: Cache -> Cache
-moveLeft = cache_index %~ max 0 . subtract 1
-
-cache_bound = cache_lookup . to (subtract 1 . length)
-
-moveRight :: Cache -> Cache
-moveRight cache =
-  if cache ^. cache_index == cache ^. cache_bound
-  then error "can't move right!"
-  else
-    cache & cache_index +~ 1
-
-commandReducer :: (Replay, Turns) -> Command -> Cache -> Cache
-commandReducer (replay, turns) command cache =
-  case command of
-    Backwards -> moveLeft cache
-    Forwards ->
-      if turnIndex == cacheBound
-      then
-        let newGrid = nextGrid turns (cacheBound + 1) (currentGrid cache)
-        in cache
-          & cache_index +~ 1
-          & cache_lookup %~ flip snoc newGrid
-      else moveRight cache
-    JumpTo n ->
-      if n <= cacheBound
-      then cache & cache_index .~ n
-      else
-        let
-          grids :: Seq Grid
-          grids = fromList . tail $
-            scanl
-              (flip $ nextGrid turns)
-              (currentGrid cache)
-              [cacheBound+1..n]
-        in
-          cache
-          & cache_index .~ n
-          & cache_lookup <>~ grids
-
-  where
-    turnIndex = cache ^. cache_index
-    cacheBound = cache ^. cache_bound
-
 
 nextGrid :: Turns -> Int -> Grid -> Grid
 nextGrid turns turnIndex =

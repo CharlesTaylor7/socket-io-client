@@ -6,10 +6,10 @@ import Control.Exception as X (throwIO)
 import Control.Monad.Fix as X (MonadFix(..))
 import Control.Monad.IO.Class as X (MonadIO)
 
-import Data.List.NonEmpty as X (NonEmpty(..), groupWith, scanl)
+import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
 
 -- relude
-import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, scanl)
+import Relude as X hiding (Alt, (??), uncons, mapMaybe, id)
 
 -- lens
 import Control.Lens as X hiding (element)

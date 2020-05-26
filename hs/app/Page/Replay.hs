@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache (commandReducer, newCache, currentGrid, toTurns, cache_bound)
+import Page.Replay.Cache (commandReducer, newCache, currentGrid)
 import Page.Replay.Download
 import Page.Replay.Types
 
@@ -58,9 +58,8 @@ gameReplay replay = do
       (preview (_ShowText . to JumpTo))
       (turnInput ^. inputElement_input)
 
-  (map, dynCache) <- toMap replay (keyEvent <> inputEvent)
+  map <- toMap replay (keyEvent <> inputEvent)
 
-  display (dynCache <&> ("bound: " <>) . show . view cache_bound)
   void $ grid map
 
 toAttr :: Text -> AttributeName
@@ -79,18 +78,13 @@ toCommand code =
     _    -> Nothing
 
 toMap
-  :: (Reflex t, MonadFix m, MonadHold t m,
-    -- debug constraints
-    MonadIO m, PostBuild t m, DomBuilder t m)
+  :: (Reflex t, MonadFix m, MonadHold t m)
   => Replay
   -> Event t Command
-  -> m (Generals.Map t, Dynamic t Cache)
+  -> m (Generals.Map t)
 toMap replay commandEvent = do
-  let seed = newCache tiles
-  let turns = toTurns replay
-
-  dynCache <- foldDyn (commandReducer (replay, turns)) seed commandEvent
-
+  let seed = newCache replay grid
+  dynCache <- foldDyn commandReducer seed commandEvent
   let dynTurn = view cache_index <$> dynCache
   let dynGrid = currentGrid <$> dynCache
   let map = Generals.Map
@@ -101,9 +95,9 @@ toMap replay commandEvent = do
             , _height = replay ^. mapHeight
             }
         }
-  pure (map, dynCache)
+  pure map
   where
-    tiles = mountainsMap <> citiesMap <> generalsMap <> clearMap
+    grid = mountainsMap <> citiesMap <> generalsMap <> clearMap
 
     mountainsMap = fromList $
       [ (index, Mountain)

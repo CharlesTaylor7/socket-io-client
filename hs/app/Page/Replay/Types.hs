@@ -61,7 +61,7 @@ instance Semigroup Command where
 
 
 data Cache = Cache
-  { _cache_lookup :: Seq Grid
+  { _cache_lookup :: Vector Grid
   , _cache_index :: Int
   }
 
