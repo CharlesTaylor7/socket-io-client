@@ -8,7 +8,7 @@ import Data.Default (Default(..))
 import Types (Dimensions(..))
 import Generals.Map.Types hiding (Map)
 
-import qualified Data.Vector.Unboxed as U
+import Data.Vector
 
 data Server
   = Server_Main
@@ -19,7 +19,7 @@ data ReplayLocation = ReplayLocation
   , _id :: Text
   }
 
-type GridLocations = U.Vector Int
+type GridLocations = Vector GridIndex
 
 data Replay = Replay
   { _id :: Text
