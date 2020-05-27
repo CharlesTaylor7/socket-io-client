@@ -67,8 +67,8 @@ initialGrid replay = mountainsMap <> citiesMap <> generalsMap <> clearMap
     numTiles = replay^.mapWidth * replay^.mapHeight
 
 
-ixGrid :: GridIndex -> Traversal' Grid Tile
-ixGrid = ix . coerce
+ixGrid :: GridIndex -> Lens' Grid Tile
+ixGrid = singular . ix . coerce
 
 increment :: GridIndex -> Grid -> Grid
 increment i = ixGrid i . _Army . size +~ 1
@@ -109,16 +109,22 @@ applyMoves moves grid = grid'
       & flip execStateT grid
       & runWriter
 
+attackingTile move = ixGrid (move ^. startTile)
+defendingTile move = ixGrid (move ^. startTile)
+
 moveReducer
   :: (MonadState Grid m, MonadWriter [Kill] m)
   => Move
   -> m ()
 moveReducer move = do
+
   let unsafeArmyLens coords = singular (ixGrid coords . _Army)
 
   tileArmy <-
     unsafeArmyLens (move ^. startTile)
     <<%= over size (leaveArmySize $ move ^. onlyHalf)
+
+  defendingPlayer <- use (unsafeArmyLens (move ^. startTile) . owner)
 
   let
     attackingPlayer = tileArmy ^. owner
@@ -128,6 +134,16 @@ moveReducer move = do
   newArmy <-
     unsafeArmyLens (move ^. endTile)
     <%= attack attackingArmy
+
+  let newOwner = newArmy ^. owner
+  defendingTileWasGeneral <- use (ixGrid (move ^. endTile) . to (is _General))
+
+  when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
+    tell $ pure $ Kill
+      { kill_by     = newOwner ^?! _Player
+      , kill_target = defendingPlayer ^?! _Player
+      }
+    ixGrid (move ^. endTile) . tileType .= General_Tile
 
   pure ()
 

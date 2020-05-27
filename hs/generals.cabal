@@ -94,6 +94,7 @@ executable generals-app
     , OverloadedStrings
     , ViewPatterns
     , TypeApplications
+    , LambdaCase
   other-modules:
       Types
     , Page.Replay

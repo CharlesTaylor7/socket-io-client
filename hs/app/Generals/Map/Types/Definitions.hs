@@ -20,6 +20,11 @@ data Tile
   | Fog_Obstacle
   deriving (Show)
 
+data ArmyTileType
+  = Clear_Tile
+  | City_Tile
+  | General_Tile
+
 instance Default Tile where
   def = Clear def
 
@@ -58,6 +63,7 @@ data Map t = Map
 
 makePrisms ''Owner
 makePrisms ''Tile
+makePrisms ''ArmyTileType
 makePrisms ''GridIndex
 
 makeFieldsNoPrefix ''Army
