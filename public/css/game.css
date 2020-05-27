@@ -43,7 +43,11 @@
   background-image: url(/img/crown.png);
 }
 
-.mountain, .city, .general {
+.swamp {
+  background-image: url(/img/swamp.png);
+}
+
+.mountain, .city, .general, .swamp {
   background-size: 100%;
 }
 
@@ -51,9 +55,6 @@
   background-color: rgb(160, 160, 160);
 }
 
-.tile-empty {
-  background-color: white;
-}
 
 .tile-mountain {
   background-color: rgb(110, 110, 110);

@@ -29,12 +29,16 @@ import qualified Generals.Map.Types as Generals
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  replayEvent <- downloadReplay replayLocation
+  replayEvent <- downloadReplay replayLocation2
   widgetHold blank $ replayEvent <&> gameReplay
   blank
   where
-    replayLocation = ReplayLocation
+    replayLocation1 = ReplayLocation
       { _id = "HOVnMO6cL"
+      , _server = Server_Main
+      }
+    replayLocation2 = ReplayLocation
+      { _id = "H9YxQHhiI"
       , _server = Server_Main
       }
 

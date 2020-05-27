@@ -82,6 +82,7 @@ getContents tile =
     Just (City army) ->    (Class "city", armyToText army)
     Just (General army) -> (Class "general", armyToText army)
     Just Mountain ->       (Class "mountain", "")
+    Just (Swamp army) ->   (Class "swamp", armyToText army)
     _ ->                   (Class "unknown", "???")
 
 armyToText :: Army -> Text
@@ -115,4 +116,6 @@ toCssClass tile = ownerClass <> emptyClass <> terrainClass
     terrainClass = Class $
       case tile of
         Just Mountain -> "tile-mountain"
+        Just (Swamp _) -> "tile-swamp"
+        Just (Clear _) -> "tile-clear"
         _             -> ""

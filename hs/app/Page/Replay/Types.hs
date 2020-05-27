@@ -35,6 +35,9 @@ data Replay = Replay
   , _afks :: Array
   , _teams :: Maybe Array
   , _mapTitle :: Maybe Text
+  , _swamps :: [Int]
+  -- , _unknown1 :: Array
+  -- , _unknown2 :: Array
   }
   deriving (Show)
 

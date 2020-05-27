@@ -15,6 +15,7 @@ data Tile
   = Clear Army
   | City Army
   | General Army
+  | Swamp Army
   | Mountain
   | Fog_Clear
   | Fog_Obstacle

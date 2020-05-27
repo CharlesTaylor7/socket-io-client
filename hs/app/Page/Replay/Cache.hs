@@ -44,7 +44,13 @@ turns moves = unfoldr f (1, moves)
         in ((i, group), (i + 1, rest))
 
 initialGrid :: Replay -> Grid
-initialGrid replay = mountainsMap <> citiesMap <> generalsMap <> clearMap
+initialGrid replay = fold
+  [ mountainsMap
+  , citiesMap
+  , generalsMap
+  , swampsMap
+  , clearMap
+  ]
   where
     mountainsMap = fromList $
       [ (index, Mountain)
@@ -59,6 +65,11 @@ initialGrid replay = mountainsMap <> citiesMap <> generalsMap <> clearMap
     generalsMap = fromList $
       [ (boardIndex, General $ Player playerId `Army` 1)
       | (playerId, boardIndex) <- replay ^.. generals . folded . withIndex
+      ]
+
+    swampsMap = fromList $
+      [ (boardIndex, Swamp def)
+      | boardIndex <- replay ^. swamps
       ]
 
     clearMap = fromList $

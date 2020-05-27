@@ -47,6 +47,7 @@ parseReplay v = Replay
   <*> afks
   <*> teams
   <*> mapTitle
+  <*> swamps
   where
     -- fields
     id = v .@ 1
@@ -61,12 +62,13 @@ parseReplay v = Replay
     afks = v .@ 11
     teams = v .@ 12
     mapTitle = v .@ 13
+    swamps = v .@ 16
+
     -- unused
     version = v .@ 0 :: Parser Int
     stars = v .@ 5 :: Parser Array
     unknown1 = v .@ 14 :: Parser Array
     unknown2 = v .@ 15 :: Parser Array
-    unknown3 = v .@ 16 :: Parser Array
 
 -- plumbing
 explicitParseAt :: (Value -> Parser a) -> Array -> Int -> Parser a
