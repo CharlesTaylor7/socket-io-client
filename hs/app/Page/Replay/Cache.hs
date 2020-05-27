@@ -6,7 +6,8 @@ module Page.Replay.Cache
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
-import Data.Vector (Vector)
+import Prelude hiding (scanl)
+import Data.Vector (Vector, scanl')
 import Data.Default
 
 import Types (Dimensions, width, height)
@@ -26,11 +27,11 @@ type Turns = [Turn]
 
 
 toHistory :: Replay -> Vector Grid
-toHistory replay = fromList $
-  scanl
+toHistory replay =
+  scanl'
     (flip $ nextGrid)
     (initialGrid replay)
-    (replay ^. moves . to turns)
+    (fromList . turns $ replay ^. moves)
 
 turns :: [Move] -> Turns
 turns moves = unfoldr f (1, moves)
