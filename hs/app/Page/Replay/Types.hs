@@ -59,17 +59,9 @@ instance Semigroup Command where
   _ <> latest   = latest
 
 
-type Turn = NonEmpty Move
-
-data Turns = Turns
-  { _maxTurn :: Int
-  , _lookup :: IntMap Turn
-  }
-
 makePrisms ''Server
 makePrisms ''Command
 
 makeFieldsNoPrefix ''ReplayLocation
 makeFieldsNoPrefix ''Replay
 makeFieldsNoPrefix ''Move
-makeFieldsNoPrefix ''Turns
