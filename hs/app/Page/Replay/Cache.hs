@@ -175,9 +175,6 @@ moveArmySize onlyHalf =
 
 attack :: Army -> Army -> Army
 attack attacking defending
-  | defending ^. owner == Neutral
-  =  attacking
-
   | attacking ^. owner == defending ^. owner
   = defending & size +~ attacking ^. size
 
