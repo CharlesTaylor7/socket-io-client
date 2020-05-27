@@ -59,6 +59,7 @@ gameReplay replay = do
       (turnInput ^. inputElement_input)
 
   map <- toMap replay (keyEvent <> inputEvent)
+  dynText (map ^. turn <&> ("turn: " <>) . show . uncurry (+) . (`divMod` 2))
 
   void $ grid map
 
