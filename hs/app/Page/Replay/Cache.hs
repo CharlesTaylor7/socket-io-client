@@ -22,9 +22,8 @@ type Turn = (Int, [Move])
 type Turns = [Turn]
 
 turns :: [Move] -> Turns
-turns moves = unfoldr traced (1, moves)
+turns moves = unfoldr f (1, moves)
   where
-    traced args@(i, _) = ("forcing " <> show i) `trace` f args
     f (i, moves) =
       if null moves
       then Nothing
