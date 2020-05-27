@@ -15,7 +15,7 @@ import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
 
 data Kill = Kill
-  { kill_by     :: Int
+  { kill_killer :: Int
   , kill_target :: Int
   }
 
@@ -114,11 +114,12 @@ applyKill :: Kill -> Grid -> Grid
 applyKill (Kill killer target) grid = grid
   & traversed . _Army %~
     (\army -> army
-      & owner . _Player . filtered (== target) .~ killer
-      & match (owner . _Player . filtered (== target)) . size %~ (`div` 2)
+      & match (matchOnTarget) . size %~ uncurry (+) . (`divMod` 2)
+      & matchOnTarget .~ killer
     )
   where
-    -- matcher = undefiendx
+    matchOnTarget :: Traversal' Army Int
+    matchOnTarget =owner . _Player . filtered (== target)
 
 attackingTile move = ixGrid (move ^. startTile)
 defendingTile move = ixGrid (move ^. startTile)
@@ -128,19 +129,18 @@ moveReducer
   => Move
   -> m ()
 moveReducer move = do
-
   let unsafeArmyLens coords = singular (ixGrid coords . _Army)
 
   tileArmy <-
     unsafeArmyLens (move ^. startTile)
     <<%= over size (leaveArmySize $ move ^. onlyHalf)
 
-  defendingPlayer <- use (unsafeArmyLens (move ^. startTile) . owner)
-
   let
     attackingPlayer = tileArmy ^. owner
     attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
     attackingArmy = attackingPlayer `Army` attackingArmySize
+
+  defendingPlayer <- use (unsafeArmyLens (move ^. endTile) . owner)
 
   newArmy <-
     unsafeArmyLens (move ^. endTile)
@@ -151,7 +151,7 @@ moveReducer move = do
 
   when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
     tell $ pure $ Kill
-      { kill_by     = newOwner ^?! _Player
+      { kill_killer = newOwner ^?! _Player
       , kill_target = defendingPlayer ^?! _Player
       }
     ixGrid (move ^. endTile) . tileType .= City_Tile
