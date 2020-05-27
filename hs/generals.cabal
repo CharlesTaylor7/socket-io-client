@@ -73,6 +73,7 @@ executable generals-app
     , data-default
     , vector
     , containers
+    , mtl
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   default-extensions:
     -- required to make type aliases for reflex constraints

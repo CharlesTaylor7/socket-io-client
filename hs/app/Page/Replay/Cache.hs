@@ -11,15 +11,26 @@ import Data.Default
 
 import Types (Dimensions, width, height)
 
+import Control.Monad.Writer.Strict
+import Control.Monad.State.Strict
+
+data Kill = Kill
+  { kill_by     :: Int
+  , kill_target :: Int
+  }
+
+type MonadKills m = MonadWriter [Kill] m
+
+type Turn = (Int, [Move])
+type Turns = [Turn]
+
+
 toHistory :: Replay -> Vector Grid
 toHistory replay = fromList $
   scanl
     (flip $ nextGrid)
     (initialGrid replay)
     (replay ^. moves . to turns)
-
-type Turn = (Int, [Move])
-type Turns = [Turn]
 
 turns :: [Move] -> Turns
 turns moves = unfoldr f (1, moves)
@@ -92,7 +103,34 @@ tileGrowth turnIndex=
   else identity
 
 applyMoves :: [Move] -> Grid -> Grid
-applyMoves moves grid = foldl' (flip moveReducer) grid moves
+applyMoves moves grid = grid'
+  where
+    (grid', kills) = traverse_ moveReducer moves
+      & flip execStateT grid
+      & runWriter
+
+moveReducer
+  :: (MonadState Grid m, MonadWriter [Kill] m)
+  => Move
+  -> m ()
+moveReducer move = do
+  let unsafeArmyLens coords = singular (ixGrid coords . _Army)
+
+  tileArmy <-
+    unsafeArmyLens (move ^. startTile)
+    <<%= over size (leaveArmySize $ move ^. onlyHalf)
+
+  let
+    attackingPlayer = tileArmy ^. owner
+    attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
+    attackingArmy = attackingPlayer `Army` attackingArmySize
+
+  newArmy <-
+    unsafeArmyLens (move ^. endTile)
+    <%= attack attackingArmy
+
+  pure ()
+
 
 leaveArmySize :: Integral n => Bool -> n -> n
 leaveArmySize onlyHalf =
@@ -106,23 +144,6 @@ moveArmySize onlyHalf =
   if onlyHalf
   then uncurry (+) . (`divMod` 2)
   else subtract 1
-
-moveReducer :: Move -> Grid -> Grid
-moveReducer move grid =
-  let
-    unsafeArmyLens coords = singular (ixGrid coords . _Army)
-
-    (tileArmy, grid') = grid
-      & unsafeArmyLens (move ^. startTile)
-      <<%~ over size (leaveArmySize $ move ^. onlyHalf)
-
-    attackingPlayer = tileArmy ^. owner
-    attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
-    attackingArmy = attackingPlayer `Army` attackingArmySize
-  in
-    grid'
-    & unsafeArmyLens (move ^. endTile)
-    %~ attack attackingArmy
 
 
 attack :: Army -> Army -> Army
