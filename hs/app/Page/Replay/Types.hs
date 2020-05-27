@@ -5,10 +5,10 @@ module Page.Replay.Types where
 import Data.Aeson (Array(..), FromJSON(..))
 import Data.Default (Default(..))
 
-
 import Types (Dimensions(..))
 import Generals.Map.Types hiding (Map)
 
+import qualified Data.Vector.Unboxed as U
 
 data Server
   = Server_Main
@@ -19,6 +19,7 @@ data ReplayLocation = ReplayLocation
   , _id :: Text
   }
 
+type GridLocations = U.Vector Int
 
 data Replay = Replay
   { _id :: Text
@@ -26,16 +27,16 @@ data Replay = Replay
   , _mapHeight :: Int
   , _usernames :: Array
 
-  , _cities :: [Int]
-  , _cityArmies :: [Int]
-  , _generals :: [Int]
-  , _mountains :: [Int]
+  , _cities :: GridLocations
+  , _cityArmies :: GridLocations
+  , _generals :: GridLocations
+  , _mountains :: GridLocations
   , _moves :: [Move]
 
   , _afks :: Array
   , _teams :: Maybe Array
   , _mapTitle :: Maybe Text
-  , _swamps :: [Int]
+  , _swamps :: GridLocations
   -- , _unknown1 :: Array
   -- , _unknown2 :: Array
   }

@@ -98,7 +98,7 @@ executable generals-app
   other-modules:
       Types
     , Page.Replay
-    , Page.Replay.Cache
+    , Page.Replay.Simulate
     , Page.Replay.Decode
     , Page.Replay.Download
     , Page.Replay.Types

@@ -4,7 +4,7 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Cache (toHistory)
+import Page.Replay.Simulate (toHistory)
 import Page.Replay.Download
 import Page.Replay.Types
 
@@ -63,7 +63,8 @@ gameReplay replay = do
       (turnInput ^. inputElement_input)
 
   map <- toMap replay (keyEvent <> inputEvent)
-  dynText (map ^. turn <&> ("turn: " <>) . show . uncurry (+) . (`divMod` 2))
+  elClass "div" "turn-marker" $
+    dynText (map ^. turn <&> ("turn: " <>) . show . uncurry (+) . (`divMod` 2))
 
   void $ grid map
 

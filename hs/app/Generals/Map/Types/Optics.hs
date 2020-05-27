@@ -2,6 +2,12 @@ module Generals.Map.Types.Optics where
 
 import Generals.Map.Types.Definitions
 
+ixGrid :: GridIndex -> Lens' Grid Tile
+ixGrid = singular . ix . coerce
+
+match :: Traversal' s a -> Traversal' s s
+match matcher = filtered $ is _Just . firstOf matcher
+
 
 _Army :: Traversal' Tile Army
 _Army = _Clear `failing` _City `failing` _General `failing` _Swamp

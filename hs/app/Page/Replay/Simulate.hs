@@ -1,4 +1,4 @@
-module Page.Replay.Cache
+module Page.Replay.Simulate
  ( toHistory
  )
  where
@@ -15,6 +15,11 @@ import Types (Dimensions, width, height)
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
 
+import Data.IntSet (IntSet)
+import qualified Data.Vector.Unboxed as U
+
+instance
+
 data Kill = Kill
   { kill_killer :: Int
   , kill_target :: Int
@@ -25,6 +30,11 @@ type MonadKills m = MonadWriter [Kill] m
 type Turn = (Int, [Move])
 type Turns = [Turn]
 
+-- data Cache = Cache
+--   { cities :: U.Vector Int
+--   , swamps :: U.Vector Int
+--   , owned :: IntSet
+--   }
 
 toHistory :: Replay -> Vector Grid
 toHistory replay =
@@ -54,12 +64,12 @@ initialGrid replay = fold
   where
     mountainsMap = fromList $
       [ (index, Mountain)
-      | index <- replay ^. mountains
+      | index <- replay ^.. mountains . folded
       ]
 
     citiesMap = fromList $
       [ (index, City (Neutral `Army` fromIntegral size))
-      | (index, size) <- zip (replay ^. cities) (replay ^. cityArmies)
+      | (index, size) <- zip (replay ^.. cities . folded) (replay ^.. cityArmies . folded)
       ]
 
     generalsMap = fromList $
@@ -69,7 +79,7 @@ initialGrid replay = fold
 
     swampsMap = fromList $
       [ (boardIndex, Swamp def)
-      | boardIndex <- replay ^. swamps
+      | boardIndex <- replay ^.. swamps . folded
       ]
 
     clearMap = fromList $
@@ -78,15 +88,6 @@ initialGrid replay = fold
       ]
     numTiles = replay^.mapWidth * replay^.mapHeight
 
-
-ixGrid :: GridIndex -> Lens' Grid Tile
-ixGrid = singular . ix . coerce
-
-increment :: GridIndex -> Grid -> Grid
-increment i = ixGrid i . _Army . size +~ 1
-
-match :: Traversal' s a -> Traversal' s s
-match matcher = filtered $ is _Just . firstOf matcher
 
 nextGrid :: Turn -> Grid -> Grid
 nextGrid (turnIndex, moves) =
