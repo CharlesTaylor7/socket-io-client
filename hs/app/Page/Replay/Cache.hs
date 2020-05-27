@@ -110,7 +110,7 @@ tileGrowth turnIndex=
   if turnIndex `mod` 50 == 49
   then
     traversed .
-    (_Clear `failing` _City `failing` _General) .
+    _Army .
     match (owner . _Player) .
     size +~ 1
   else identity
@@ -119,9 +119,11 @@ swampLoss :: Int -> Grid -> Grid
 swampLoss turnIndex =
   if turnIndex `mod` 2 == 1
   then
-    traversed .
-    _Swamp .
-    size %~ max 0 . subtract 1
+    traversed . _Swamp %~
+    \army ->
+      if army^.size > 1
+      then army & size -~ 1
+      else Neutral `Army` 0
   else identity
 
 applyMoves :: [Move] -> Grid -> Grid
@@ -176,7 +178,7 @@ moveReducer move = do
       { kill_killer = newOwner ^?! _Player
       , kill_target = defendingPlayer ^?! _Player
       }
-    ixGrid (move ^. endTile) . tileType .= City_Tile
+    ixGrid (move ^. endTile) . armyTileType .= City_Tile
 
   pure ()
 
