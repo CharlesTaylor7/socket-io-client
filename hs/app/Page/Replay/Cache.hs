@@ -92,6 +92,7 @@ nextGrid :: Turn -> Grid -> Grid
 nextGrid (turnIndex, moves) =
   cityGrowth turnIndex .
   tileGrowth turnIndex .
+  swampLoss  turnIndex .
   applyMoves moves
 
 cityGrowth :: Int -> Grid -> Grid
@@ -112,6 +113,15 @@ tileGrowth turnIndex=
     (_Clear `failing` _City `failing` _General) .
     match (owner . _Player) .
     size +~ 1
+  else identity
+
+swampLoss :: Int -> Grid -> Grid
+swampLoss turnIndex =
+  if turnIndex `mod` 2 == 1
+  then
+    traversed .
+    _Swamp .
+    size %~ max 0 . subtract 1
   else identity
 
 applyMoves :: [Move] -> Grid -> Grid
