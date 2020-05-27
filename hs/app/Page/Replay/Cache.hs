@@ -16,20 +16,21 @@ toHistory replay = fromList $
   scanl
     (flip $ nextGrid)
     (initialGrid replay)
-    (replay ^.. moves . to toTurns . folded . reindexed (+ 1) withIndex)
+    (replay ^. moves . to turns)
 
-type Turn = [Move]
+type Turn = (Int, [Move])
 type Turns = [Turn]
 
-toTurns :: [Move] -> Turns
-toTurns moves = unfoldr f (1, moves)
+turns :: [Move] -> Turns
+turns moves = unfoldr traced (1, moves)
   where
+    traced args@(i, _) = ("forcing " <> show i) `trace` f args
     f (i, moves) =
       if null moves
       then Nothing
       else Just $
         let (group, rest) = moves & span ((i ==) . view turn)
-        in (group, (i+1, rest))
+        in ((i, group), (i + 1, rest))
 
 initialGrid :: Replay -> Grid
 initialGrid replay = mountainsMap <> citiesMap <> generalsMap <> clearMap
@@ -65,7 +66,7 @@ increment i = ixGrid i . _Army . size +~ 1
 match :: Traversal' s a -> Traversal' s s
 match matcher = filtered $ is _Just . firstOf matcher
 
-nextGrid :: (Int, [Move]) -> Grid -> Grid
+nextGrid :: Turn -> Grid -> Grid
 nextGrid (turnIndex, moves) =
   cityGrowth turnIndex .
   tileGrowth turnIndex .
