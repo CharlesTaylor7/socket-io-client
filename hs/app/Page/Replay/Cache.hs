@@ -103,11 +103,22 @@ tileGrowth turnIndex=
   else identity
 
 applyMoves :: [Move] -> Grid -> Grid
-applyMoves moves grid = grid'
+applyMoves moves grid = grid''
   where
     (grid', kills) = traverse_ moveReducer moves
       & flip execStateT grid
       & runWriter
+    grid'' = foldl' (flip applyKill) grid' kills
+
+applyKill :: Kill -> Grid -> Grid
+applyKill (Kill killer target) grid = grid
+  & traversed . _Army %~
+    (\army -> army
+      & owner . _Player . filtered (== target) .~ killer
+      & match (owner . _Player . filtered (== target)) . size %~ (`div` 2)
+    )
+  where
+    -- matcher = undefiendx
 
 attackingTile move = ixGrid (move ^. startTile)
 defendingTile move = ixGrid (move ^. startTile)
@@ -143,7 +154,7 @@ moveReducer move = do
       { kill_by     = newOwner ^?! _Player
       , kill_target = defendingPlayer ^?! _Player
       }
-    ixGrid (move ^. endTile) . tileType .= General_Tile
+    ixGrid (move ^. endTile) . tileType .= City_Tile
 
   pure ()
 
