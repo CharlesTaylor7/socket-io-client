@@ -18,7 +18,6 @@ import Control.Monad.State.Strict
 import Data.IntSet (IntSet)
 import qualified Data.Vector.Unboxed as U
 
-instance
 
 data Kill = Kill
   { kill_killer :: Int

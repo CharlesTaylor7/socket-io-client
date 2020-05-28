@@ -19,7 +19,7 @@ data ReplayLocation = ReplayLocation
   , _id :: Text
   }
 
-type GridLocations = Vector GridIndex
+type GridLocations = Vector Int
 
 data Replay = Replay
   { _id :: Text
