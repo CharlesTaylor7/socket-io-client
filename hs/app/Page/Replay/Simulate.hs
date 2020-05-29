@@ -140,7 +140,11 @@ ixLens = singular . ix
 applyKill :: MonadState GameInfo m => Kill -> m ()
 applyKill (Kill killer target) = do
   -- remove all territory belonging to target
-  territory <- gameInfo_owned . ixLens target <<.= mempty
+  maybe_territory <- gameInfo_owned . at target <<.= Nothing
+  let
+    territory = case maybe_territory of
+      Just territory -> territory
+      Nothing -> error $ "player " <> show target <> " cannot be killed twice"
 
   -- give it to killer
   gameInfo_owned . ixLens killer <>= territory
