@@ -11,8 +11,6 @@ import Prelude hiding (scanl)
 import Data.Vector (Vector, scanl')
 import Data.Default
 
-import Types (Dimensions, width, height)
-
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
 
