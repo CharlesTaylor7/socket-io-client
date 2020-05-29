@@ -25,9 +25,9 @@ replayUrl :: ReplayLocation -> Url
 replayUrl replay
   = Url $
      "https://generalsio-replays-"
-  <> replay ^. server . to urlSuffix
+  <> replay ^. replayLocation_server . to urlSuffix
   <> ".s3.amazonaws.com/"
-  <> replay ^. id
+  <> replay ^. replayLocation_id
   <> ".gior"
 
 urlSuffix :: Server -> Text

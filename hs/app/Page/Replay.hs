@@ -34,12 +34,12 @@ replay = elClass "div" "replay" $ do
   blank
   where
     replayLocation1 = ReplayLocation
-      { _id = "HOVnMO6cL"
-      , _server = Server_Main
+      { _replayLocation_id = "HOVnMO6cL"
+      , _replayLocation_server = Server_Main
       }
     replayLocation2 = ReplayLocation
-      { _id = "H9YxQHhiI"
-      , _server = Server_Main
+      { _replayLocation_id = "H9YxQHhiI"
+      , _replayLocation_server = Server_Main
       }
 
 gameReplay :: Widget t m => Replay -> m ()
@@ -107,8 +107,8 @@ toMap replay commandEvent = do
         { _tiles = dynGrid
         , _turn = dynTurn
         , _dimensions = Dimensions
-            { _width  = replay ^. mapWidth
-            , _height = replay ^. mapHeight
+            { _width  = replay ^. replay_mapWidth
+            , _height = replay ^. replay_mapHeight
             }
         }
   pure map
