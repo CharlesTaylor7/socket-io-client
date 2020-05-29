@@ -87,7 +87,7 @@ getContents tile =
 
 armyToText :: Army -> Text
 armyToText army =
-  case army ^. size . from (non 0) of
+  case army ^. army_size . from (non 0) of
     Just n -> n ^. re _ShowText
     Nothing -> ""
 
@@ -109,7 +109,7 @@ toCssClass tile = ownerClass <> emptyClass <> terrainClass
         _                -> ""
 
     emptyClass = Class $
-      case tile ^? _Just . _Army . size of
+      case tile ^? _Just . _Army . army_size of
         Just 0 -> "tile-empty"
         _      -> ""
 

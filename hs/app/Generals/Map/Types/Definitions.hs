@@ -40,15 +40,15 @@ instance Default Owner where
   def = Neutral
 
 data Army = Army
-  { _owner :: Owner
-  , _size :: Int
+  { _army_owner :: Owner
+  , _army_size :: Int
   }
   deriving (Show, Eq)
 
 instance Default Army where
   def = Army
-    { _owner = def
-    , _size = 0
+    { _army_owner = def
+    , _army_size = coerce (def :: Sum Int)
     }
 
 newtype GridIndex = GridIndex Int
@@ -69,5 +69,5 @@ makePrisms ''Tile
 makePrisms ''ArmyTileType
 makePrisms ''GridIndex
 
-makeFieldsNoPrefix ''Army
+makeLenses ''Army
 makeFieldsNoPrefix ''Map

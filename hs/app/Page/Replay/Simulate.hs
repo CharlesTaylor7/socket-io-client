@@ -86,7 +86,7 @@ advanceTurn (turnIndex, moves) =
   (execState $ swampLoss turnIndex) .
   applyMoves moves
 
-increment i = singular (ix i . _Army . size) +~ 1
+increment i = singular (ix i . _Army . army_size) +~ 1
 
 cityGrowth :: Int -> GameInfo -> GameInfo
 cityGrowth turnIndex info =
@@ -121,10 +121,10 @@ swampLoss turnIndex =
     for_ replay_swamps $ \i -> do
       updatedArmy <- gameInfo_grid . ixLens i . singular _Army <%=
         \army ->
-          if army^.size > 1
-          then army & size -~ 1
+          if army^.army_size > 1
+          then army & army_size -~ 1
           else Neutral `Army` 0
-      when (is _Neutral $ updatedArmy ^. owner) $
+      when (is _Neutral $ updatedArmy ^. army_owner) $
         gameInfo_activeSwamps . contains i .= False
 
 applyMoves :: [Move] -> GameInfo -> GameInfo
@@ -147,7 +147,7 @@ applyKill (Kill killer target) = do
 
   -- halve the armies in the transferred territory
   for_ (Set.toList territory) $ \i ->
-    gameInfo_grid . ix i . _Army . size %= halfRoundUp
+    gameInfo_grid . ix i . _Army . army_size %= halfRoundUp
 
 
 
@@ -163,23 +163,23 @@ moveReducer move = do
   -- subtract army from attacking tile
   tileArmy <-
     gameInfo_grid . attackingTile move . singular _Army
-    <<%= over size (leaveArmySize $ move ^. move_onlyHalf)
+    <<%= over army_size (leaveArmySize $ move ^. move_onlyHalf)
 
   -- build attacking army
   let
-    attackingPlayer = tileArmy ^. owner
-    attackingArmySize = moveArmySize (move ^. move_onlyHalf) (tileArmy ^. size)
+    attackingPlayer = tileArmy ^. army_owner
+    attackingArmySize = moveArmySize (move ^. move_onlyHalf) (tileArmy ^. army_size)
     attackingArmy = attackingPlayer `Army` attackingArmySize
 
   -- determine defending player
-  defendingPlayer <- use (gameInfo_grid . defendingTile move . singular _Army . owner)
+  defendingPlayer <- use (gameInfo_grid . defendingTile move . singular _Army . army_owner)
 
   -- army leftover after attack
   newArmy <-
     gameInfo_grid . defendingTile move . singular _Army
     <%= attack attackingArmy
 
-  let newOwner = newArmy ^. owner
+  let newOwner = newArmy ^. army_owner
   defendingTileWasGeneral <- use (gameInfo_grid . ixGrid (move ^. move_endTile) . to (is _General))
 
   -- update cache
@@ -227,11 +227,11 @@ moveArmySize move_onlyHalf =
 
 attack :: Army -> Army -> Army
 attack attacking defending
-  | attacking ^. owner == defending ^. owner
-  = defending & size +~ attacking ^. size
+  | attacking ^. army_owner == defending ^. army_owner
+  = defending & army_size +~ attacking ^. army_size
 
-  | attacking ^. size > defending ^. size
-  = attacking & size -~ defending ^. size
+  | attacking ^. army_size > defending ^. army_size
+  = attacking & army_size -~ defending ^. army_size
 
   | otherwise
-  = defending & size -~ attacking ^. size
+  = defending & army_size -~ attacking ^. army_size
