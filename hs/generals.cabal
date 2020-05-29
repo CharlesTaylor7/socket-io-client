@@ -107,6 +107,7 @@ executable generals-app
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics
     , Component.Grid
+    , Component.TableGrid
     , Component.FileUpload
     , Component.FileDownload
     , Js.FFI

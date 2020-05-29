@@ -154,7 +154,6 @@ applyKill (Kill killer target) = do
     gameInfo_grid . ix i . _Army . army_size %= halfRoundUp
 
 
-
 moveReducer
   :: (MonadState GameInfo m, MonadWriter [Kill] m)
   => Move
