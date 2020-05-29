@@ -9,17 +9,17 @@ import Data.Vector (Vector)
 
 type Turn = (Int, [Move])
 type Turns = [Turn]
-type GameInfo = (Grid, Cache)
 
 data Kill = Kill
   { kill_killer :: Int
   , kill_target :: Int
   }
 
-data Cache = Cache
-  { _cache_activeCities :: IntSet
-  , _cache_activeSwamps :: IntSet
-  , _cache_owned :: Vector IntSet
+data GameInfo = GameInfo
+  { _gameInfo_grid         :: !Grid
+  , _gameInfo_activeCities :: !IntSet
+  , _gameInfo_activeSwamps :: !IntSet
+  , _gameInfo_owned        :: !(IntMap IntSet)
   }
 
-makeLenses ''Cache
+makeLenses ''GameInfo

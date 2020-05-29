@@ -22,7 +22,7 @@ import Data.Vector (Vector)
 
 
 toHistory :: Replay -> Vector Grid
-toHistory replay = fst <$>
+toHistory replay = view gameInfo_grid <$>
   scanl'
     (flip $ advanceTurn)
     (initialGameInfo replay)
@@ -39,14 +39,15 @@ turns moves = unfoldr f (1, moves)
         in ((i, group), (i + 1, rest))
 
 initialGameInfo :: Replay -> GameInfo
-initialGameInfo replay = (map, cache)
+initialGameInfo replay = GameInfo
+  { _gameInfo_grid = map
+  , _gameInfo_activeCities = fromList $ replay ^.. generals . folded
+  , _gameInfo_activeSwamps = mempty
+  , _gameInfo_owned = fromList $ replay ^.. generals . ifolded . withIndex  . alongside identity (to singleton)
+  }
   where
-    cache = Cache
-      { _cache_activeCities = fromList $ replay ^.. generals . folded
-      , _cache_activeSwamps = mempty
-      , _cache_owned = fromList $ replay ^.. generals . folded . to singleton
-      }
-    singleton i = mempty & contains i .~ True
+    singleton :: Int -> IntSet
+    singleton tile = mempty & contains tile .~ True
     map = fold
       [ mountainsMap
       , citiesMap
@@ -94,11 +95,11 @@ cityGrowth turnIndex info =
   if turnIndex `mod` 2 == 1
   then
     info
-    & _1 .~
+    & gameInfo_grid .~
       foldl'
         (flip increment)
-        (info ^. _1)
-        (info ^. _2 . cache_activeCities . to Set.toList)
+        (info ^. gameInfo_grid)
+        (info ^. gameInfo_activeCities . to Set.toList)
   else
     info
 
@@ -107,26 +108,26 @@ tileGrowth turnIndex info =
   if turnIndex `mod` 50 == 49
   then
     info
-    & _1 .~
+    & gameInfo_grid .~
       foldl'
         (flip increment)
-        (info ^. _1)
-        (info ^. _2 . cache_owned . folded . to Set.toList)
+        (info ^. gameInfo_grid)
+        (info ^. gameInfo_owned . folded . to Set.toList)
   else
     info
 
 swampLoss :: MonadState GameInfo m => Int -> m ()
 swampLoss turnIndex =
   when (turnIndex `mod` 2 == 1) $ do
-    swamps <- use $ _2 . cache_activeSwamps . to Set.toList
+    swamps <- use $ gameInfo_activeSwamps . to Set.toList
     for_ swamps $ \i -> do
-      updatedArmy <- _1 . ixLens i . singular _Army <%=
+      updatedArmy <- gameInfo_grid . ixLens i . singular _Army <%=
         \army ->
           if army^.size > 1
           then army & size -~ 1
           else Neutral `Army` 0
       when (is _Neutral $ updatedArmy ^. owner) $
-        _2 . cache_activeSwamps . contains i .= False
+        gameInfo_activeSwamps . contains i .= False
 
 applyMoves :: [Move] -> GameInfo -> GameInfo
 applyMoves moves info =
@@ -141,14 +142,14 @@ ixLens = singular . ix
 applyKill :: MonadState GameInfo m => Kill -> m ()
 applyKill (Kill killer target) = do
   -- remove all territory belonging to target
-  territory <- _2 . cache_owned . ixLens target <<.= mempty
+  territory <- gameInfo_owned . ixLens target <<.= mempty
 
   -- give it to killer
-  _2 . cache_owned . ixLens killer <>= territory
+  gameInfo_owned . ixLens killer <>= territory
 
   -- halve the armies in the transferred territory
   for_ (Set.toList territory) $ \i ->
-    _1 . ix i . _Army . size %= halfRoundUp
+    gameInfo_grid . ix i . _Army . size %= halfRoundUp
 
 
 
@@ -163,7 +164,7 @@ moveReducer move = do
 
   -- subtract army from attacking tile
   tileArmy <-
-    _1 . attackingTile move . singular _Army
+    gameInfo_grid . attackingTile move . singular _Army
     <<%= over size (leaveArmySize $ move ^. onlyHalf)
 
   -- build attacking army
@@ -173,29 +174,29 @@ moveReducer move = do
     attackingArmy = attackingPlayer `Army` attackingArmySize
 
   -- determine defending player
-  defendingPlayer <- use (_1 . defendingTile move . singular _Army . owner)
+  defendingPlayer <- use (gameInfo_grid . defendingTile move . singular _Army . owner)
 
   -- army leftover after attack
   newArmy <-
-    _1 . defendingTile move . singular _Army
+    gameInfo_grid . defendingTile move . singular _Army
     <%= attack attackingArmy
 
   let newOwner = newArmy ^. owner
-  defendingTileWasGeneral <- use (_1 . ixGrid (move ^. endTile) . to (is _General))
+  defendingTileWasGeneral <- use (gameInfo_grid . ixGrid (move ^. endTile) . to (is _General))
 
   -- update cache
   when (newOwner /= defendingPlayer) $ do
     let newPlayerId = newOwner ^?! _Player
-    _2 . cache_owned . ixLens newPlayerId . contains (move ^. endTile . _GridIndex) .= True
+    gameInfo_owned . ixLens newPlayerId . contains (move ^. endTile . _GridIndex) .= True
     case defendingPlayer ^? _Player of
       Just id ->
-        _2 . cache_owned . ixLens id . contains (move ^. endTile . _GridIndex) .= False
+        gameInfo_owned . ixLens id . contains (move ^. endTile . _GridIndex) .= False
       _ -> do
-        defenseTileType <- use (_1 . ixGrid (move ^. endTile) . armyTileType)
+        defenseTileType <- use (gameInfo_grid . ixGrid (move ^. endTile) . armyTileType)
         when (defenseTileType == Swamp_Tile) $
-          _2 . cache_activeSwamps . contains (move ^. endTile . _GridIndex) .= True
+          gameInfo_activeSwamps . contains (move ^. endTile . _GridIndex) .= True
         when (defenseTileType == City_Tile) $
-          _2 . cache_activeCities . contains (move ^. endTile . _GridIndex) .= True
+          gameInfo_activeCities . contains (move ^. endTile . _GridIndex) .= True
 
   -- emit kill & convert conquered tile to being a city
   when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
@@ -203,7 +204,7 @@ moveReducer move = do
       { kill_killer = newOwner ^?! _Player
       , kill_target = defendingPlayer ^?! _Player
       }
-    _1 . ixGrid (move ^. endTile) . armyTileType .= City_Tile
+    gameInfo_grid . ixGrid (move ^. endTile) . armyTileType .= City_Tile
 
   pure ()
 
