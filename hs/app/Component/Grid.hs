@@ -20,21 +20,21 @@ img name = elAttr "img" ("href" =: url) blank
 grid
   :: (DomBuilder t m, PostBuild t m)
   => Generals.Map t
-  -> m (Element t m)
+  -> m ()
 grid map = do
   let mapHeight = map ^. dimensions . height
   let mapWidth  = map ^. dimensions . width
   let gridIx = ix . linearize
         where linearize (i, j) = (j - 1) * mapWidth + (i - 1)
 
-  postBuild <- getPostBuild
+  -- postBuild <- getPostBuild
   (element, _) <- elStyle' Dom.div (gridStyle (map ^. dimensions)) $
     for_ [1..mapHeight] $ \j ->
     elStyle Dom.div rowStyle $
       for_ [1..mapWidth] $ \i ->
       tileElement (map ^. tiles <&> preview (gridIx (i, j)))
-  notReadyUntil postBuild
-  pure element
+  -- notReadyUntil postBuild
+  blank
 
 -- static grid
 gridStyle dimensions = def

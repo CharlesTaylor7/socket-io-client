@@ -66,7 +66,7 @@ gameReplay replay = do
   elClass "div" "turn-marker" $
     dynText (map ^. turn <&> ("turn: " <>) . show . uncurry (+) . (`divMod` 2))
 
-  void $ grid map
+  grid map
 
 toAttr :: Text -> AttributeName
 toAttr = AttributeName Nothing
