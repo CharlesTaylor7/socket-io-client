@@ -12,7 +12,7 @@ import Control.Monad.IO.Class as X (MonadIO)
 import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
 
 -- relude
-import Relude as X hiding (Alt, (??), uncons, mapMaybe, id)
+import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)
 
 -- lens
 import Control.Lens as X hiding (element)

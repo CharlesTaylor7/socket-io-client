@@ -3,6 +3,7 @@ module Page.Replay.Simulate
  )
  where
 
+import Page.Replay.Simulate.Types
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
@@ -16,30 +17,15 @@ import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
 
 import Data.IntSet (IntSet)
-import qualified Data.Vector.Unboxed as U
+import qualified Data.IntSet as Set
+import Data.Vector (Vector)
 
-
-data Kill = Kill
-  { kill_killer :: Int
-  , kill_target :: Int
-  }
-
-type MonadKills m = MonadWriter [Kill] m
-
-type Turn = (Int, [Move])
-type Turns = [Turn]
-
--- data Cache = Cache
---   { cities :: U.Vector Int
---   , swamps :: U.Vector Int
---   , owned :: IntSet
---   }
 
 toHistory :: Replay -> Vector Grid
-toHistory replay =
+toHistory replay = fst <$>
   scanl'
-    (flip $ nextGrid)
-    (initialGrid replay)
+    (flip $ advanceTurn)
+    (initialGameInfo replay)
     (fromList . turns $ replay ^. moves)
 
 turns :: [Move] -> Turns
@@ -52,15 +38,22 @@ turns moves = unfoldr f (1, moves)
         let (group, rest) = moves & span ((i ==) . view turn)
         in ((i, group), (i + 1, rest))
 
-initialGrid :: Replay -> Grid
-initialGrid replay = fold
-  [ mountainsMap
-  , citiesMap
-  , generalsMap
-  , swampsMap
-  , clearMap
-  ]
+initialGameInfo :: Replay -> GameInfo
+initialGameInfo replay = (map, cache)
   where
+    cache = Cache
+      { _cache_activeCities = fromList $ replay ^.. generals . folded
+      , _cache_activeSwamps = mempty
+      , _cache_owned = fromList $ replay ^.. generals . folded . to singleton
+      }
+    singleton i = mempty & contains i .~ True
+    map = fold
+      [ mountainsMap
+      , citiesMap
+      , generalsMap
+      , swampsMap
+      , clearMap
+      ]
     mountainsMap = fromList $
       [ (index, Mountain)
       | index <- replay ^.. mountains . folded
@@ -87,113 +80,149 @@ initialGrid replay = fold
       ]
     numTiles = replay^.mapWidth * replay^.mapHeight
 
-
-nextGrid :: Turn -> Grid -> Grid
-nextGrid (turnIndex, moves) =
+advanceTurn :: Turn -> GameInfo -> GameInfo
+advanceTurn (turnIndex, moves) =
   cityGrowth turnIndex .
   tileGrowth turnIndex .
-  swampLoss  turnIndex .
+  (execState $ swampLoss turnIndex) .
   applyMoves moves
 
-cityGrowth :: Int -> Grid -> Grid
-cityGrowth turnIndex =
+increment i = singular (ix i . _Army . size) +~ 1
+
+cityGrowth :: Int -> GameInfo -> GameInfo
+cityGrowth turnIndex info =
   if turnIndex `mod` 2 == 1
   then
-    traversed .
-    (_City `failing` _General) .
-    match (owner . _Player) .
-    size +~ 1
-  else identity
+    info
+    & _1 .~
+      foldl'
+        (flip increment)
+        (info ^. _1)
+        (info ^. _2 . cache_activeCities . to Set.toList)
+  else
+    info
 
-tileGrowth :: Int -> Grid -> Grid
-tileGrowth turnIndex=
+tileGrowth :: Int -> GameInfo -> GameInfo
+tileGrowth turnIndex info =
   if turnIndex `mod` 50 == 49
   then
-    traversed .
-    _Army .
-    match (owner . _Player) .
-    size +~ 1
-  else identity
+    info
+    & _1 .~
+      foldl'
+        (flip increment)
+        (info ^. _1)
+        (info ^. _2 . cache_owned . folded . to Set.toList)
+  else
+    info
 
-swampLoss :: Int -> Grid -> Grid
+swampLoss :: MonadState GameInfo m => Int -> m ()
 swampLoss turnIndex =
-  if turnIndex `mod` 2 == 1
-  then
-    traversed . _Swamp %~
-    \army ->
-      if army^.size > 1
-      then army & size -~ 1
-      else Neutral `Army` 0
-  else identity
+  when (turnIndex `mod` 2 == 1) $ do
+    swamps <- use $ _2 . cache_activeSwamps . to Set.toList
+    for_ swamps $ \i -> do
+      updatedArmy <- _1 . ixLens i . singular _Army <%=
+        \army ->
+          if army^.size > 1
+          then army & size -~ 1
+          else Neutral `Army` 0
+      when (is _Neutral $ updatedArmy ^. owner) $
+        _2 . cache_activeSwamps . contains i .= False
 
-applyMoves :: [Move] -> Grid -> Grid
-applyMoves moves grid = grid''
-  where
-    (grid', kills) = traverse_ moveReducer moves
-      & flip execStateT grid
-      & runWriter
-    grid'' = foldl' (flip applyKill) grid' kills
+applyMoves :: [Move] -> GameInfo -> GameInfo
+applyMoves moves info =
+  traverse_ moveReducer moves
+  &   runWriterT
+  >>= traverse_ applyKill . view _2
+  &   flip execState info
 
-applyKill :: Kill -> Grid -> Grid
-applyKill (Kill killer target) grid = grid
-  & traversed . _Army %~
-    (\army -> army
-      & match (matchOnTarget) . size %~ uncurry (+) . (`divMod` 2)
-      & matchOnTarget .~ killer
-    )
-  where
-    matchOnTarget :: Traversal' Army Int
-    matchOnTarget =owner . _Player . filtered (== target)
+ixLens :: (Ixed s) => Index s -> Lens' s (IxValue s)
+ixLens = singular . ix
 
-attackingTile move = ixGrid (move ^. startTile)
-defendingTile move = ixGrid (move ^. startTile)
+applyKill :: MonadState GameInfo m => Kill -> m ()
+applyKill (Kill killer target) = do
+  -- remove all territory belonging to target
+  territory <- _2 . cache_owned . ixLens target <<.= mempty
+
+  -- give it to killer
+  _2 . cache_owned . ixLens killer <>= territory
+
+  -- halve the armies in the transferred territory
+  for_ (Set.toList territory) $ \i ->
+    _1 . ix i . _Army . size %= halfRoundUp
+
+
 
 moveReducer
-  :: (MonadState Grid m, MonadWriter [Kill] m)
+  :: (MonadState GameInfo m, MonadWriter [Kill] m)
   => Move
   -> m ()
 moveReducer move = do
-  let unsafeArmyLens coords = singular (ixGrid coords . _Army)
+  let
+    attackingTile move = ixGrid (move ^. startTile)
+    defendingTile move = ixGrid (move ^. endTile)
 
+  -- subtract army from attacking tile
   tileArmy <-
-    unsafeArmyLens (move ^. startTile)
+    _1 . attackingTile move . singular _Army
     <<%= over size (leaveArmySize $ move ^. onlyHalf)
 
+  -- build attacking army
   let
     attackingPlayer = tileArmy ^. owner
     attackingArmySize = moveArmySize (move ^. onlyHalf) (tileArmy ^. size)
     attackingArmy = attackingPlayer `Army` attackingArmySize
 
-  defendingPlayer <- use (unsafeArmyLens (move ^. endTile) . owner)
+  -- determine defending player
+  defendingPlayer <- use (_1 . defendingTile move . singular _Army . owner)
 
+  -- army leftover after attack
   newArmy <-
-    unsafeArmyLens (move ^. endTile)
+    _1 . defendingTile move . singular _Army
     <%= attack attackingArmy
 
   let newOwner = newArmy ^. owner
-  defendingTileWasGeneral <- use (ixGrid (move ^. endTile) . to (is _General))
+  defendingTileWasGeneral <- use (_1 . ixGrid (move ^. endTile) . to (is _General))
 
+  -- update cache
+  when (newOwner /= defendingPlayer) $ do
+    let newPlayerId = newOwner ^?! _Player
+    _2 . cache_owned . ixLens newPlayerId . contains (move ^. endTile . _GridIndex) .= True
+    case defendingPlayer ^? _Player of
+      Just id ->
+        _2 . cache_owned . ixLens id . contains (move ^. endTile . _GridIndex) .= False
+      _ -> do
+        defenseTileType <- use (_1 . ixGrid (move ^. endTile) . armyTileType)
+        when (defenseTileType == Swamp_Tile) $
+          _2 . cache_activeSwamps . contains (move ^. endTile . _GridIndex) .= True
+        when (defenseTileType == City_Tile) $
+          _2 . cache_activeCities . contains (move ^. endTile . _GridIndex) .= True
+
+  -- emit kill & convert conquered tile to being a city
   when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
     tell $ pure $ Kill
       { kill_killer = newOwner ^?! _Player
       , kill_target = defendingPlayer ^?! _Player
       }
-    ixGrid (move ^. endTile) . armyTileType .= City_Tile
+    _1 . ixGrid (move ^. endTile) . armyTileType .= City_Tile
 
   pure ()
 
+halfRoundUp :: Integral n => n -> n
+halfRoundUp = uncurry (+) . (`divMod` 2)
+
+halfRoundDown :: Integral n => n -> n
+halfRoundDown = (`div` 2)
 
 leaveArmySize :: Integral n => Bool -> n -> n
 leaveArmySize onlyHalf =
   if onlyHalf
-  then (`div` 2)
+  then halfRoundDown
   else const 1
-
 
 moveArmySize :: Integral n => Bool -> n -> n
 moveArmySize onlyHalf =
   if onlyHalf
-  then uncurry (+) . (`divMod` 2)
+  then halfRoundUp
   else subtract 1
 
 

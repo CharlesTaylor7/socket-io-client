@@ -99,6 +99,7 @@ executable generals-app
       Types
     , Page.Replay
     , Page.Replay.Simulate
+    , Page.Replay.Simulate.Types
     , Page.Replay.Decode
     , Page.Replay.Download
     , Page.Replay.Types

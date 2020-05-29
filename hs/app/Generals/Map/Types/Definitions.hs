@@ -26,6 +26,7 @@ data ArmyTileType
   | City_Tile
   | General_Tile
   | Swamp_Tile
+  deriving (Eq)
 
 instance Default Tile where
   def = Clear def
