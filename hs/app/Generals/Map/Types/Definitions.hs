@@ -1,5 +1,4 @@
 {-# language TemplateHaskell #-}
-{-# language FlexibleInstances #-}
 module Generals.Map.Types.Definitions where
 
 import Prelude hiding (Map)
@@ -58,9 +57,9 @@ newtype GridIndex = GridIndex Int
 type Grid = IntMap Tile
 
 data Map t = Map
-  { _turn :: Dynamic t Int
-  , _tiles :: Dynamic t Grid
-  , _dimensions :: Dimensions
+  { _map_turn :: Dynamic t Int
+  , _map_tiles :: Dynamic t Grid
+  , _map_dimensions :: Dimensions
   }
 
 
@@ -70,4 +69,4 @@ makePrisms ''ArmyTileType
 makePrisms ''GridIndex
 
 makeLenses ''Army
-makeFieldsNoPrefix ''Map
+makeLenses ''Map

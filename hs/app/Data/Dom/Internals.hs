@@ -18,7 +18,7 @@ div = Node "div"
 
 elStyle :: forall t m a. DomBuilder t m
         => DOMNode
-        -> StyleInfo
+        -> Style
         -> m a
         -> m a
 elStyle (Node name) (toAttrs -> attrs) =
@@ -26,7 +26,7 @@ elStyle (Node name) (toAttrs -> attrs) =
 
 elStyle' :: forall t m a . DomBuilder t m
         => DOMNode
-        -> StyleInfo
+        -> Style
         -> m a
         -> m (Element t m, a)
 elStyle' (Node name) (toAttrs -> attrs) =
@@ -34,7 +34,7 @@ elStyle' (Node name) (toAttrs -> attrs) =
 
 elDynStyle :: forall t m a . (DomBuilder t m, PostBuild t m)
            => DOMNode
-           -> Dynamic t StyleInfo
+           -> Dynamic t Style
            -> m a
            -> m a
 elDynStyle (Node name) (fmap toAttrs -> dynAttrs) =
@@ -42,7 +42,7 @@ elDynStyle (Node name) (fmap toAttrs -> dynAttrs) =
 
 elDynStyle' :: forall t m a . (DomBuilder t m, PostBuild t m)
             => DOMNode
-            -> Dynamic t StyleInfo
+            -> Dynamic t Style
             -> m a
             -> m (Element t m, a)
 elDynStyle' (Node name) (fmap toAttrs -> dynAttrs) =

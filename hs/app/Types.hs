@@ -1,5 +1,4 @@
 {-# language TemplateHaskell #-}
-{-# language FlexibleInstances #-}
 module Types where
 
 
@@ -13,8 +12,8 @@ newtype Id = Id Int
   deriving (Show)
 
 data Dimensions = Dimensions
-  { _width  :: Int
-  , _height :: Int
+  { _dimensions_width  :: Int
+  , _dimensions_height :: Int
   }
   deriving (Eq, Show)
 
@@ -22,4 +21,4 @@ makePrisms ''Id
 makePrisms ''BotName
 makePrisms ''GameConfig
 
-makeFieldsNoPrefix ''Dimensions
+makeLenses ''Dimensions

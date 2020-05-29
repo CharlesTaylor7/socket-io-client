@@ -64,9 +64,12 @@ gameReplay replay = do
 
   map <- toMap replay (keyEvent <> inputEvent)
   elClass "div" "turn-marker" $
-    dynText (map ^. turn <&> ("turn: " <>) . show . uncurry (+) . (`divMod` 2))
+    dynText (map ^. map_turn <&> ("turn: " <>) . show . halfRoundUp)
 
   grid map
+
+halfRoundUp :: Int -> Int
+halfRoundUp = uncurry (+) . (`divMod` 2)
 
 toAttr :: Text -> AttributeName
 toAttr = AttributeName Nothing
@@ -104,11 +107,11 @@ toMap replay commandEvent = do
 
   let dynGrid = dynTurn <&> (\i -> history ^?! ix i)
   let map = Generals.Map
-        { _tiles = dynGrid
-        , _turn = dynTurn
-        , _dimensions = Dimensions
-            { _width  = replay ^. replay_mapWidth
-            , _height = replay ^. replay_mapHeight
+        { _map_tiles = dynGrid
+        , _map_turn = dynTurn
+        , _map_dimensions = Dimensions
+            { _dimensions_width  = replay ^. replay_mapWidth
+            , _dimensions_height = replay ^. replay_mapHeight
             }
         }
   pure map

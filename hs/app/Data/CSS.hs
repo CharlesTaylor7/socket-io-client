@@ -7,11 +7,8 @@ import Data.Default (Default(..))
 instance ToText Pixels where
   toText = view (_Pixels . re _Show . packed . to (<> "px"))
 
-instance Default StyleInfo where
-  def = StyleInfo
-    { _inlineStyle = mempty
-    , _cssClass = mempty
-    }
+instance Default Style where
+  def = Style mempty mempty
 
 instance Semigroup CSSClass where
   Class "" <> a = a
@@ -26,15 +23,15 @@ primary = Class "primary"
 secondary = Class "secondary"
 selected = Class "selected"
 
-toAttrs :: StyleInfo -> Map Text Text
-toAttrs styleInfo =
+toAttrs :: Style -> Map Text Text
+toAttrs style =
   let
     styleText =
-      ifoldlOf (inlineStyle . ifolded) join  "" styleInfo
+      ifoldlOf (style_inline . ifolded) join "" style
     join key acc value =
       key <> ":" <> value <> ";" <> acc
     classText =
-      styleInfo ^. cssClass . _Class
+      style ^. style_cssClass . _Class
   in
     mempty
       & at "class" ?~ classText

@@ -34,7 +34,7 @@ import Control.Lens.Wrapped as X
 import Data.Text.Lens as X hiding (text)
 import Numeric.Lens as X
 -- opt in
-import Control.Lens.TH as X (makeLenses, makePrisms, makeFieldsNoPrefix)
+import Control.Lens.TH as X (makeLenses, makePrisms)
 -- unused
 -- import Control.Lens.Empty as X
 -- import Control.Lens.Equality as X

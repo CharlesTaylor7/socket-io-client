@@ -1,7 +1,4 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# language FlexibleInstances #-}
-
-
 module Data.Dom.Types where
 
 newtype DOMNode = Node { unNode :: Text }

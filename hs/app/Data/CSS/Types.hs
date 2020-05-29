@@ -1,10 +1,9 @@
 {-# language TemplateHaskell #-}
-{-# language FlexibleInstances #-}
 module Data.CSS.Types where
 
-data StyleInfo = StyleInfo
-  { _inlineStyle :: Map Text Text
-  , _cssClass :: CSSClass
+data Style = Style
+  { _style_inline :: Map Text Text
+  , _style_cssClass :: CSSClass
   }
 
 newtype Pixels = Pixels Int
@@ -15,7 +14,6 @@ newtype CSSClass = Class { unClass :: Text }
   deriving (Eq, Show)
 
 
-
-makeFieldsNoPrefix ''StyleInfo
+makeLenses ''Style
 makePrisms ''Pixels
 makePrisms ''CSSClass

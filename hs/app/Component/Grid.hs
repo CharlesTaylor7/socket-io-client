@@ -22,30 +22,30 @@ grid
   => Generals.Map t
   -> m ()
 grid map = do
-  let mapHeight = map ^. dimensions . height
-  let mapWidth  = map ^. dimensions . width
+  let mapHeight = map ^. map_dimensions . dimensions_height
+  let mapWidth  = map ^. map_dimensions . dimensions_width
   let gridIx = ix . linearize
         where linearize (i, j) = (j - 1) * mapWidth + (i - 1)
 
   -- postBuild <- getPostBuild
-  (element, _) <- elStyle' Dom.div (gridStyle (map ^. dimensions)) $
+  (element, _) <- elStyle' Dom.div (gridStyle (map ^. map_dimensions)) $
     for_ [1..mapHeight] $ \j ->
     elStyle Dom.div rowStyle $
       for_ [1..mapWidth] $ \i ->
-      tileElement (map ^. tiles <&> preview (gridIx (i, j)))
+      tileElement (map ^. map_tiles <&> preview (gridIx (i, j)))
   -- notReadyUntil postBuild
   blank
 
 -- static grid
 gridStyle dimensions = def
-  & cssClass . _Class .~ "grid"
-  & inlineStyle . at "width" ?~ (toText . gridWidth) dimensions
+  & style_cssClass . _Class .~ "grid"
+  & style_inline . at "width" ?~ (toText . gridWidth) dimensions
 
 gridWidth :: Dimensions -> Pixels
-gridWidth dimensions = tileSideLength * (dimensions ^. width . to fromIntegral)
+gridWidth dimensions = tileSideLength * (dimensions ^. dimensions_width . to fromIntegral)
 
 rowStyle = def
-  & cssClass . _Class .~ "row"
+  & style_cssClass . _Class .~ "row"
 
 sideLength :: Text
 sideLength = toText tileSideLength
@@ -61,18 +61,18 @@ tileElement
 tileElement tile = elDynStyle Dom.div (tileStyle <$> tile) $
   let
     contents = getContents <$> tile
-    cssClass = fst <$> contents
+    style_cssClass = fst <$> contents
     text = snd <$> contents
   in
-    tileContents cssClass text
+    tileContents style_cssClass text
 
 tileContents
   :: (DomBuilder t m, PostBuild t m)
   => Dynamic t CSSClass
   -> Dynamic t Text
   -> m ()
-tileContents (fmap (view _Class) -> cssClass) text =
-  elDynClass "span" cssClass $
+tileContents (fmap (view _Class) -> style_cssClass) text =
+  elDynClass "span" style_cssClass $
     dynText text
 
 getContents :: Maybe Tile -> (CSSClass, Text)
@@ -92,8 +92,8 @@ armyToText army =
     Nothing -> ""
 
 tileStyle tile = def
-  & cssClass .~ (Class "tile" <> toCssClass tile)
-  & inlineStyle %~
+  & style_cssClass .~ (Class "tile" <> toCssClass tile)
+  & style_inline %~
     (at "width" ?~ sideLength) .
     (at "height" ?~ sideLength)
   where
