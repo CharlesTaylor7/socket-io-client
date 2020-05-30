@@ -20,36 +20,46 @@ grid
 grid map = do
   let mapHeight = map ^. map_dimensions . dimensions_height
   let mapWidth  = map ^. map_dimensions . dimensions_width
-  let
-    gridIx :: (Int, Int) -> Traversal' Grid Tile
-    gridIx = ix . linearize
-      where linearize (i, j) = (j - 1) * mapWidth + (i - 1)
 
   elClass "table" "grid" $
     elClass "tbody" "" $
       for_ [1..mapHeight] $ \j ->
       elClass "tr" "" $
         for_ [1..mapWidth] $ \i ->
+        tileElement map (i, j)
 
-        let
-          tileTraversal :: Traversal' Grid Tile
-          tileTraversal = gridIx (i, j)
+tileElement
+  :: forall t m. (DomBuilder t m, PostBuild t m)
+  => Generals.Map t
+  -> (Int, Int)
+  -> m ()
+tileElement map coords =
+  let
+    gridIx :: (Int, Int) -> Traversal' Grid Tile
+    gridIx = ix . linearize
+      where
+        linearize (i, j) = (j - 1) * mapWidth + (i - 1)
+        mapWidth = map ^. map_dimensions . dimensions_width
 
-          nonzero :: (Eq a, Num a) => Prism' a a
-          nonzero = from (non 0) . _Just
+    tileTraversal :: Traversal' Grid Tile
+    tileTraversal = gridIx coords
 
-          dynClass = map ^. map_tiles
-            <&> (preview tileTraversal >>> toClass)
-          dynArmySize = map ^. map_tiles
-            <&>
-              (   preview (tileTraversal . _Army . army_size . nonzero . to show)
-              >>> maybe "" identity
-              )
+    nonzero :: (Eq a, Num a) => Prism' a a
+    nonzero = from (non 0) . _Just
 
-        in
-          elDynClass (Dom.Node "td") dynClass $ dynText dynArmySize
+    dynClass :: Dynamic t CSSClass
+    dynClass = map ^. map_tiles
+      <&> (preview tileTraversal >>> toClass)
 
-  blank
+    dynArmyText :: Dynamic t Text
+    dynArmyText = map ^. map_tiles
+      <&>
+        (   preview (tileTraversal . _Army . army_size . nonzero . to show)
+        >>> maybe "" identity
+        )
+  in
+    elDynClass (Dom.Node "td") dynClass $ dynText dynArmyText
+
 
 toClass :: Maybe Tile -> CSSClass
 toClass tile =

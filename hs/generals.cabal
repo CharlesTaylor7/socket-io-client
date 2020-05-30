@@ -86,15 +86,14 @@ executable generals-app
     , DeriveGeneric
     , DerivingVia
     , GeneralizedNewtypeDeriving
-    -- required for overloaded fields & lens
-    , DuplicateRecordFields
-    , MultiParamTypeClasses
-    , FunctionalDependencies
+    -- required to put type signatures on context bound functions
+    , ScopedTypeVariables
     -- nice to have
     , OverloadedStrings
     , ViewPatterns
     , TypeApplications
     , LambdaCase
+
   other-modules:
       Types
     , Page.Replay
