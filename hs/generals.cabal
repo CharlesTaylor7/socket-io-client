@@ -95,6 +95,7 @@ executable generals-app
     , Generals.Map.Types
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics
+    , Component.Elastic
     , Component.Grid
     , Js.FFI
     , Js.Imports

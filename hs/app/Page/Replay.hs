@@ -4,10 +4,11 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Simulate (toHistory)
+import Page.Replay.Simulate
 import Page.Replay.Download
 import Page.Replay.Types
 
+import Component.Elastic
 import Component.Grid
 
 import Js.Imports
@@ -62,7 +63,7 @@ gameReplay replay = do
   elClass "div" "turn-marker" $
     dynText (map ^. map_turn <&> ("turn: " <>) . show . halfRoundUp)
 
-  grid map
+  elastic $ grid map
 
 halfRoundUp :: Int -> Int
 halfRoundUp = uncurry (+) . (`divMod` 2)
