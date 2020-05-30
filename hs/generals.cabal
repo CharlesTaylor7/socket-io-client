@@ -88,12 +88,13 @@ executable generals-app
     , GeneralizedNewtypeDeriving
     -- required to put type signatures on context bound functions
     , ScopedTypeVariables
+    -- patterns
+    , PatternSynonyms
+    , ViewPatterns
     -- nice to have
     , OverloadedStrings
-    , ViewPatterns
     , TypeApplications
     , LambdaCase
-
   other-modules:
       Types
     , Page.Replay
@@ -114,4 +115,3 @@ executable generals-app
     , Data.CSS.Types
     , Data.Dom
     , Data.Dom.Internals
-    , Data.Dom.Types

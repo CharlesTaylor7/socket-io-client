@@ -5,8 +5,7 @@ module Component.Grid
 import Reflex hiding (elDynClass)
 import Types
 
-import Data.CSS.Types
-import Data.Dom (elStyle, elStyle', elDynStyle, elDynStyle', elDynClass)
+import Data.Dom
 import qualified Data.Dom as Dom
 
 import Generals.Map.Types hiding (Map)

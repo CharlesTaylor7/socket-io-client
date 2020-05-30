@@ -5,10 +5,13 @@ import qualified Reflex
 
 import Data.CSS
 import Data.CSS.Types
-import Data.Dom.Types
 
-div :: DOMNode
-div = Node "div"
+type DOMNode = Text
+
+{-# complete Node #-}
+pattern Node :: Text -> Text
+pattern Node text = text
+
 
 button :: DomBuilder t m => CSSClass -> Text -> m (Event t ())
 button (Class className) display = do
