@@ -29,9 +29,11 @@ subtract b a = a <> invert b
 zero :: Abelian n => n
 zero = mempty
 
-type Dragging = All
-pattern DragOn  = All True
-pattern DragOff = All False
+newtype Dragging = Dragging Bool
+  deriving Semigroup via All
+
+pattern DragOn  = Dragging True
+pattern DragOff = Dragging False
 
 mouseEvent
   ::
@@ -56,12 +58,17 @@ elastic child = do
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
     dragReferencePoint <- hold mempty mouseDown
+    lastPosition <- hold mempty mouseUp
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
     dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
 
     let
+      dragEvent :: Event t Point
+      dragEvent = mouseMove
+        & gate (coerceBehavior draggingBehavior)
+        & attachWith subtract dragReferencePoint
       mouseMove, mouseDown, mouseUp :: Event t Point
       mouseMove = mouseEvent Mousemove e
       mouseDown = mouseEvent Mousedown e
@@ -76,12 +83,6 @@ elastic child = do
         , mouseUp    $> DragOff
         , mouseLeave $> DragOff
         ]
-
-      dragEvent :: Event t Point
-      dragEvent = mouseMove
-        & gate (coerceBehavior draggingBehavior)
-        & attachWith minus dragReferencePoint
-
 
   pure a
 
