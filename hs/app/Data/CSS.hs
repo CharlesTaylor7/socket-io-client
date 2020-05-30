@@ -8,7 +8,14 @@ instance ToText Pixels where
   toText = view (_Pixels . re _Show . packed . to (<> "px"))
 
 instance Default Style where
-  def = Style mempty mempty
+  def = mempty
+
+instance Monoid Style where
+  mempty = Style mempty mempty
+
+instance Semigroup Style where
+  Style a b <> Style c d = Style (a <> c) (b <> d)
+
 
 instance Semigroup CSSClass where
   Class "" <> a = a

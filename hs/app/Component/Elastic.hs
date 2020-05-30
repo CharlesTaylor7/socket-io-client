@@ -20,16 +20,15 @@ elastic
   :: forall t m a.
   (  Widget t m
   )
-  => m a
+  => (Dynamic t Style -> m a)
   -> m a
 elastic child = do
   rec
-    -- elastic wrapper
-    (e, a) <- elDynStyle' "div" dynStyle $ child
+    (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
     dragBehavior <- hold DragOff toggleDragEvent
 
-    dynStyle <-holdDyn def $ fmapCheap toStyle dragEvent
+    dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
 
     let
       mouseDown, mouseUp, mouseLeave :: Event t Dragging
@@ -58,5 +57,15 @@ toStyle (mouseX, mouseY) =
     & at "top" ?~ (show y <> "px")
   )
   where
-    x = mouseX `div` 2
-    y = mouseY `div` 2
+    x = mouseX
+    y = mouseY
+
+
+elasticStyle :: Style
+elasticStyle = def
+  & style_cssClass .~ Class "elastic"
+  & style_inline .~ (
+    def
+    & at "width" ?~ "100vw"
+    & at "height" ?~ "100vh"
+  )

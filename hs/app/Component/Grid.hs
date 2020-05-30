@@ -1,5 +1,6 @@
 module Component.Grid
   ( grid
+  , gridDynStyle
   ) where
 
 import Reflex hiding (elDynClass)
@@ -12,20 +13,27 @@ import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 
-grid
+gridDynStyle
   :: (DomBuilder t m, PostBuild t m)
   => Generals.Map t
+  -> Dynamic t Style
   -> m ()
-grid map = do
+gridDynStyle map gridStyle = do
   let mapHeight = map ^. map_dimensions . dimensions_height
   let mapWidth  = map ^. map_dimensions . dimensions_width
 
-  elClass "table" "grid" $
+  elDynStyle "table" (gridStyle <&> style_cssClass .~ Class "grid") $
     elClass "tbody" "" $
       for_ [1..mapHeight] $ \j ->
       elClass "tr" "" $
         for_ [1..mapWidth] $ \i ->
         tileElement map (i, j)
+
+grid
+  :: (DomBuilder t m, PostBuild t m)
+  => Generals.Map t
+  -> m ()
+grid map = gridDynStyle map def
 
 tileElement
   :: forall t m. (DomBuilder t m, PostBuild t m)

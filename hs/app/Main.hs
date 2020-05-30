@@ -8,14 +8,17 @@ import Data.Dom
 
 main :: IO ()
 main = mainWidget $ do
-  let
-    style = def
-      & style_cssClass .~ Class "green-block"
-      & style_inline .~ (
-        def
-        & at "height" ?~ "100px"
-        & at "width" ?~ "100px"
-        & at "background" ?~ "green"
-      )
+  elastic $ \dynStyle ->
+    elDynStyle "div" (dynStyle <&> (greenBlockStyle <>)) $
+      blank
 
-  elastic $ elStyle "div" style $ blank
+
+greenBlockStyle :: Style
+greenBlockStyle = def
+  & style_cssClass .~ Class "green-block"
+  & style_inline .~ (
+    def
+    & at "height" ?~ "100px"
+    & at "width" ?~ "100px"
+    & at "background" ?~ "green"
+  )

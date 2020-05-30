@@ -8,7 +8,6 @@ import Page.Replay.Simulate
 import Page.Replay.Download
 import Page.Replay.Types
 
--- import Component.AutoFocus
 import Component.Elastic
 import Component.Grid
 
@@ -65,7 +64,7 @@ gameReplay replay = do
   elClass "div" "turn-marker" $
     dynText (map ^. map_turn <&> ("turn: " <>) . show . halfRoundUp)
 
-  elastic $ grid map
+  elastic $ gridDynStyle map
 
 halfRoundUp :: Int -> Int
 halfRoundUp = uncurry (+) . (`divMod` 2)
