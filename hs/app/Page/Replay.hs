@@ -8,7 +8,7 @@ import Page.Replay.Simulate (toHistory)
 import Page.Replay.Download
 import Page.Replay.Types
 
-import Component.TableGrid
+import Component.Grid
 import Component.FileUpload
 import Component.FileDownload
 
