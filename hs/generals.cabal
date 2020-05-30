@@ -106,8 +106,6 @@ executable generals-app
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics
     , Component.Grid
-    , Component.FileUpload
-    , Component.FileDownload
     , Js.FFI
     , Js.Imports
     , Js.Utils

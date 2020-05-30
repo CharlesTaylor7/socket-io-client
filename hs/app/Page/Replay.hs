@@ -9,8 +9,6 @@ import Page.Replay.Download
 import Page.Replay.Types
 
 import Component.Grid
-import Component.FileUpload
-import Component.FileDownload
 
 import Js.Imports
 import Js.Types
