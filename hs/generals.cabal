@@ -102,6 +102,7 @@ executable generals-app
     , Generals.Map.Types.Optics
     , Component.AutoFocus
     , Component.Elastic
+    , Component.Elastic.Types
     , Component.Grid
     , Js.FFI
     , Js.Imports

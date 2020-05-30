@@ -6,46 +6,25 @@ import Prelude hiding (subtract)
 import Reflex hiding (elDynClass)
 import Types
 
+import Data.Group
+import Data.These
 import Data.Dom
 import qualified Data.Dom as Dom
 
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
-import Data.Group
-
-import Data.These
-
-newtype Point = Point (Sum Int, Sum Int)
-  deriving newtype (Semigroup, Monoid, Group, Abelian)
-
-add :: Abelian n => n -> n -> n
-add = (<>)
-
-minus :: Abelian n => n -> n -> n
-a `minus` b = a <> invert b
-
-subtract :: Abelian n => n -> n -> n
-subtract b a = a <> invert b
-
-zero :: Abelian n => n
-zero = mempty
-
-newtype Dragging = Dragging Bool
-  deriving Semigroup via All
-
-{-# complete DragOn, DragOff #-}
-pattern DragOn  = Dragging True
-pattern DragOff = Dragging False
+import Component.Elastic.Types
 
 
 elastic
   :: forall t m a.
   (  Widget t m
   )
-  => (Dynamic t Style -> m a)
+  => InitialDimensions
+  -> (Dynamic t Style -> m a)
   -> m a
-elastic child = do
+elastic dims child = do
   rec
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
@@ -55,14 +34,17 @@ elastic child = do
     draggingBehavior <- hold DragOff toggleDragEvent
 
     dragAmount <- holdDyn zero $ dragEvent
-    zoomLevel <- accumDyn (+) 0 $ fmapCheap _wheelEventResult_deltaY wheelEvent
+    zoomLevel <- accumDyn (\a b -> a + b & clamp 10 90) 50 $ wheelEvent
 
     let
       dynChildStyle :: Dynamic t Style
-      dynChildStyle = zipDynWith toStyle dragAmount zoomLevel
+      dynChildStyle = zipDynWith (toStyle dims )dragAmount zoomLevel
 
-      wheelEvent :: Event t WheelEventResult
-      wheelEvent = traceEventWith show $ domEvent Wheel e
+      toTransform :: Point -> Double -> Transform
+
+
+      wheelEvent :: Event t Double
+      wheelEvent = domEvent Wheel e & fmapCheap _wheelEventResult_deltaY
 
       dragEvent :: Event t Point
       dragEvent = mouseMove
@@ -86,6 +68,12 @@ elastic child = do
 
   pure a
 
+clamp :: Ord n => n -> n -> n -> n
+clamp min max n
+  | n < min = min
+  | n > max = max
+  | otherwise = n
+
 combineMousedownAndMouseup :: These Point Point -> Maybe Point
 combineMousedownAndMouseup = \case
   This a -> Just a
@@ -105,22 +93,6 @@ mouseEvent
 mouseEvent tag e = domEvent tag e & coerceEvent
 
 
-toStyle :: Point -> Double -> Style
-toStyle (coerce -> (mouseX, mouseY)) zoomLevel =
-  def
-  & style_cssClass .~ Class "elastic"
-  & style_inline .~ (
-    def
-    & at "position" ?~ "relative"
-    & at "width" ?~ percentage
-    & at "height" ?~ percentage
-    & at "left" ?~ (show x <> "px")
-    & at "top" ?~ (show y <> "px")
-  )
-  where
-    percentage = show (50 + zoomLevel) <> "%"
-    x = mouseX :: Int
-    y = mouseY :: Int
 
 
 elasticStyle :: Style

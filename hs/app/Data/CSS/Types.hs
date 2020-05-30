@@ -6,7 +6,7 @@ data Style = Style
   , _style_cssClass :: CSSClass
   }
 
-newtype Pixels = Pixels Int
+newtype Pixels = Pixels Double
   deriving (Num)
 
 
