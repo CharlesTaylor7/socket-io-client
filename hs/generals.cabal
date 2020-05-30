@@ -35,16 +35,6 @@ library reflex-imports
     , lens
     , data-default
 
-library data-nat16
-  import: common
-  hs-source-dirs:
-    data-nat16
-  exposed-modules:
-    Data.Nat16
-  build-depends:
-      relude
-    , data-default
-
 library generals-prelude
   import: common
   hs-source-dirs:
@@ -56,7 +46,6 @@ library generals-prelude
     , relude
     , lens >= 4.18 && < 5.0
     , data-default
-    , data-nat16
 
 executable generals-app
   import: common

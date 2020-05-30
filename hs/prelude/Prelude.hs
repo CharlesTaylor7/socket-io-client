@@ -40,6 +40,3 @@ import Control.Lens.TH as X (makeLenses, makePrisms)
 -- import Control.Lens.Reified as X
 -- import Control.Lens.Type as X
 -- import Control.Lens.Zoom as X
-
--- data-nat16
-import Data.Nat16 as X
