@@ -64,7 +64,7 @@ gameReplay replay = do
   elClass "div" "turn-marker" $
     dynText (map ^. map_turn <&> ("turn: " <>) . show . halfRoundUp)
 
-  elastic $ gridDynStyle map
+  grid map
 
 halfRoundUp :: Int -> Int
 halfRoundUp = uncurry (+) . (`divMod` 2)

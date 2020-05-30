@@ -54,9 +54,15 @@ elastic child = do
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
-    dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
+    dragAmount <- holdDyn zero $ dragEvent
+    zoomLevel <- accumDyn (+) 0 $ fmapCheap _wheelEventResult_deltaY wheelEvent
 
     let
+      dynChildStyle :: Dynamic t Style
+      dynChildStyle = zipDynWith toStyle dragAmount zoomLevel
+
+      wheelEvent :: Event t WheelEventResult
+      wheelEvent = traceEventWith show $ domEvent Wheel e
 
       dragEvent :: Event t Point
       dragEvent = mouseMove
@@ -99,17 +105,20 @@ mouseEvent
 mouseEvent tag e = domEvent tag e & coerceEvent
 
 
-toStyle :: Point -> Style
-toStyle (coerce -> (mouseX, mouseY)) =
+toStyle :: Point -> Double -> Style
+toStyle (coerce -> (mouseX, mouseY)) zoomLevel =
   def
   & style_cssClass .~ Class "elastic"
   & style_inline .~ (
     def
     & at "position" ?~ "relative"
+    & at "width" ?~ percentage
+    & at "height" ?~ percentage
     & at "left" ?~ (show x <> "px")
     & at "top" ?~ (show y <> "px")
   )
   where
+    percentage = show (50 + zoomLevel) <> "%"
     x = mouseX :: Int
     y = mouseY :: Int
 

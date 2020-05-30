@@ -18,7 +18,6 @@ greenBlockStyle = def
   & style_cssClass .~ Class "green-block"
   & style_inline .~ (
     def
-    & at "height" ?~ "100px"
-    & at "width" ?~ "100px"
+
     & at "background" ?~ "green"
   )
