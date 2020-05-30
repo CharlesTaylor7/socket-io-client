@@ -8,6 +8,7 @@ import Page.Replay.Simulate
 import Page.Replay.Download
 import Page.Replay.Types
 
+-- import Component.AutoFocus
 import Component.Elastic
 import Component.Grid
 
@@ -53,7 +54,8 @@ gameReplay replay = do
     & inputElementConfig_elementConfig . elementConfig_initialAttributes
     %~
       ( at (toAttr "type") ?~ "text") .
-      ( at (toAttr "pattern") ?~ "[0-9]*")
+      ( at (toAttr "pattern") ?~ "[0-9]*") .
+      ( at (toAttr "autofocus") ?~ "")
   let
     inputEvent = mapMaybe
       (preview (to readEither . _Right . to JumpTo))

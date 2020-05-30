@@ -77,6 +77,8 @@ executable generals-app
     , GeneralizedNewtypeDeriving
     -- required to put type signatures on context bound functions
     , ScopedTypeVariables
+    -- required to effectively use reflex
+    , RecursiveDo
     -- patterns
     , PatternSynonyms
     , ViewPatterns
@@ -95,6 +97,7 @@ executable generals-app
     , Generals.Map.Types
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics
+    , Component.AutoFocus
     , Component.Elastic
     , Component.Grid
     , Js.FFI
