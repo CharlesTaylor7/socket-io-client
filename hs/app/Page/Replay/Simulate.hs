@@ -7,7 +7,6 @@ import Page.Replay.Simulate.Types
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
-import Prelude hiding (scanl)
 import Data.Vector (Vector, scanl')
 import Data.Default
 

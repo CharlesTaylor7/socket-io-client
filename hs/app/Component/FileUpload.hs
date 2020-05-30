@@ -1,7 +1,6 @@
 {-# language RecordWildCards #-}
 module Component.FileUpload where
 
-import Prelude hiding ((#))
 import Reflex
 
 import Js.Imports

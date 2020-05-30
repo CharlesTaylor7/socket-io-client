@@ -12,8 +12,6 @@ import Component.Grid
 import Component.FileUpload
 import Component.FileDownload
 
-import Prelude hiding ((#), (!), (!!))
-
 import Js.Imports
 import Js.Types
 import Js.Utils
