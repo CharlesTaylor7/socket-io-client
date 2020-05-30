@@ -22,7 +22,7 @@ armyTileType = lens getter setter
       Clear _ -> Clear_Tile
       City _ -> City_Tile
       General _ -> General_Tile
-      Swamp _ -> General_Tile
+      Swamp _ -> Swamp_Tile
     setter s b = s ^?! _Army . to construct
       where
         construct =
