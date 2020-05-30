@@ -5,7 +5,6 @@
 
 # build output
 /public/js/build/
-/public/version.txt
 
 # VSCode
 *.vscode/

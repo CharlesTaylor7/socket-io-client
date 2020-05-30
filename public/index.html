@@ -17,12 +17,6 @@
     <input type="number" />
   </body>
   <script>
-    // log build uuid
-    fetch('./version.txt')
-      .then(body => body.text())
-      .then(version => console.log('version:', version))
-  </script>
-  <script>
     if('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('./service-worker.js')
