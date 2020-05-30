@@ -38,17 +38,6 @@ newtype Dragging = Dragging Bool
 pattern DragOn  = Dragging True
 pattern DragOff = Dragging False
 
-mouseEvent
-  ::
-  (  Reflex t
-  ,  HasDomEvent t target eventName
-  ,  DomEventType target eventName ~ (Int, Int)
-  )
-  => EventName eventName
-  -> target
-  -> Event t Point
-mouseEvent tag e = domEvent tag e & coerceEvent
-
 
 elastic
   :: forall t m a.
@@ -61,17 +50,13 @@ elastic child = do
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
     dragReferencePoint <- accumB add zero $
-      alignEventWithMaybe combine mouseDown mouseUp
+      alignEventWithMaybe combineMousedownAndMouseup mouseDown mouseUp
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
     dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
 
     let
-      combine :: These Point Point -> Maybe Point
-      combine (This a)    = Just a
-      combine (That b)    = Just $ invert b
-      combine (These _ _) = error "Mouse up & down at the same time!?"
 
       dragEvent :: Event t Point
       dragEvent = mouseMove
@@ -94,6 +79,25 @@ elastic child = do
         ]
 
   pure a
+
+combineMousedownAndMouseup :: These Point Point -> Maybe Point
+combineMousedownAndMouseup = \case
+  This a -> Just a
+  That b -> Just $ invert b
+  These _ _ ->
+    error "Mouse up & down at the same time!?"
+
+mouseEvent
+  ::
+  (  Reflex t
+  ,  HasDomEvent t target eventName
+  ,  DomEventType target eventName ~ (Int, Int)
+  )
+  => EventName eventName
+  -> target
+  -> Event t Point
+mouseEvent tag e = domEvent tag e & coerceEvent
+
 
 toStyle :: Point -> Style
 toStyle (coerce -> (mouseX, mouseY)) =
