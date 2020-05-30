@@ -1,6 +1,6 @@
 module Reflex (module X) where
 
-import Reflex.Dom as X hiding (Widget, Element, button)
+import Reflex.Dom as X hiding (Group(..), Widget, Element, button)
 import Reflex.Dom.Location as X
 
 import Reflex.Element as X

@@ -2,6 +2,7 @@ module Component.Elastic
   ( elastic
   ) where
 
+import Prelude hiding (subtract)
 import Reflex hiding (elDynClass)
 import Types
 
@@ -11,9 +12,37 @@ import qualified Data.Dom as Dom
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
+import Data.Group
+
+newtype Point = Point (Sum Int, Sum Int)
+  deriving newtype (Semigroup, Monoid, Group, Abelian)
+
+add :: Abelian n => n -> n -> n
+add = (<>)
+
+minus :: Abelian n => n -> n -> n
+a `minus` b = a <> invert b
+
+subtract :: Abelian n => n -> n -> n
+subtract b a = a <> invert b
+
+zero :: Abelian n => n
+zero = mempty
+
 type Dragging = All
 pattern DragOn  = All True
 pattern DragOff = All False
+
+mouseEvent
+  ::
+  (  Reflex t
+  ,  HasDomEvent t target eventName
+  ,  DomEventType target eventName ~ (Int, Int)
+  )
+  => EventName eventName
+  -> target
+  -> Event t Point
+mouseEvent tag e = domEvent tag e & coerceEvent
 
 
 elastic
@@ -26,30 +55,38 @@ elastic child = do
   rec
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
-    dragReferencePoint <- hold (error "no start point") (domEvent Mousedown e)
+    dragReferencePoint <- hold mempty mouseDown
+
     draggingBehavior <- hold DragOff toggleDragEvent
 
     dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
 
     let
-      mouseDown, mouseUp, mouseLeave :: Event t Dragging
-      mouseDown = domEvent Mousedown e $> DragOn
-      mouseUp = domEvent Mouseup e $> DragOff
-      mouseLeave = domEvent Mouseleave e $> DragOff
+      mouseMove, mouseDown, mouseUp :: Event t Point
+      mouseMove = mouseEvent Mousemove e
+      mouseDown = mouseEvent Mousedown e
+      mouseUp   = mouseEvent Mouseup   e
+
+      mouseLeave :: Event t ()
+      mouseLeave = domEvent Mouseleave e
 
       toggleDragEvent :: Event t Dragging
-      toggleDragEvent = mouseDown <> mouseUp <> mouseLeave
+      toggleDragEvent = fold
+        [ mouseDown  $> DragOn
+        , mouseUp    $> DragOff
+        , mouseLeave $> DragOff
+        ]
 
-      dragEvent :: Event t (Int, Int)
-      dragEvent = domEvent Mousemove e
+      dragEvent :: Event t Point
+      dragEvent = mouseMove
         & gate (coerceBehavior draggingBehavior)
-        & attachWith (\(x1, y1) (x2, y2) -> (x2 - x1, y2 - y1)) dragReferencePoint
+        & attachWith minus dragReferencePoint
 
 
   pure a
 
-toStyle :: (Int, Int) -> Style
-toStyle (mouseX, mouseY) =
+toStyle :: Point -> Style
+toStyle (coerce -> (mouseX, mouseY)) =
   def
   & style_cssClass .~ Class "elastic"
   & style_inline .~ (
@@ -59,8 +96,8 @@ toStyle (mouseX, mouseY) =
     & at "top" ?~ (show y <> "px")
   )
   where
-    x = mouseX
-    y = mouseY
+    x = mouseX :: Int
+    y = mouseY :: Int
 
 
 elasticStyle :: Style
