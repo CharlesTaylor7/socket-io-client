@@ -14,6 +14,8 @@ import qualified Generals.Map.Types as Generals
 
 import Data.Group
 
+import Data.These
+
 newtype Point = Point (Sum Int, Sum Int)
   deriving newtype (Semigroup, Monoid, Group, Abelian)
 
@@ -32,6 +34,7 @@ zero = mempty
 newtype Dragging = Dragging Bool
   deriving Semigroup via All
 
+{-# complete DragOn, DragOff #-}
 pattern DragOn  = Dragging True
 pattern DragOff = Dragging False
 
@@ -57,18 +60,24 @@ elastic child = do
   rec
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
-    dragReferencePoint <- hold mempty mouseDown
-    lastPosition <- hold mempty mouseUp
+    dragReferencePoint <- accumB add zero $
+      alignEventWithMaybe combine mouseDown mouseUp
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
     dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
 
     let
+      combine :: These Point Point -> Maybe Point
+      combine (This a)    = Just a
+      combine (That b)    = Just $ invert b
+      combine (These _ _) = error "Mouse up & down at the same time!?"
+
       dragEvent :: Event t Point
       dragEvent = mouseMove
         & gate (coerceBehavior draggingBehavior)
         & attachWith subtract dragReferencePoint
+
       mouseMove, mouseDown, mouseUp :: Event t Point
       mouseMove = mouseEvent Mousemove e
       mouseDown = mouseEvent Mousedown e

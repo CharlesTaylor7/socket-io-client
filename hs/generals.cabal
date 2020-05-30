@@ -64,6 +64,7 @@ executable generals-app
     , containers
     , mtl
     , groups
+    , these
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   default-extensions:
     -- required to make type aliases for reflex constraints
