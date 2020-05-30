@@ -16,7 +16,6 @@ import qualified Generals.Map.Types as Generals
 
 import Component.Elastic.Types
 
-
 elastic
   :: forall t m a.
   (  Widget t m
@@ -25,6 +24,15 @@ elastic
   -> (Dynamic t Style -> m a)
   -> m a
 elastic dims child = do
+  let
+    elasticStyle :: Style
+    elasticStyle = def
+      & style_cssClass .~ Class "elastic"
+      & style_inline .~ (
+        def
+        & at "width" ?~ "100vw"
+        & at "height" ?~ "100vh"
+      )
   rec
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
@@ -33,25 +41,39 @@ elastic dims child = do
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
+    -- dragAmount :: Dynamic t (Point Int)
     dragAmount <- holdDyn zero $ dragEvent
-    zoomLevel <- accumDyn (\a b -> a + b & clamp 10 90) 50 $ wheelEvent
+
+    -- range from quarter size to 4 times as big
+    zoomLevel <- accumDyn (\a b -> a + b & clamp (-750) 3000) 0 $ traceEventWith show wheelEvent
 
     let
+      dynScale = zoomLevel <&> \level -> 1 + 0.001 * level
+
       dynChildStyle :: Dynamic t Style
-      dynChildStyle = zipDynWith (toStyle dims )dragAmount zoomLevel
+      dynChildStyle = zipDynWith combine dragAmount dynScale
 
-      toTransform :: Point -> Double -> Transform
+      toDoublePoint :: Point Int -> Point Double
+      toDoublePoint = coerce . convert . coerce
+        where
+          toDouble :: Int -> Double
+          toDouble = fromIntegral
 
+          convert :: (Int, Int) -> (Double, Double)
+          convert (a, b) = (toDouble a, toDouble b)
+
+      combine :: Point Int -> Double -> Style
+      combine offset zoom = toStyle dims $ Transform (toDoublePoint offset) zoom
 
       wheelEvent :: Event t Double
       wheelEvent = domEvent Wheel e & fmapCheap _wheelEventResult_deltaY
 
-      dragEvent :: Event t Point
+      dragEvent :: Event t (Point Int)
       dragEvent = mouseMove
         & gate (coerceBehavior draggingBehavior)
         & attachWith subtract dragReferencePoint
 
-      mouseMove, mouseDown, mouseUp :: Event t Point
+      mouseMove, mouseDown, mouseUp :: Event t (Point Int)
       mouseMove = mouseEvent Mousemove e
       mouseDown = mouseEvent Mousedown e
       mouseUp   = mouseEvent Mouseup   e
@@ -74,7 +96,7 @@ clamp min max n
   | n > max = max
   | otherwise = n
 
-combineMousedownAndMouseup :: These Point Point -> Maybe Point
+combineMousedownAndMouseup :: Group g => These g g -> Maybe g
 combineMousedownAndMouseup = \case
   This a -> Just a
   That b -> Just $ invert b
@@ -89,17 +111,5 @@ mouseEvent
   )
   => EventName eventName
   -> target
-  -> Event t Point
+  -> Event t (Point Int)
 mouseEvent tag e = domEvent tag e & coerceEvent
-
-
-
-
-elasticStyle :: Style
-elasticStyle = def
-  & style_cssClass .~ Class "elastic"
-  & style_inline .~ (
-    def
-    & at "width" ?~ "100vw"
-    & at "height" ?~ "100vh"
-  )
