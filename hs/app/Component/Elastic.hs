@@ -11,6 +11,9 @@ import qualified Data.Dom as Dom
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
+pattern DragOn  = All True
+pattern DragOff = All False
+
 
 elastic
   :: Widget t m
@@ -20,11 +23,20 @@ elastic child = do
   (e, a) <- elClass' "div" "elastic" $ child
 
   let
-    scrollEvent = domEvent Scroll e
-    dragEvent = domEvent Mousedown e
+    beginDragEvent = domEvent Mousedown e $> DragOn
+    endDragEvent = domEvent Mouseup e $> DragOff
 
-  performEvent $ scrollEvent <&> print
-  performEvent $ dragEvent <&> print
+
+  dragBehavior <- hold DragOff (beginDragEvent <> endDragEvent)
+
+  let
+    -- scrollEvent = domEvent Scroll e
+    moveEvent = domEvent Mousemove e
+    dragEvent = gate (coerceBehavior dragBehavior) moveEvent
+
+  -- performEvent $ scrollEvent <&> print
+  performEvent $ moveEvent <&> (\(i, j) -> print ("move", i, j))
+  performEvent $ dragEvent <&> (\(i, j) -> print ("drag", i, j))
 
 
   pure a
