@@ -1,0 +1,92 @@
+.grid {
+  table-layout: fixed;
+  border-spacing: 0;
+}
+
+.grid td {
+  position: relative;
+  border: 1px solid black;
+  width: 50px;
+  height: 50px;
+  max-width: 50px;
+  max-height: 50px;
+  min-width: 50px;
+  min-height: 50px;
+  background: #dcdcdc;
+  text-align: center;
+  color: white;
+  text-shadow: 0 0 2px black;
+  opacity: 1;
+  padding: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  background-size: 40px 40px
+}
+
+.grid td.selectable,.grid td.attackable {
+  position: relative;
+  z-index: 20
+}
+
+.grid td.selectable:hover,.grid td.attackable:hover {
+  cursor: pointer
+}
+
+.grid.pingmode td.selectable,.grid.pingmode td.selectable:hover,.grid.pingmode td.attackable:hover {
+  cursor: crosshair
+}
+
+.grid td.selected {
+  border: 1px solid white
+}
+
+.grid td.selected50 {
+  text-shadow: 1px 1px black
+}
+
+.grid td.attackable {
+  opacity: .4
+}
+
+.grid td.city,.grid td.general,.grid td.mountain,.grid td.obstacle,.grid td.swamp {
+  background-position: center;
+  background-repeat: no-repeat
+}
+
+.grid td.city {
+  background-color: gray;
+  background-image: url('/city.png')
+}
+
+.grid td.neutral {
+  background-color: gray
+}
+
+.grid td.general {
+  background-image: url('/crown.png')
+}
+
+.grid td.mountain {
+  background-image: url('/mountain.png');
+  background-color: #bbb
+}
+
+.grid td.obstacle {
+  background-image: url('/obstacle.png')
+}
+
+.grid td.swamp {
+  background-image: url('/swamp.png');
+  background-color: gray
+}
+
+.grid td.fog {
+  border: 1px solid transparent;
+  background-color: rgba(255,255,255,0.1)
+}
+
+.grid td.fog.selected {
+  border: 1px solid white
+}
