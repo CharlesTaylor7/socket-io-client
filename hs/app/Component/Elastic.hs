@@ -26,7 +26,8 @@ elastic child = do
   rec
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
-    dragBehavior <- hold DragOff toggleDragEvent
+    dragReferencePoint <- hold (error "no start point") (domEvent Mousedown e)
+    draggingBehavior <- hold DragOff toggleDragEvent
 
     dynChildStyle <-holdDyn def $ fmapCheap toStyle dragEvent
 
@@ -40,9 +41,10 @@ elastic child = do
       toggleDragEvent = mouseDown <> mouseUp <> mouseLeave
 
       dragEvent :: Event t (Int, Int)
-      dragEvent = gate (coerceBehavior dragBehavior) moveEvent
-        where
-          moveEvent = domEvent Mousemove e
+      dragEvent = domEvent Mousemove e
+        & gate (coerceBehavior draggingBehavior)
+        & attachWith (\(x1, y1) (x2, y2) -> (x2 - x1, y2 - y1)) dragReferencePoint
+
 
   pure a
 
