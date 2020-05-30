@@ -1,17 +1,22 @@
+
+
+
 .grid {
   table-layout: fixed;
   border-spacing: 0;
+  --table-cell-side-length: 15px;
+
 }
 
 .grid td {
   position: relative;
   border: 1px solid black;
-  width: 50px;
-  height: 50px;
-  max-width: 50px;
-  max-height: 50px;
-  min-width: 50px;
-  min-height: 50px;
+  width: var(--table-cell-side-length);
+  height: var(--table-cell-side-length);
+  max-width: var(--table-cell-side-length);
+  max-height: var(--table-cell-side-length);
+  min-width: var(--table-cell-side-length);
+  min-height: var(--table-cell-side-length);
   background: #dcdcdc;
   text-align: center;
   color: white;
@@ -21,8 +26,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 16px;
-  background-size: 40px 40px
+  /* font-size: 16px; */
+  /* background-size: 40px 40px */
 }
 
 .grid td.selectable,.grid td.attackable {
