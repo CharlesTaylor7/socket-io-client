@@ -1,20 +1,35 @@
 module Data.Dom.Internals where
 
 import Reflex hiding (button)
+import qualified Reflex
 
 import Data.CSS
 import Data.CSS.Types
 import Data.Dom.Types
 
+div :: DOMNode
+div = Node "div"
 
 button :: DomBuilder t m => CSSClass -> Text -> m (Event t ())
 button (Class className) display = do
   (e, _) <- elClass' "button" className $ text display
   pure $ domEvent Click e
 
+title :: DomBuilder t m => Text -> m ()
+title = el "title" . text
 
-div :: DOMNode
-div = Node "div"
+loadCSS :: DomBuilder t m => Text -> m ()
+loadCSS file = elAttr "link" attrs blank
+  where attrs = mempty
+          & at "href" ?~ file
+          & at "type" ?~ "text/css"
+          & at "rel" ?~ "stylesheet"
+
+
+loadJS :: DomBuilder t m => Text -> m ()
+loadJS file = elAttr "script" attrs blank
+  where attrs = "src" =: file
+
 
 elStyle :: forall t m a. DomBuilder t m
         => DOMNode
@@ -48,16 +63,20 @@ elDynStyle' :: forall t m a . (DomBuilder t m, PostBuild t m)
 elDynStyle' (Node name) (fmap toAttrs -> dynAttrs) =
   elDynAttr' name dynAttrs
 
-title :: DomBuilder t m => Text -> m ()
-title = el "title" . text
 
-loadCSS :: DomBuilder t m => Text -> m ()
-loadCSS file = elAttr "link" attrs blank
-  where attrs = mempty
-          & at "href" ?~ file
-          & at "type" ?~ "text/css"
-          & at "rel" ?~ "stylesheet"
+elDynClass :: forall t m a. (DomBuilder t m, PostBuild t m)
+        => DOMNode
+        -> Dynamic t CSSClass
+        -> m a
+        -> m a
+elDynClass (Node name) (coerceDynamic -> dynClass) =
+  Reflex.elDynClass name dynClass
 
-loadJS :: DomBuilder t m => Text -> m ()
-loadJS file = elAttr "script" attrs blank
-  where attrs = "src" =: file
+
+elDynClass' :: forall t m a. (DomBuilder t m, PostBuild t m)
+        => DOMNode
+        -> Dynamic t CSSClass
+        -> m a
+        -> m (Element t m, a)
+elDynClass' (Node name) (coerceDynamic -> dynClass) =
+  Reflex.elDynClass' name dynClass

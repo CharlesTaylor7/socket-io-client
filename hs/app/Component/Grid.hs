@@ -1,4 +1,6 @@
-module Component.Grid where
+module Component.Grid
+  ( grid
+  ) where
 
 import Reflex
 import Types

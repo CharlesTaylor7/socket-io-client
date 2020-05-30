@@ -59,7 +59,7 @@ gameReplay replay = do
       ( at (toAttr "pattern") ?~ "[0-9]*")
   let
     inputEvent = mapMaybe
-      (preview (_ShowText . to JumpTo))
+      (preview (to readEither . _Right . to JumpTo))
       (turnInput ^. inputElement_input)
 
   map <- toMap replay (keyEvent <> inputEvent)
