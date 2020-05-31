@@ -77,24 +77,29 @@ getTransform e = do
         & gate (coerceBehavior dragging)
         & traceEventWith (\p -> "MouseLeave: " <> show p)
         & attachWith (const . add) mousePosition
-      ]
-  let dragReferencePoint = current dragReferencePointDyn
-
-  display dragReferencePointDyn
-
-  dynOffset :: Dynamic t Point <-
-    holdDyn zero $ leftmost
-      [ mouseMove
-        & gate (coerceBehavior dragging)
-        & attachWith add dragReferencePoint
       , zoomScale
         & updated
         & traceEventWith (\zoom -> "Zoom: " <> show zoom)
-        <&> \(!_) -> mempty
-        -- & attachWith (\mouse zoom -> add mouse . scale zoom . subtract mouse) mousePosition
+        -- <&> \(!_) -> mempty
+        & attachWith conjugate mousePosition
       ]
+  let dragReferencePoint = current dragReferencePointDyn
+  display dragReferencePointDyn
 
-  pure $ zipDynWith Transform dynOffset zoomScale
+
+  dynOffset :: Dynamic t Point <-
+    holdDyn zero $
+      (leftmost
+        [ mouseMove
+          & gate (coerceBehavior dragging)
+          & attachWith add dragReferencePoint
+        , wheelEvent
+          & tag dragReferencePoint
+        ]
+      )
+
+  pure $
+    zipDynWith Transform dynOffset zoomScale
 
   where
     zoomReducer a b = a + b & clamp (-750) 3000
@@ -109,6 +114,10 @@ getTransform e = do
 
     mouseLeave :: Event t ()
     mouseLeave = domEvent Mouseleave e
+
+
+conjugate :: Point -> Double -> Point -> Point
+conjugate mouse zoom = add mouse . scale zoom . subtract mouse
 
 clamp :: Ord n => n -> n -> n -> n
 clamp min max n
