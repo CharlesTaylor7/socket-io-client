@@ -62,15 +62,22 @@ getTransform e = do
   dragReferencePoint :: Behavior t Point <-
     accumB (&) zero $ leftmost
       [ mouseDown
+        & traceEventWith (\p -> "MouseDown: " <> show p)
         & fmapCheap add
+
       , mouseUp
         & gate (coerceBehavior dragging)
+        & traceEventWith (\p -> "MouseUp: " <> show p)
         & fmapCheap subtract
+
       , mouseLeave
         & gate (coerceBehavior dragging)
+        & traceEventWith (\p -> "MouseUp: " <> show p)
         & attachWith (const . subtract) mousePosition
+
       , zoomLevel
         & updated
+        & traceEventWith (\zoom -> "Zoom: " <> show zoom)
         & attachWith (\mouse zoom -> add mouse . scale zoom . subtract mouse) mousePosition
       ]
 
