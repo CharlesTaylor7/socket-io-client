@@ -59,36 +59,35 @@ getTransform e = do
 
   zoomLevel :: Dynamic t Double <- accumDyn zoomReducer 0 $ wheelEvent
 
-  dragReferencePoint :: Behavior t Point <-
-    accumB (&) zero $ leftmost
+  dragReferencePointDyn :: Dynamic t Point <-
+    accumDyn (&) zero $ leftmost
       [ mouseDown
         & traceEventWith (\p -> "MouseDown: " <> show p)
-        & fmapCheap add
+        & fmapCheap subtract
 
       , mouseUp
         & gate (coerceBehavior dragging)
         & traceEventWith (\p -> "MouseUp: " <> show p)
-        & fmapCheap subtract
+        & fmapCheap add
 
       , mouseLeave
         & gate (coerceBehavior dragging)
-        & traceEventWith (\p -> "MouseUp: " <> show p)
-        & attachWith (const . subtract) mousePosition
+        & traceEventWith (\p -> "MouseLeave: " <> show p)
+        & attachWith (const . add) mousePosition
 
-      , zoomLevel
-        & updated
-        & traceEventWith (\zoom -> "Zoom: " <> show zoom)
-        & attachWith (\mouse zoom -> add mouse . scale zoom . subtract mouse) mousePosition
+      -- , zoomLevel
+      --   & updated
+      --   & traceEventWith (\zoom -> "Zoom: " <> show zoom)
+      --   & attachWith (\mouse zoom -> add mouse . scale zoom . subtract mouse) mousePosition
       ]
+  let dragReferencePoint = current dragReferencePointDyn
 
-  let
-    dragEvent :: Event t Point
-    dragEvent = mouseMove
-      & gate (coerceBehavior dragging)
-      & attachWith subtract dragReferencePoint
+  display dragReferencePointDyn
 
-
-  dragAmount :: Dynamic t Point <- holdDyn zero $ dragEvent
+  dragAmount :: Dynamic t Point <- holdDyn zero $
+    mouseMove
+    & gate (coerceBehavior dragging)
+    & attachWith add dragReferencePoint
 
   let
     -- range from quarter size to 4 times as big
