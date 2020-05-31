@@ -41,8 +41,7 @@ elastic dims child = do
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
-    -- dragAmount :: Dynamic t (Point Int)
-    dragAmount <- holdDyn zero $ dragEvent
+    dragAmount :: Dynamic t (Point Int) <- holdDyn zero $ dragEvent
 
     -- range from quarter size to 4 times as big
     zoomLevel <- accumDyn (\a b -> a + b & clamp (-750) 3000) 0 $ traceEventWith show wheelEvent
@@ -54,13 +53,11 @@ elastic dims child = do
       dynChildStyle = zipDynWith combine dragAmount dynScale
 
       toDoublePoint :: Point Int -> Point Double
-      toDoublePoint = coerce . convert . coerce
+      toDoublePoint = view $ coerced . converted . coerced
         where
-          toDouble :: Int -> Double
-          toDouble = fromIntegral
-
-          convert :: (Int, Int) -> (Double, Double)
-          convert (a, b) = (toDouble a, toDouble b)
+          converted = alongside (to int2Double) (to int2Double)
+          int2Double :: Int -> Double
+          int2Double = fromIntegral
 
       combine :: Point Int -> Double -> Style
       combine offset zoom = toStyle dims $ Transform (toDoublePoint offset) zoom
