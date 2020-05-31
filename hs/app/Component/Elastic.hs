@@ -48,6 +48,21 @@ elastic dims child = do
 
 getTransform :: forall t m. Widget t m => Element t m -> m (Dynamic t Transform)
 getTransform e = do
+  let
+    wheelEvent :: Event t Double
+    wheelEvent = domEvent Wheel e & fmapCheap _wheelEventResult_deltaY
+
+    mouseMove, mouseDown, mouseUp :: Event t Point
+    mouseMove = mouseEvent Mousemove e
+    mouseDown = mouseEvent Mousedown e
+    mouseUp   = mouseEvent Mouseup   e
+
+  mousePosition :: Behavior t Point <-
+    hold zero mouseMove
+
+  let
+    mouseLeave :: Event t Point
+    mouseLeave = domEvent Mouseleave e & tag mousePosition
 
   dragging :: Behavior t Dragging <-
     hold DragOff $ fold
@@ -56,8 +71,25 @@ getTransform e = do
       , mouseLeave $> DragOff
       ]
 
-  mousePosition :: Behavior t Point <-
-    hold zero mouseMove
+  dragReferencePoint :: Behavior t Point <-
+    hold zero $ mouseDown
+      -- & traceEventWith (\p -> "MouseDown: " <> show p)
+
+  let
+    dragEnd :: Event t Point =
+      [ mouseUp, mouseLeave ]
+      & leftmost
+      & gate (coerceBehavior dragging)
+      & attachWith subtract dragReferencePoint
+
+  dragDyn :: Dynamic t Point <-
+    holdDyn zero $
+      leftmost
+        [ dragEnd    $> zero
+        , mouseMove
+          & gate (coerceBehavior dragging)
+          & attachWith subtract dragReferencePoint
+        ]
 
   zoomDyn :: Dynamic t Zoom <-
     wheelEvent
@@ -74,59 +106,21 @@ getTransform e = do
       )
       def
 
-  dragReferencePoint :: Behavior t Point <-
-    accumB (&) zero $ leftmost
-      [ mouseDown
-        & traceEventWith (\p -> "MouseDown: " <> show p)
-        & fmapCheap subtract
-
-      , mouseUp
-        & gate (coerceBehavior dragging)
-        & traceEventWith (\p -> "MouseUp: " <> show p)
-        & fmapCheap add
-
-      , mouseLeave
-        & gate (coerceBehavior dragging)
-        & traceEventWith (\p -> "MouseLeave: " <> show p)
-        & attachWith (const . add) mousePosition
-
-      , zoomDyn
-        & updated
-        & traceEventWith (\p -> "Zoom: " <> show p)
-        & attachWith
-            (\mouse zoom ->
-                add mouse . scale (1 + zoom ^. zoom_delta) . subtract mouse
-            )
-            mousePosition
-
-      ]
-
-  dynOffset :: Dynamic t Point <-
-    holdDyn zero $
+  objectPositionWithoutDrag :: Dynamic t Point <-
+    accumDyn (&) zero $
       (leftmost
-        [ mouseMove
-          & gate (coerceBehavior dragging)
-          & attachWith add dragReferencePoint
-        , wheelEvent $> ()
-          & tag dragReferencePoint
+        [ dragEnd <&> add
+        -- , wheelEvent $> ()
+        --   & tag dragReferencePoint
         ]
       )
 
+  let
+    objectPosition :: Dynamic t Point
+    objectPosition = zipDynWith add objectPositionWithoutDrag dragDyn
+
   pure $
-    zipDynWith Transform dynOffset (zoomDyn <&> _zoom_scale)
-
-  where
-
-    wheelEvent :: Event t Double
-    wheelEvent = domEvent Wheel e & fmapCheap _wheelEventResult_deltaY
-
-    mouseMove, mouseDown, mouseUp :: Event t Point
-    mouseMove = mouseEvent Mousemove e
-    mouseDown = mouseEvent Mousedown e
-    mouseUp   = mouseEvent Mouseup   e
-
-    mouseLeave :: Event t ()
-    mouseLeave = domEvent Mouseleave e
+    zipDynWith Transform objectPosition (zoomDyn <&> _zoom_scale)
 
 
 clamp :: Ord n => n -> n -> n -> n
