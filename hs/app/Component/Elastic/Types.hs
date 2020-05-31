@@ -14,9 +14,19 @@ import Data.Group
 
 import Data.These
 
-newtype Point n = Point (Sum n, Sum n)
-  deriving newtype (Semigroup, Monoid, Group, Abelian)
-  deriving stock (Show)
+data Point a = Point !a !a
+  deriving stock (Show, Functor, Foldable, Traversable)
+
+instance Num n => Semigroup (Point n) where
+  Point a b <> Point c d = Point (a + c) (b + d)
+
+instance Num n => Monoid (Point n) where
+  mempty = Point 0 0
+
+instance Num n => Group (Point n) where
+  invert (Point x y) = Point (-x) (-y)
+
+instance Num n => Abelian (Point n)
 
 add :: Abelian n => n -> n -> n
 add = (<>)
@@ -29,6 +39,9 @@ subtract b a = a <> invert b
 
 zero :: Abelian n => n
 zero = mempty
+
+scale :: Num n => n -> Point n -> Point n
+scale scalar (Point x y) = Point (scalar * x) (scalar * y)
 
 newtype Dragging = Dragging Bool
   deriving Semigroup via All
@@ -45,13 +58,13 @@ data Transform = Transform
 type InitialDimensions = (Pixels, Pixels)
 
 toStyle :: InitialDimensions -> Transform -> Style
-toStyle (width, height) (Transform (coerce -> (x, y)) (coerce -> scale)) =
+toStyle (width, height) (Transform (Point x y) (coerce -> scale)) =
   def
   & style_inline .~ (
     def
     & at "position" ?~ "relative"
     & at "width"  ?~ toText (scale * width)
     & at "height" ?~ toText (scale * height)
-    & at "left"   ?~ toText (x :: Pixels)
-    & at "top"    ?~ toText (y :: Pixels)
+    & at "left"   ?~ toText (coerce x :: Pixels)
+    & at "top"    ?~ toText (coerce y :: Pixels)
   )

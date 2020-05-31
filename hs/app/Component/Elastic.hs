@@ -14,7 +14,12 @@ import qualified Data.Dom as Dom
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
-import Component.Elastic.Types
+import Component.Elastic.Types hiding (Point)
+import qualified Component.Elastic.Types as E
+
+type Point = E.Point Double
+pattern Point x y = E.Point x y
+{-# complete Point #-}
 
 elastic
   :: forall t m a.
@@ -50,52 +55,49 @@ getTransform e = do
       ]
   dragging :: Behavior t Dragging <- hold DragOff toggleDragEvent
 
-  mousePosition <- hold zero mouseMove
+  mousePosition :: Behavior t Point <- hold zero mouseMove
 
-  dragReferencePoint :: Behavior t (Point Int) <-
-    accumB add zero $ leftmost
+  zoomLevel :: Dynamic t Double <- accumDyn zoomReducer 0 $ wheelEvent
+
+  dragReferencePoint :: Behavior t Point <-
+    accumB (&) zero $ leftmost
       [ mouseDown
+        & fmapCheap add
       , mouseUp
         & gate (coerceBehavior dragging)
-        & fmapCheap invert
+        & fmapCheap subtract
       , mouseLeave
         & gate (coerceBehavior dragging)
-        & attachWith (const . invert) mousePosition
+        & attachWith (const . subtract) mousePosition
+      , zoomLevel
+        & updated
+        & attachWith (\mouse zoom -> add mouse . scale zoom . subtract mouse) mousePosition
       ]
 
   let
-    dragEvent :: Event t (Point Int)
+    dragEvent :: Event t Point
     dragEvent = mouseMove
       & gate (coerceBehavior dragging)
       & attachWith subtract dragReferencePoint
 
 
-  dragAmount :: Dynamic t (Point Int) <- holdDyn zero $ dragEvent
--- range from quarter size to 4 times as big
-  zoomLevel :: Dynamic t Double <- accumDyn (\a b -> a + b & clamp (-750) 3000) 0 $ wheelEvent
+  dragAmount :: Dynamic t Point <- holdDyn zero $ dragEvent
 
   let
+    -- range from quarter size to 4 times as big
     dynScale = zoomLevel <&> \level -> 1 + 0.001 * level
 
     dynTransform :: Dynamic t Transform
-    dynTransform = zipDynWith combine dragAmount dynScale
-
-    toDoublePoint :: Point Int -> Point Double
-    toDoublePoint = view $ coerced . converted . coerced
-      where
-        converted = alongside (to int2Double) (to int2Double)
-        int2Double :: Int -> Double
-        int2Double = fromIntegral
-
-    combine :: Point Int -> Double -> Transform
-    combine offset zoom = Transform (toDoublePoint offset) zoom
+    dynTransform = zipDynWith Transform dragAmount dynScale
 
   pure dynTransform
   where
+    zoomReducer a b = a + b & clamp (-750) 3000
+
     wheelEvent :: Event t Double
     wheelEvent = domEvent Wheel e & fmapCheap _wheelEventResult_deltaY
 
-    mouseMove, mouseDown, mouseUp :: Event t (Point Int)
+    mouseMove, mouseDown, mouseUp :: Event t Point
     mouseMove = mouseEvent Mousemove e
     mouseDown = mouseEvent Mousedown e
     mouseUp   = mouseEvent Mouseup   e
@@ -118,5 +120,8 @@ mouseEvent
   )
   => EventName eventName
   -> target
-  -> Event t (Point Int)
-mouseEvent tag e = domEvent tag e & coerceEvent
+  -> Event t Point
+mouseEvent tag e = domEvent tag e & coerceEvent & fmapCheap toDoublePoint & coerceEvent
+
+toDoublePoint :: (Int, Int) -> Point
+toDoublePoint (x, y) = Point (fromIntegral x) (fromIntegral y)

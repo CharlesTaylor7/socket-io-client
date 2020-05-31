@@ -77,6 +77,8 @@ executable generals-app
     , DeriveGeneric
     , DerivingVia
     , GeneralizedNewtypeDeriving
+    , DeriveFunctor
+    , DeriveTraversable
     -- required to put type signatures on context bound functions
     , ScopedTypeVariables
     -- required to effectively use reflex
