@@ -1,3 +1,4 @@
+{-# language TemplateHaskell #-}
 module Component.Elastic.Types where
 
 import Prelude hiding (subtract)
@@ -11,11 +12,14 @@ import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 import Data.Group
-
 import Data.These
+import Data.Default
 
 data Point a = Point !a !a
   deriving stock (Show, Functor, Foldable, Traversable)
+
+instance Default n => Default (Point n) where
+  def = Point def def
 
 instance Num n => Semigroup (Point n) where
   Point a b <> Point c d = Point (a + c) (b + d)
@@ -50,6 +54,7 @@ newtype Dragging = Dragging Bool
 pattern DragOn  = Dragging True
 pattern DragOff = Dragging False
 
+
 data Transform = Transform
   { _transform_offset :: Point Double
   , _transform_scale  :: Double
@@ -68,3 +73,14 @@ toStyle (width, height) (Transform (Point x y) (coerce -> scale)) =
     & at "left"   ?~ toText (coerce x :: Pixels)
     & at "top"    ?~ toText (coerce y :: Pixels)
   )
+
+data Zoom = Zoom
+  { _zoom_scale :: !Double
+  , _zoom_delta :: !Double
+  }
+  deriving (Show)
+
+instance Default Zoom where
+  def = Zoom 1 0
+
+makeLenses ''Zoom

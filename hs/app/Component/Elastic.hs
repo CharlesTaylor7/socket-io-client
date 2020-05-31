@@ -8,6 +8,7 @@ import Types
 
 import Data.Group
 import Data.These
+import Data.Default
 import Data.Dom
 import qualified Data.Dom as Dom
 
@@ -44,8 +45,10 @@ elastic dims child = do
 
   pure a
 
+
 getTransform :: forall t m. Widget t m => Element t m -> m (Dynamic t Transform)
 getTransform e = do
+
   dragging :: Behavior t Dragging <-
     hold DragOff $ fold
       [ mouseDown  $> DragOn
@@ -56,14 +59,23 @@ getTransform e = do
   mousePosition :: Behavior t Point <-
     hold zero mouseMove
 
-  zoomScale :: Dynamic t Double <-
+  zoomDyn :: Dynamic t Zoom <-
     wheelEvent
-    & accumDyn zoomReducer 0
-    -- range from quarter size to 4 times as big
-    <&> fmap (\level -> 1 + 0.001 * level)
+    & foldDyn
+      (\delta zoom ->
+        let
+          rescaledDelta = delta * 0.001
+          total = zoom ^. zoom_scale
+          -- range from quarter size to 4 times as big
+          newTotal = rescaledDelta + total & clamp 0.25 4
+          observedDelta = newTotal - total
+        in
+          Zoom newTotal observedDelta
+      )
+      def
 
-  dragReferencePointDyn :: Dynamic t Point <-
-    accumDyn (&) zero $ leftmost
+  dragReferencePoint :: Behavior t Point <-
+    accumB (&) zero $ leftmost
       [ mouseDown
         & traceEventWith (\p -> "MouseDown: " <> show p)
         & fmapCheap subtract
@@ -77,15 +89,17 @@ getTransform e = do
         & gate (coerceBehavior dragging)
         & traceEventWith (\p -> "MouseLeave: " <> show p)
         & attachWith (const . add) mousePosition
-      , zoomScale
-        & updated
-        & traceEventWith (\zoom -> "Zoom: " <> show zoom)
-        -- <&> \(!_) -> mempty
-        & attachWith conjugate mousePosition
-      ]
-  let dragReferencePoint = current dragReferencePointDyn
-  display dragReferencePointDyn
 
+      , zoomDyn
+        & updated
+        & traceEventWith (\p -> "Zoom: " <> show p)
+        & attachWith
+            (\mouse zoom ->
+                add mouse . scale (1 + zoom ^. zoom_delta) . subtract mouse
+            )
+            mousePosition
+
+      ]
 
   dynOffset :: Dynamic t Point <-
     holdDyn zero $
@@ -93,16 +107,15 @@ getTransform e = do
         [ mouseMove
           & gate (coerceBehavior dragging)
           & attachWith add dragReferencePoint
-        , wheelEvent
+        , wheelEvent $> ()
           & tag dragReferencePoint
         ]
       )
 
   pure $
-    zipDynWith Transform dynOffset zoomScale
+    zipDynWith Transform dynOffset (zoomDyn <&> _zoom_scale)
 
   where
-    zoomReducer a b = a + b & clamp (-750) 3000
 
     wheelEvent :: Event t Double
     wheelEvent = domEvent Wheel e & fmapCheap _wheelEventResult_deltaY
@@ -115,9 +128,6 @@ getTransform e = do
     mouseLeave :: Event t ()
     mouseLeave = domEvent Mouseleave e
 
-
-conjugate :: Point -> Double -> Point -> Point
-conjugate mouse zoom = add mouse . scale zoom . subtract mouse
 
 clamp :: Ord n => n -> n -> n -> n
 clamp min max n
