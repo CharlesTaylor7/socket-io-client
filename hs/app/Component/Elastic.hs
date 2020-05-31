@@ -62,7 +62,6 @@ getTransform e = do
     -- range from quarter size to 4 times as big
     <&> fmap (\level -> 1 + 0.001 * level)
 
-
   dragReferencePointDyn :: Dynamic t Point <-
     accumDyn (&) zero $ leftmost
       [ mouseDown
@@ -95,11 +94,8 @@ getTransform e = do
         -- & attachWith (\mouse zoom -> add mouse . scale zoom . subtract mouse) mousePosition
       ]
 
-  let
-    dynTransform :: Dynamic t Transform
-    dynTransform = zipDynWith Transform dynOffset zoomScale
+  pure $ zipDynWith Transform dynOffset zoomScale
 
-  pure dynTransform
   where
     zoomReducer a b = a + b & clamp (-750) 3000
 
@@ -113,7 +109,6 @@ getTransform e = do
 
     mouseLeave :: Event t ()
     mouseLeave = domEvent Mouseleave e
-
 
 clamp :: Ord n => n -> n -> n -> n
 clamp min max n
