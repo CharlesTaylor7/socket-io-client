@@ -42,8 +42,10 @@ elastic dims child = do
 eitherOr :: Show a => These a a -> Maybe a
 eitherOr (This a) = Just a
 eitherOr (That a) = Just a
-eitherOr (These a b) = Nothing & trace ("Coincidence:" <> show (a, b))
+eitherOr (These a b) = Nothing & trace ("Coincidence: " <> show (a, b))
 
+foldAlign :: (Reflex t, Show a, Foldable f) => f (Event t a) -> Event t a
+foldAlign = foldl' (alignEventWithMaybe eitherOr) never
 
 getTransform :: forall t m. Widget t m => Element t m -> m (Dynamic t Transform)
 getTransform e = do
@@ -61,12 +63,14 @@ getTransform e = do
   let mousePosition = current mousePositionDyn
 
   dragReferencePointDyn :: Dynamic t (Point Int) <-
-    accumDyn (&) zero $ leftmost $
-      [ mouseDown  & fmapCheap add
-      , mouseUp    & fmapCheap subtract
+    accumDyn add zero $
+    -- leftmost $
+    foldAlign
+      [ mouseDown
+      , mouseUp & fmapCheap invert
       , mouseLeave
         & gate (coerceBehavior dragging)
-        & attachWith (const . subtract) mousePosition
+        & attachWith (const . invert) mousePosition
       ]
   -- temporary
   let dragReferencePoint = current dragReferencePointDyn
