@@ -11,14 +11,7 @@ newtype BotName = BotName Text
 newtype Id = Id Int
   deriving (Show)
 
-data Dimensions = Dimensions
-  { _dimensions_width  :: Int
-  , _dimensions_height :: Int
-  }
-  deriving (Eq, Show)
 
 makePrisms ''Id
 makePrisms ''BotName
 makePrisms ''GameConfig
-
-makeLenses ''Dimensions

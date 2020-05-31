@@ -19,8 +19,8 @@ gridDynStyle
   -> Dynamic t Style
   -> m ()
 gridDynStyle map gridStyle = do
-  let mapHeight = map ^. map_dimensions . dimensions_height
-  let mapWidth  = map ^. map_dimensions . dimensions_width
+  let mapHeight = map ^. map_height
+  let mapWidth  = map ^. map_width
 
   elDynStyle "table" (gridStyle <&> style_cssClass .~ Class "grid") $
     elClass "tbody" "" $
@@ -46,7 +46,7 @@ tileElement map coords =
     gridIx = ix . linearize
       where
         linearize (i, j) = (j - 1) * mapWidth + (i - 1)
-        mapWidth = map ^. map_dimensions . dimensions_width
+        mapWidth = map ^. map_width
 
     tileTraversal :: Traversal' Grid Tile
     tileTraversal = gridIx coords

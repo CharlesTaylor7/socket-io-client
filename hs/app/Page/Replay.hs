@@ -18,8 +18,6 @@ import qualified Js.FFI as FFI
 
 import Data.Default
 
-import Types (Dimensions(..))
-
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
@@ -64,7 +62,19 @@ gameReplay replay = do
   elClass "div" "turn-marker" $
     dynText (map ^. map_turn <&> ("turn: " <>) . show . halfRoundUp)
 
-  grid map
+
+  let
+    mapWidth = map ^. map_width . to fromIntegral
+    mapHeight = map ^. map_height . to fromIntegral
+
+    minTileSize :: Pixels
+    minTileSize = 15
+    initialSize = 4 * minTileSize
+
+  elastic
+    (initialSize * mapWidth, initialSize * mapHeight)
+    (0.25, 2)
+    (gridDynStyle map)
 
 halfRoundUp :: Int -> Int
 halfRoundUp = uncurry (+) . (`divMod` 2)
@@ -107,9 +117,7 @@ toMap replay commandEvent = do
   let map = Generals.Map
         { _map_tiles = dynGrid
         , _map_turn = dynTurn
-        , _map_dimensions = Dimensions
-            { _dimensions_width  = replay ^. replay_mapWidth
-            , _dimensions_height = replay ^. replay_mapHeight
-            }
+        , _map_width = replay ^. replay_mapWidth
+        , _map_height = replay ^. replay_mapHeight
         }
   pure map

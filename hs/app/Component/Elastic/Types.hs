@@ -61,6 +61,7 @@ data Transform = Transform
   }
 
 type InitialDimensions = (Pixels, Pixels)
+type ScaleRange = (Double, Double)
 
 toStyle :: InitialDimensions -> Transform -> Style
 toStyle (width, height) (Transform (Point x y) (coerce -> scale)) =

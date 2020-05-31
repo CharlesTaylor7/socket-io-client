@@ -3,7 +3,6 @@ module Page.Replay.Decode
   )
   where
 
-import Types (Dimensions(..))
 import Page.Replay.Types
 
 import Data.Aeson hiding (decode)

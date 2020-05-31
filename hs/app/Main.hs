@@ -8,9 +8,7 @@ import Data.Dom
 
 main :: IO ()
 main = mainWidget $ do
-  elastic (300, 300) $ \dynStyle ->
-    elDynStyle "div" (dynStyle <&> (greenBlockStyle <>)) $
-      blank
+  replay
 
 
 greenBlockStyle :: Style

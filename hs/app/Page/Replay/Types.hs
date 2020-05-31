@@ -4,7 +4,6 @@ module Page.Replay.Types where
 import Data.Aeson (Array(..), FromJSON(..))
 import Data.Default (Default(..))
 
-import Types (Dimensions(..))
 import Generals.Map.Types hiding (Map)
 
 import Data.Vector
