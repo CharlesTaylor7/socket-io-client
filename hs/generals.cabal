@@ -86,6 +86,7 @@ executable generals-app
     , ViewPatterns
     -- nice to have
     , OverloadedStrings
+    , BangPatterns
     , TypeApplications
     , LambdaCase
     , TupleSections

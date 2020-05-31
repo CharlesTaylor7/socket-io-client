@@ -36,16 +36,22 @@ elastic dims child = do
   rec
     (e, a) <- elStyle' "div" elasticStyle $ child dynChildStyle
 
-    dragReferencePoint <- accumB add zero $
-      alignEventWithMaybe combineMousedownAndMouseup mouseDown mouseUp
+    mousePosition <- holdDyn zero mouseMove
+
+    dragReferencePoint <- accumB (&) zero $
+      leftmost $
+        [ mouseDown & fmapCheap add
+        , mouseUp & fmapCheap subtract
+        -- , dynScale & updated &
+        ]
 
     draggingBehavior <- hold DragOff toggleDragEvent
 
     dragAmount :: Dynamic t (Point Int) <- holdDyn zero $ dragEvent
+  -- range from quarter size to 4 times as big
+    zoomLevel <- accumDyn (\a b -> a + b & clamp (-750) 3000) 0 $ wheelEvent
 
-    -- range from quarter size to 4 times as big
-    zoomLevel <- accumDyn (\a b -> a + b & clamp (-750) 3000) 0 $ traceEventWith show wheelEvent
-
+    display mousePosition
     let
       dynScale = zoomLevel <&> \level -> 1 + 0.001 * level
 
@@ -92,13 +98,6 @@ clamp min max n
   | n < min = min
   | n > max = max
   | otherwise = n
-
-combineMousedownAndMouseup :: Group g => These g g -> Maybe g
-combineMousedownAndMouseup = \case
-  This a -> Just a
-  That b -> Just $ invert b
-  These _ _ ->
-    error "Mouse up & down at the same time!?"
 
 mouseEvent
   ::
