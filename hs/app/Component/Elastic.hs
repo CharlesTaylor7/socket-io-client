@@ -73,7 +73,6 @@ getTransform e = do
 
   dragReferencePoint :: Behavior t Point <-
     hold zero $ mouseDown
-      -- & traceEventWith (\p -> "MouseDown: " <> show p)
 
   let
     dragEnd :: Event t Point =
@@ -108,12 +107,16 @@ getTransform e = do
 
   objectPositionWithoutDrag :: Dynamic t Point <-
     accumDyn (&) zero $
-      (leftmost
+      leftmost
         [ dragEnd <&> add
-        -- , wheelEvent $> ()
-        --   & tag dragReferencePoint
+        , zoomDyn
+          & updated
+          & attachWith
+            (\mouse zoom ->
+              add mouse . scale (1 + zoom ^. zoom_delta) . subtract mouse
+            )
+           mousePosition
         ]
-      )
 
   let
     objectPosition :: Dynamic t Point
