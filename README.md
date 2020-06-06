@@ -12,7 +12,7 @@
 - open any terminal. Run `yarn watch:server`.
 - open another terminal. Run `yarn watch:js`.
 
-Congrats, you should have build all the sources and have a server running at localhost:8000.
+Congrats, you should have built all the sources and have a server running at localhost:8000.
 
 ## To do
 
