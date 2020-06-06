@@ -107,6 +107,7 @@ executable generals-app
     , Component.Elastic
     , Component.Elastic.Types
     , Component.Grid
+    , Component.TestBlock
     , Js.FFI
     , Js.Imports
     , Js.Utils
