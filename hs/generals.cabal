@@ -103,7 +103,6 @@ executable generals-app
     , Generals.Map.Types
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics
-    , Component.AutoFocus
     , Component.Elastic
     , Component.Elastic.Types
     , Component.Grid
