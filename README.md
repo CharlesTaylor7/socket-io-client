@@ -22,7 +22,7 @@ Congrats, you should have built all the sources and have a server running at loc
 - fix css
 - ui for importing a replay? paste a url in an input?
 - loading animation while replay loads?
-
+- handle afks
 
 ### Bot
 - Port old bot client to Haskell
