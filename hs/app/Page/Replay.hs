@@ -30,9 +30,7 @@ replay = elClass "div" "replay" $ do
   replaysEvent :: Event t [ReplayLocation] <- getCachedReplays
 
   dropdownSelection :: Event t ReplayLocation <-
-    fmap switchDyn $
-    widgetHold (pure def) $
-    replaysEvent <&> \replays ->
+    bindEvent replaysEvent $ \replays ->
       let
         optionsVector :: Vector ReplayLocation
         optionsVector = fromList replays
@@ -40,7 +38,7 @@ replay = elClass "div" "replay" $ do
         optionsMap :: Map Int Text
         optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
 
-        initialKey = 0
+        initialKey = -1
 
         lookup i = optionsVector ^?! ix i
       in
@@ -49,15 +47,11 @@ replay = elClass "div" "replay" $ do
 
 
   replayEvent :: Event t Replay <-
-    fmap switchDyn $
-    widgetHold (pure never) $ dropdownSelection
-    <&> downloadReplay
+    bindEvent dropdownSelection downloadReplay
 
   widgetHold blank $ replayEvent <&> gameReplay
   blank
 
-
--- widgetHold
 
 toDescription :: ReplayLocation -> Text
 toDescription (ReplayLocation server id) =
