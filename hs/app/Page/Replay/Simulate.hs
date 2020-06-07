@@ -39,12 +39,16 @@ toHistory replay =
         [] ->
           pure Nothing
     )
-    (initialGameInfo replay, replay ^. replay_moves . to turns)
+    (seed, replay ^. replay_moves . to turns)
+  & Stream.cons seed
   & fmap (view gameInfo_grid)
   & unstream
   & liftIO
 
   where
+    seed :: GameInfo
+    seed = initialGameInfo replay
+
     tryTo :: a -> MaybeT IO a
     tryTo = MaybeT . fmap (preview _Right) . try' . evaluate
 

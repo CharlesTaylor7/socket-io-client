@@ -27,10 +27,11 @@ import qualified Generals.Map.Types as Generals
 
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  replaysEvent :: Event t [ReplayLocation] <- getCachedReplays
+  cachedReplays :: Event t [ReplayLocation] <-
+    getCachedReplays
 
   dropdownSelection :: Event t ReplayLocation <-
-    bindEvent replaysEvent $ \replays ->
+    bindEvent cachedReplays $ \replays ->
       let
         optionsVector :: Vector ReplayLocation
         optionsVector = fromList replays
@@ -40,11 +41,17 @@ replay = elClass "div" "replay" $ do
 
         initialKey = -1
 
-        lookup i = optionsVector ^?! ix i
+        lookup i = optionsVector ^? ix i
       in
         dropdown initialKey (pure optionsMap) def
-        <&> fmap lookup . _dropdown_change
+        <&> fmapMaybe lookup . _dropdown_change
 
+  widgetHold_ blank $ dropdownSelection <&> \replay ->
+      elAttr "a"
+        ( "href" =:
+          ("http://generals.io/replays/" <> replay ^. replayLocation_id)
+        ) $
+        text "Replay"
 
   replayEvent :: Event t Replay <-
     bindEvent dropdownSelection downloadReplay
@@ -79,6 +86,7 @@ gameReplay replay = do
       ( at (toAttr "type") ?~ "text") .
       ( at (toAttr "pattern") ?~ "[0-9]*") .
       ( at (toAttr "autofocus") ?~ "")
+
   let
     inputEvent = mapMaybe
       (preview (to readEither . _Right . to JumpTo))
