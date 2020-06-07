@@ -9,6 +9,7 @@ import Control.Monad.Fix as X (MonadFix(..))
 import Control.Monad.IO.Class as X (MonadIO)
 
 import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
+import Data.Traversable as X (for)
 
 -- relude
 import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)

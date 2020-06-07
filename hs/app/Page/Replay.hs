@@ -11,7 +11,7 @@ import Page.Replay.Types
 import Component.Elastic
 import Component.Grid
 
-import Js.Imports
+import Js.Imports (JSVal, asyncCallback1, (!), fromJSValUnchecked)
 import Js.Types
 import Js.Utils
 import qualified Js.FFI as FFI

@@ -1,4 +1,6 @@
-module Js.Utils where
+module Js.Utils
+  ( promiseToEvent
+  ) where
 
 import Reflex
 import Js.Imports

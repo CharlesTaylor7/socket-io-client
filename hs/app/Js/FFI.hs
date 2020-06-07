@@ -16,18 +16,17 @@ foreign import javascript unsafe
   "document.addEventListener('keydown', $1)"
   registerOnKeydown :: Callback (JSVal -> IO ()) -> IO ()
 
-foreign import javascript unsafe
-  "console.log($1)"
-  console_log :: JSVal -> IO ()
-
-foreign import javascript unsafe
-  "fetch($1).then(function(body) { return body.text() })"
-  fetch_bodytext :: Url -> IO (Promise Text)
 
 -- external dependencies
 foreign import javascript unsafe
   "window.downloadReplay($1)"
   downloadReplay :: Url -> IO (Promise Text)
+
+
+foreign import javascript unsafe
+  "window.cachedReplays()"
+  cachedReplays :: IO JSArray
+
 
 foreign import javascript unsafe
   "window.newSocket($1)"

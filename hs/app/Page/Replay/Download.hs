@@ -1,4 +1,6 @@
-module Page.Replay.Download where
+module Page.Replay.Download
+  ( downloadReplay
+  ) where
 
 import Reflex
 
@@ -21,6 +23,7 @@ downloadReplay location = do
   replayEvent <- promiseToEvent promise
   pure $ replayEvent <&> decode
 
+
 replayUrl :: ReplayLocation -> Url
 replayUrl replay
   = Url $
@@ -29,6 +32,7 @@ replayUrl replay
   <> ".s3.amazonaws.com/"
   <> replay ^. replayLocation_id
   <> ".gior"
+
 
 urlSuffix :: Server -> Text
 urlSuffix Server_Main = "na"
