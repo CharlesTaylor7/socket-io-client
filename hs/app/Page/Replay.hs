@@ -6,6 +6,7 @@ import Data.Dom
 
 import Page.Replay.Simulate
 import Page.Replay.Download
+import Page.Replay.Utils (getCachedReplays)
 import Page.Replay.Types
 
 import Component.Elastic
@@ -17,25 +18,49 @@ import Js.Utils
 import qualified Js.FFI as FFI
 
 import Data.Default
+import Data.Vector (Vector)
 
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 
+
 replay :: Widget t m => m ()
 replay = elClass "div" "replay" $ do
-  replayEvent <- downloadReplay replayLocation2
-  widgetHold blank $ replayEvent <&> gameReplay
+  replaysEvent :: Event t [ReplayLocation] <- getCachedReplays
+
+  dropdownSelection :: Event t ReplayLocation <-
+    fmap switchDyn $
+    widgetHold (pure def) $
+    replaysEvent <&> \replays ->
+      let
+        optionsVector = fromList replays :: Vector ReplayLocation
+        optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
+        initialKey = 0 :: Int
+        lookup i = optionsVector ^?! ix i
+      in
+        dropdown initialKey (pure optionsMap) def
+        <&> fmap lookup . _dropdown_change
+
+
+
+  -- widgetHold blank $ dropdownSelection
+  -- replayEvent <- downloadReplay replayLocation2
+  -- widgetHold blank $ replayEvent <&> gameReplay
   blank
+
+
+
+
+toDescription :: ReplayLocation -> Text
+toDescription (ReplayLocation server id) =
+  describe server
+  <> "-"
+  <> show id
   where
-    replayLocation1 = ReplayLocation
-      { _replayLocation_id = "HOVnMO6cL"
-      , _replayLocation_server = Server_Main
-      }
-    replayLocation2 = ReplayLocation
-      { _replayLocation_id = "H9YxQHhiI"
-      , _replayLocation_server = Server_Main
-      }
+    describe Server_Main = "main"
+    describe Server_Bot = "bot"
+
 
 gameReplay :: Widget t m => Replay -> m ()
 gameReplay replay = do

@@ -2,27 +2,32 @@ module Page.Replay.Utils
   ( getCachedReplays
   ) where
 
+import Reflex
+
 import Js.Imports
+import Js.Utils (promiseToEventVia)
 import qualified Js.FFI as FFI
 
 import Page.Replay.Types (ReplayLocation(..), Server(..))
 
-
-getCachedReplays :: IO [ReplayLocation]
-getCachedReplays = do
-  cachedReplays <- FFI.cachedReplays
-  for (toList cachedReplays) $ \jsVal -> do
+instance FromJSVal ReplayLocation where
+  fromJSVal jsVal = do
     let obj = Object jsVal
     replayId <- unsafeGetProp "replayId" obj
-      >>= fromJSValUnchecked
+      >>= fromJSVal
     server <- unsafeGetProp "server" obj
-      >>= fromJSValUnchecked
-      <&> parseServer
+      >>= fromJSVal
+      -- <&> parseServer
 
-    pure $ ReplayLocation server replayId
+    pure $ ReplayLocation <$> (server >>= parseServer) <*> replayId
+
+parseServer :: Text -> Maybe Server
+parseServer "na" = Just Server_Main
+parseServer "bot" = Just Server_Bot
+parseServer _ = Nothing
 
 
-
-parseServer :: Text -> Server
-parseServer "na" = Server_Main
-parseServer "bot" = Server_Bot
+getCachedReplays :: Widget t m => m (Event t [ReplayLocation])
+getCachedReplays = do
+  cached <- liftIO FFI.cachedReplays
+  promiseToEventVia fromJSValUncheckedListOf cached

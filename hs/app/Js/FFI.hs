@@ -2,10 +2,10 @@
 module Js.FFI where
 
 import Js.Imports
-import Js.Types (Url)
+import Js.Types (Url, Promise)
 
+import Page.Replay.Types (ReplayLocation)
 
-newtype Promise a = Promise JSVal
 
 -- general utilities
 foreign import javascript unsafe
@@ -25,7 +25,7 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
   "window.cachedReplays()"
-  cachedReplays :: IO JSArray
+  cachedReplays :: IO (Promise [ReplayLocation])
 
 
 foreign import javascript unsafe

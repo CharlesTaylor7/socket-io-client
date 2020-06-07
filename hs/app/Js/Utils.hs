@@ -1,9 +1,11 @@
 module Js.Utils
   ( promiseToEvent
+  , promiseToEventVia
   ) where
 
 import Reflex
 import Js.Imports
+import Js.Types (Promise)
 
 import qualified Js.FFI as FFI
 
@@ -14,8 +16,14 @@ type ToEvent_Constraints t m =
   , MonadIO m
   , MonadIO (Performable m)
   )
-promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => FFI.Promise a -> m (Event t a)
-promiseToEvent promise = do
+
+
+promiseToEventVia
+  :: (ToEvent_Constraints t m, FromJSVal a)
+  => (JSVal -> IO a)
+  -> Promise a
+  -> m (Event t a)
+promiseToEventVia convert promise = do
   (event, trigger) <- newTriggerEvent
 
   -- callback triggers event
@@ -31,6 +39,10 @@ promiseToEvent promise = do
       -- release js callback
       releaseCallback jsCallback
       -- convert js reference to haskell data type
-      fromJSValUnchecked jsVal
+      convert jsVal
 
   pure doneEvent
+
+
+promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => Promise a -> m (Event t a)
+promiseToEvent = promiseToEventVia fromJSValUnchecked

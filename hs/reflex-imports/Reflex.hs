@@ -5,6 +5,7 @@ import Reflex.Dom as X hiding
   , Element
   , Group(..)
   , FunctorMaybe(..)
+  , JSArray(..)
   , switchPromptly
   , switchPromptOnly
   , button
@@ -15,3 +16,4 @@ import Reflex.Element as X
 import Reflex.Optics as X
 import Reflex.Utils as X
 import Reflex.Widget as X
+import Reflex.Instances as X

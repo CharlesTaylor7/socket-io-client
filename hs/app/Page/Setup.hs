@@ -20,6 +20,7 @@ setup = elClass "div" "setup" $ do
   buildGamePage <$> button "button-start" "Start game"
   pure ()
 
+mkDropdown :: Widget t m => _ -> _ -> Text -> m ()
 mkDropdown initial dynOptions className =
       dropdown initial dynOptions $
         def

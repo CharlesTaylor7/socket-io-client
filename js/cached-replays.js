@@ -1,4 +1,4 @@
-const replayUrlRegex = /$https:\/\/generalsio-replays-(na|bot)\.s3\.amazonaws\.com\/(\w+)\.gior^/
+const replayUrlRegex = /https:\/\/generalsio-replays-(na|bot)\.s3\.amazonaws\.com\/(\w+)\.gior/
 
 module.exports = async () => {
   const replaysCache = await caches.open('replays')
