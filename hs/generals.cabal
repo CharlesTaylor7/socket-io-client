@@ -46,7 +46,9 @@ library generals-prelude
       base >= 4.7 && < 5.0
     , relude
     , lens >= 4.18 && < 5.0
-    , data-default
+    , vector
+    , containers
+    -- , data-default
 
 executable generals-app
   import: common
@@ -66,6 +68,7 @@ executable generals-app
     , mtl
     , groups
     , these
+    , primitive
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   default-extensions:
     -- required to make type aliases for reflex constraints

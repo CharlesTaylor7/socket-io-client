@@ -4,7 +4,8 @@ module Prelude (module X) where
 
 -- base
 import "base" Prelude as X (span)
-import Control.Exception as X (throwIO)
+import Control.Arrow as X ((&&&))
+import Control.Exception as X (throwIO, try, evaluate)
 import Control.Monad.Fix as X (MonadFix(..))
 import Control.Monad.IO.Class as X (MonadIO)
 
@@ -13,6 +14,12 @@ import Data.Traversable as X (for)
 
 -- relude
 import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)
+
+-- containers
+import Data.IntSet as X (IntSet)
+
+-- vector
+import Data.Vector as X (Vector)
 
 -- lens
 import Control.Lens.At as X
@@ -41,5 +48,3 @@ import Control.Lens.TH as X (makeLenses, makePrisms)
 -- import Control.Lens.Reified as X
 -- import Control.Lens.Type as X
 -- import Control.Lens.Zoom as X
-
-import Control.Arrow as X ((&&&))

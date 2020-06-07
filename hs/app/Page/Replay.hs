@@ -5,7 +5,7 @@ import Reflex
 import Data.Dom
 
 import Page.Replay.Simulate
-import Page.Replay.Download
+import Page.Replay.Download (downloadReplay)
 import Page.Replay.Utils (getCachedReplays)
 import Page.Replay.Types
 
@@ -57,7 +57,7 @@ toDescription :: ReplayLocation -> Text
 toDescription (ReplayLocation server id) =
   describe server
   <> "-"
-  <> show id
+  <> id
   where
     describe Server_Main = "main"
     describe Server_Bot = "bot"
@@ -129,21 +129,25 @@ commandReducer (firstTurn, lastTurn) command =
     JumpTo n  -> const $ max firstTurn $ min lastTurn n
 
 toMap
-  :: (Reflex t, MonadFix m, MonadHold t m)
+  :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m)
   => Replay
   -> Event t Command
   -> m (Generals.Map t)
 toMap replay commandEvent = do
-  let history = toHistory replay
-  let minTurn = 0
-  let maxTurn = history & length & subtract 1
+  history <- toHistory replay
+
+  let
+    minTurn = 0
+    maxTurn = history & length & subtract 1
+
   dynTurn <- foldDyn (commandReducer (minTurn, maxTurn)) 0 commandEvent
 
-  let dynGrid = dynTurn <&> (\i -> history ^?! ix i)
-  let map = Generals.Map
-        { _map_tiles = dynGrid
-        , _map_turn = dynTurn
-        , _map_width = replay ^. replay_mapWidth
-        , _map_height = replay ^. replay_mapHeight
-        }
+  let
+    dynGrid = dynTurn <&> (\i -> history ^?! ix i)
+    map = Generals.Map
+      { _map_tiles = dynGrid
+      , _map_turn = dynTurn
+      , _map_width = replay ^. replay_mapWidth
+      , _map_height = replay ^. replay_mapHeight
+      }
   pure map

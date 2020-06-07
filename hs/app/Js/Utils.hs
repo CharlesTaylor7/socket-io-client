@@ -1,5 +1,6 @@
 module Js.Utils
-  ( promiseToEvent
+  ( PromiseToEvent
+  , promiseToEvent
   , promiseToEventVia
   ) where
 
@@ -9,7 +10,7 @@ import Js.Types (Promise)
 
 import qualified Js.FFI as FFI
 
-type ToEvent_Constraints t m =
+type PromiseToEvent t m =
   ( Reflex t
   , PerformEvent t m
   , TriggerEvent t m
@@ -17,9 +18,8 @@ type ToEvent_Constraints t m =
   , MonadIO (Performable m)
   )
 
-
 promiseToEventVia
-  :: (ToEvent_Constraints t m, FromJSVal a)
+  :: (PromiseToEvent t m, FromJSVal a)
   => (JSVal -> IO a)
   -> Promise a
   -> m (Event t a)
@@ -44,5 +44,8 @@ promiseToEventVia convert promise = do
   pure doneEvent
 
 
-promiseToEvent :: (ToEvent_Constraints t m, FromJSVal a) => Promise a -> m (Event t a)
+promiseToEvent
+  :: (PromiseToEvent t m, FromJSVal a)
+  => Promise a
+  -> m (Event t a)
 promiseToEvent = promiseToEventVia fromJSValUnchecked

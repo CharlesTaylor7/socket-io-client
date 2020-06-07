@@ -16,7 +16,10 @@ import Js.Types
 import qualified Js.FFI as FFI
 
 
-downloadReplay :: Widget t m => ReplayLocation -> m (Event t Replay)
+downloadReplay
+  :: PromiseToEvent t m
+  => ReplayLocation
+  -> m (Event t Replay)
 downloadReplay location = do
   let url = replayUrl location
   promise <- liftIO $ FFI.downloadReplay url

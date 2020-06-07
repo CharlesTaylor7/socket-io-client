@@ -7,23 +7,49 @@ import Page.Replay.Simulate.Types
 import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
-import Data.Vector (Vector, scanl')
 import Data.Default
 
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
 
-import Data.IntSet (IntSet)
 import qualified Data.IntSet as Set
-import Data.Vector (Vector)
+
+import qualified Data.Vector as Vector
+import qualified Data.Vector.Generic.Mutable as MVector
+import Data.Vector.Fusion.Bundle (MBundle)
+import qualified Data.Vector.Fusion.Bundle.Monadic as Stream
+
+import Control.Monad.Primitive (PrimMonad)
+
+unstream :: (PrimMonad m) => MBundle m v a -> m (Vector a)
+unstream = Vector.freeze <=< MVector.munstream
 
 
-toHistory :: Replay -> Vector Grid
-toHistory replay = view gameInfo_grid <$>
-  scanl'
-    (flip $ advanceTurn)
-    (initialGameInfo replay)
-    (fromList . turns $ replay ^. replay_moves)
+toHistory
+  :: MonadIO m
+  => Replay
+  -> m (Vector Grid)
+toHistory replay =
+  Stream.unfoldrM
+    (\(gameInfo, turns) ->
+      case turns of
+        t:ts -> runMaybeT $ do
+          gameInfo <- tryTo $ advanceTurn t gameInfo
+          pure (gameInfo, (gameInfo, ts))
+        [] ->
+          pure Nothing
+    )
+    (initialGameInfo replay, replay ^. replay_moves . to turns)
+  & fmap (view gameInfo_grid)
+  & unstream
+  & liftIO
+
+  where
+    tryTo :: a -> MaybeT IO a
+    tryTo = MaybeT . fmap (preview _Right) . try' . evaluate
+
+    try' :: IO a -> IO (Either SomeException a)
+    try' = try
 
 turns :: [Move] -> Turns
 turns moves = unfoldr f (1, moves)
@@ -186,7 +212,10 @@ moveReducer move = do
 
   -- update cache
   when (newOwner /= defendingPlayer) $ do
-    let newPlayerId = newOwner ^?! _Player
+    let newPlayerId =
+          case newOwner ^? _Player of
+            Just id -> id
+            Nothing -> error $ show (move ^. move_endTile, newArmy)
     gameInfo_owned . ixLens newPlayerId . contains (move ^. move_endTile . _GridIndex) .= True
     case defendingPlayer ^? _Player of
       Just id ->
