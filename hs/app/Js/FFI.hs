@@ -1,4 +1,4 @@
-{-# LANGUAGE JavaScriptFFI #-}
+{-# language JavaScriptFFI #-}
 module Js.FFI where
 
 import Js.Imports

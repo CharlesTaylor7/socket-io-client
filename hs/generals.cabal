@@ -80,10 +80,12 @@ executable generals-app
     , GeneralizedNewtypeDeriving
     , DeriveFunctor
     , DeriveTraversable
-    -- required to put type signatures on context bound functions
+    -- required to effectively document code
     , ScopedTypeVariables
     -- required to effectively use reflex
     , RecursiveDo
+    -- awesome debugging by having the compiler tell you the type of something
+    , PartialTypeSignatures
     -- patterns
     , PatternSynonyms
     , ViewPatterns
