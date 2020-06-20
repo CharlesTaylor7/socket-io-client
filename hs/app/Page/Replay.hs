@@ -18,6 +18,7 @@ import Js.Utils
 import qualified Js.FFI as FFI
 
 import Data.Default
+import Control.Lens.Unsafe ((^?!))
 import Data.Vector (Vector)
 
 import Generals.Map.Types hiding (Map)

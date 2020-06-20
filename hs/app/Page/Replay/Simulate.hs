@@ -8,6 +8,7 @@ import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
 import Data.Default
+import Control.Lens.Unsafe
 
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict

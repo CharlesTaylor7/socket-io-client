@@ -1,6 +1,7 @@
 module Generals.Map.Types.Optics where
 
 import Generals.Map.Types.Definitions
+import Control.Lens.Unsafe (singular, (^?!))
 
 ixGrid :: GridIndex -> Lens' Grid Tile
 ixGrid = singular . ix . coerce
