@@ -12,6 +12,7 @@ import Control.Lens.Unsafe
 
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
+import Control.Monad.Except
 
 import qualified Data.IntSet as Set
 
@@ -22,29 +23,27 @@ import qualified Data.Vector.Fusion.Bundle.Monadic as Stream
 
 import Control.Monad.Primitive (PrimMonad)
 
+
 unstream :: (PrimMonad m) => MBundle m v a -> m (Vector a)
 unstream = Vector.freeze <=< MVector.munstream
 
-
-toHistory
-  :: MonadIO m
-  => Replay
-  -> m (Vector Grid)
-toHistory replay =
-  Stream.unfoldrM
+toHistory :: Replay -> Vector Grid
+toHistory replay = runST $
+  Stream.unfoldr
     (\(gameInfo, turns) ->
       case turns of
-        t:ts -> runMaybeT $ do
-          gameInfo <- tryTo $ advanceTurn t gameInfo
+        t:ts -> do
+          gameInfo <- advanceTurn t
+            & flip execStateT gameInfo
+            & preview _Right
           pure (gameInfo, (gameInfo, ts))
         [] ->
-          pure Nothing
+          Nothing
     )
     (seed, replay ^. replay_moves . to turns)
   & Stream.cons seed
   & fmap (view gameInfo_grid)
   & unstream
-  & liftIO
 
   where
     seed :: GameInfo
@@ -109,40 +108,39 @@ initialGameInfo replay = GameInfo
       ]
     numTiles = replay^.replay_mapWidth * replay^.replay_mapHeight
 
-advanceTurn :: Turn -> GameInfo -> GameInfo
-advanceTurn (turnIndex, moves) =
-  cityGrowth turnIndex .
-  tileGrowth turnIndex .
-  (execState $ swampLoss turnIndex) .
+type SimulateMonadConstraints m = (MonadError Text m, MonadState GameInfo m)
+
+advanceTurn :: SimulateMonadConstraints m => Turn -> m ()
+advanceTurn (turnIndex, moves) = do
+  cityGrowth turnIndex
+  tileGrowth turnIndex
+  swampLoss turnIndex
   applyMoves moves
 
+increment :: _
 increment i = singular (ix i . _Army . army_size) +~ 1
 
-cityGrowth :: Int -> GameInfo -> GameInfo
-cityGrowth turnIndex info =
-  if turnIndex `mod` 2 == 1
-  then
-    info
-    & gameInfo_grid .~
-      foldl'
+cityGrowth :: SimulateMonadConstraints m => Int -> m ()
+cityGrowth turnIndex =
+  when (turnIndex `mod` 2 == 1) $ do
+    grid <- use gameInfo_grid
+    activeCities <- use gameInfo_activeCities
+    gameInfo_grid .=
+      Set.foldl'
         (flip increment)
-        (info ^. gameInfo_grid)
-        (info ^. gameInfo_activeCities . to Set.toList)
-  else
-    info
+        grid
+        activeCities
 
-tileGrowth :: Int -> GameInfo -> GameInfo
-tileGrowth turnIndex info =
-  if turnIndex `mod` 50 == 49
-  then
-    info
-    & gameInfo_grid .~
-      foldl'
+tileGrowth :: SimulateMonadConstraints m => Int -> m ()
+tileGrowth turnIndex =
+  when (turnIndex `mod` 50 == 49) $ do
+    grid <- use gameInfo_grid
+    owned <- use $ gameInfo_owned . folded
+    gameInfo_grid .=
+      Set.foldl'
         (flip increment)
-        (info ^. gameInfo_grid)
-        (info ^. gameInfo_owned . folded . to Set.toList)
-  else
-    info
+        grid
+        owned
 
 swampLoss :: MonadState GameInfo m => Int -> m ()
 swampLoss turnIndex =
@@ -157,12 +155,11 @@ swampLoss turnIndex =
       when (is _Neutral $ updatedArmy ^. army_owner) $
         gameInfo_activeSwamps . contains i .= False
 
-applyMoves :: [Move] -> GameInfo -> GameInfo
-applyMoves moves info =
+applyMoves :: SimulateMonadConstraints m => [Move] -> m ()
+applyMoves moves =
   traverse_ moveReducer moves
   &   runWriterT
   >>= traverse_ applyKill . view _2
-  &   flip execState info
 
 ixLens :: (Ixed s) => Index s -> Lens' s (IxValue s)
 ixLens = singular . ix

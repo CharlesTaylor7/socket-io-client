@@ -12,3 +12,6 @@
 # node
 /.cache/
 /node_modules/
+
+# vim
+*.swp

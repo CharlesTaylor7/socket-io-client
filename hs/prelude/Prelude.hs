@@ -8,6 +8,7 @@ import Control.Arrow as X ((&&&))
 import Control.Exception as X (throwIO, try, evaluate)
 import Control.Monad.Fix as X (MonadFix(..))
 import Control.Monad.IO.Class as X (MonadIO)
+import Control.Monad.ST as X (ST, runST)
 
 import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
 import Data.Traversable as X (for)
