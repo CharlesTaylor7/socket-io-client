@@ -38,8 +38,7 @@ toHistory replay =
         t:ts -> runMaybeT $ do
           gameInfo <- advanceTurn t
             & flip execStateT gameInfo
-            -- & fmap ( preview _Right )
-            & handle
+            & logError
           pure (gameInfo, (gameInfo, ts))
         [] ->
           pure Nothing
@@ -54,8 +53,8 @@ toHistory replay =
     seed :: GameInfo
     seed = initialGameInfo replay
 
-    handle :: Either Text a -> MaybeT IO a
-    handle = \case
+    logError :: Either Text a -> MaybeT IO a
+    logError = \case
       Left text -> print text >> empty
       Right a -> pure a
 
@@ -127,7 +126,7 @@ advanceTurn (turnIndex, moves) = do
   swampLoss turnIndex
   applyMoves moves
 
-increment :: _
+increment :: Index Grid -> Grid -> Grid
 increment i = singular (ix i . _Army . army_size) +~ 1
 
 cityGrowth :: SimulateMonadConstraints m => Int -> m ()
