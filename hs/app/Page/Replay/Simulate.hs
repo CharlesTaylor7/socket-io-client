@@ -27,27 +27,37 @@ import Control.Monad.Primitive (PrimMonad)
 unstream :: (PrimMonad m) => MBundle m v a -> m (Vector a)
 unstream = Vector.freeze <=< MVector.munstream
 
-toHistory :: Replay -> Vector Grid
-toHistory replay = runST $
-  Stream.unfoldr
+toHistory
+  :: MonadIO m
+  => Replay
+  -> m (Vector Grid)
+toHistory replay =
+  Stream.unfoldrM
     (\(gameInfo, turns) ->
       case turns of
-        t:ts -> do
+        t:ts -> runMaybeT $ do
           gameInfo <- advanceTurn t
             & flip execStateT gameInfo
-            & preview _Right
+            -- & fmap ( preview _Right )
+            & handle
           pure (gameInfo, (gameInfo, ts))
         [] ->
-          Nothing
+          pure Nothing
     )
     (seed, replay ^. replay_moves . to turns)
-  & Stream.cons seed
-  & fmap (view gameInfo_grid)
-  & unstream
+    & Stream.cons seed
+    & fmap (view gameInfo_grid)
+    & unstream
+    & liftIO
 
   where
     seed :: GameInfo
     seed = initialGameInfo replay
+
+    handle :: Either Text a -> MaybeT IO a
+    handle = \case
+      Left text -> print text >> empty
+      Right a -> pure a
 
     tryTo :: a -> MaybeT IO a
     tryTo = MaybeT . fmap (preview _Right) . try' . evaluate
