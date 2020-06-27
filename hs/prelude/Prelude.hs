@@ -35,7 +35,7 @@ import Control.Lens.Lens as X
 import Control.Lens.Prism as X
 import Control.Lens.Review as X hiding ((#))
 import Control.Lens.Setter as X
-import Control.Lens.Traversal as X hiding (element, singular)
+import Control.Lens.Traversal as X hiding (element, singular, unsafePartsOf)
 import Control.Lens.Tuple as X
 import Control.Lens.Wrapped as X
 import Data.Text.Lens as X hiding (text)
@@ -49,3 +49,6 @@ import Control.Lens.TH as X (makeLenses, makePrisms)
 -- import Control.Lens.Reified as X
 -- import Control.Lens.Type as X
 -- import Control.Lens.Zoom as X
+
+-- custom
+import Control.Lens.Safe as X

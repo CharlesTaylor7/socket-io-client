@@ -49,6 +49,7 @@ library generals-prelude
       base >= 4.7 && < 5.0
     , relude
     , lens >= 4.18 && < 5.0
+    , profunctors
     , vector
     , containers
     , mtl
