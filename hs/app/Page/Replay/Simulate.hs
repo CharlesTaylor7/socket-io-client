@@ -8,7 +8,6 @@ import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
 import Data.Default
-import Control.Lens.Unsafe
 
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
@@ -22,6 +21,9 @@ import Data.Vector.Fusion.Bundle (MBundle)
 import qualified Data.Vector.Fusion.Bundle.Monadic as Stream
 
 import Control.Monad.Primitive (PrimMonad)
+
+
+type SimulateMonadConstraints m = (MonadError Text m, MonadState GameInfo m)
 
 
 unstream :: (PrimMonad m) => MBundle m v a -> m (Vector a)
@@ -117,7 +119,6 @@ initialGameInfo replay = GameInfo
       ]
     numTiles = replay^.replay_mapWidth * replay^.replay_mapHeight
 
-type SimulateMonadConstraints m = (MonadError Text m, MonadState GameInfo m)
 
 advanceTurn :: SimulateMonadConstraints m => Turn -> m ()
 advanceTurn (turnIndex, moves) = do
