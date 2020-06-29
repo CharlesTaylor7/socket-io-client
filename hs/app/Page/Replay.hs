@@ -85,8 +85,8 @@ gameReplay replay = do
     & inputElementConfig_elementConfig . elementConfig_initialAttributes
     %~
       ( at (toAttr "type") ?~ "text") .
-      ( at (toAttr "pattern") ?~ "[0-9]*") .
-      ( at (toAttr "autofocus") ?~ "")
+      ( at (toAttr "pattern") ?~ "[0-9]*")
+      -- ( at (toAttr "autofocus") ?~ "")
 
   let
     inputEvent = mapMaybe
