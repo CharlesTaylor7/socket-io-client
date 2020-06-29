@@ -62,10 +62,14 @@ toHistory replay =
       Right a -> tryTo a
 
     tryTo :: a -> MaybeT IO a
-    tryTo = MaybeT . fmap (preview _Right) . try' . evaluate
+    tryTo action = do
+      either <- liftIO . try . evaluate $ action
+      case either of
+        Left (exception :: SomeException) -> do
+          print exception
+          empty
+        Right a -> pure a
 
-    try' :: IO a -> IO (Either SomeException a)
-    try' = try
 
 turns :: [Move] -> Turns
 turns moves = unfoldr f (1, moves)
