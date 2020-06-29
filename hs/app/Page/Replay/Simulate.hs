@@ -8,7 +8,7 @@ import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
 import Data.Default
-import Control.Lens.Unsafe
+import Control.Lens.Unsafe (singular)
 
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
@@ -180,13 +180,13 @@ applyMoves moves =
   &   runWriterT
   >>= traverse_ applyKill . view _2
 
-applyKill :: MonadState GameInfo m => Kill -> m ()
+applyKill :: SimulateMonadConstraints m => Kill -> m ()
 applyKill (Kill killer target) = do
   -- remove all territory belonging to target
   maybe_territory <- gameInfo_owned . at target <<.= Nothing
-  let
-    territory = maybe_territory ^?! _Just $
-      "player " <> show target <> " cannot be killed twice"
+
+  territory <-  maybe_territory ^?? _Just $
+    "player " <> show target <> " cannot be killed twice"
 
   -- give it to killer
   singular
@@ -200,7 +200,7 @@ applyKill (Kill killer target) = do
 
 
 moveReducer
-  :: (MonadState GameInfo m, MonadWriter [Kill] m)
+  :: (SimulateMonadConstraints m, MonadWriter [Kill] m)
   => Move
   -> m ()
 moveReducer move = do
@@ -239,9 +239,8 @@ moveReducer move = do
 
   -- update cache
   when (newOwner /= defendingPlayer) $ do
-    let
-      newPlayerId = newOwner ^?! _Player $
-        show (move ^. move_endTile, newArmy)
+    newPlayerId <- newOwner ^?? _Player $
+      show (move ^. move_endTile, newArmy)
 
     gameInfo_owned . ix newPlayerId . contains (move ^. move_endTile . _GridIndex) .= True
     case defendingPlayer ^? _Player of
@@ -256,13 +255,23 @@ moveReducer move = do
 
   -- emit kill & convert conquered tile to being a city
   when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
-    tell $ pure $ Kill
-      { kill_killer = newOwner ^?! _Player $ "Kill: killer"
-      , kill_target = defendingPlayer ^?! _Player $ "Kill: mark"
+    -- read player ids
+    killer <- newOwner ^?? _Player $ "Kill: killer"
+    mark <- defendingPlayer ^?? _Player $ "Kill: mark"
+
+    -- emit kill
+    tell $ singleton $ Kill
+      { kill_killer = killer
+      , kill_target = mark
       }
+    -- convert conquered general to a city
     gameInfo_grid . ixGrid (move ^. move_endTile) . armyTileType .= City_Tile
 
   pure ()
+
+
+singleton :: a -> [a]
+singleton = pure
 
 halfRoundUp :: Integral n => n -> n
 halfRoundUp = uncurry (+) . (`divMod` 2)

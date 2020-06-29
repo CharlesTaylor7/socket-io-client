@@ -40,20 +40,3 @@ infixl 8 ^??
 (structure ^?? optic) error = previewOrError optic error structure
 {-# INLINE (^??) #-}
 
-type BazT = BazaarT (->)
-
--- (.=?)
---   :: (MonadState s m, MonadError e m)
---   => Traversal' s a
---   -> a
---   -> m s
--- optic .=? val = undefined
---
-
-
-
-
-
-
-
-
