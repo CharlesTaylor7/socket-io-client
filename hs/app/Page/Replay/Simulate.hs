@@ -180,20 +180,19 @@ applyMoves moves =
   &   runWriterT
   >>= traverse_ applyKill . view _2
 
-ixLens :: (Ixed s, Show (Index s)) => Index s -> Lens' s (IxValue s)
-ixLens i = singular ("index at: " <> show i) $ ix i
-
 applyKill :: MonadState GameInfo m => Kill -> m ()
 applyKill (Kill killer target) = do
   -- remove all territory belonging to target
   maybe_territory <- gameInfo_owned . at target <<.= Nothing
   let
-    territory = case maybe_territory of
-      Just territory -> territory
-      Nothing -> error $ "player " <> show target <> " cannot be killed twice"
+    territory = maybe_territory ^?! _Just $
+      "player " <> show target <> " cannot be killed twice"
 
   -- give it to killer
-  gameInfo_owned . ixLens killer <>= territory
+  singular
+    "give territory to killer"
+    (gameInfo_owned . ix killer)
+    <>= territory
 
   -- halve the armies in the transferred territory
   for_ (Set.toList territory) $ \i ->
@@ -240,14 +239,14 @@ moveReducer move = do
 
   -- update cache
   when (newOwner /= defendingPlayer) $ do
-    let newPlayerId =
-          case newOwner ^? _Player of
-            Just id -> id
-            Nothing -> error $ show (move ^. move_endTile, newArmy)
-    gameInfo_owned . ixLens newPlayerId . contains (move ^. move_endTile . _GridIndex) .= True
+    let
+      newPlayerId = newOwner ^?! _Player $
+        show (move ^. move_endTile, newArmy)
+
+    gameInfo_owned . ix newPlayerId . contains (move ^. move_endTile . _GridIndex) .= True
     case defendingPlayer ^? _Player of
       Just id ->
-        gameInfo_owned . ixLens id . contains (move ^. move_endTile . _GridIndex) .= False
+        gameInfo_owned . ix id . contains (move ^. move_endTile . _GridIndex) .= False
       _ -> do
         defenseTileType <- use (gameInfo_grid . ixGrid (move ^. move_endTile) . armyTileType)
         when (defenseTileType == Swamp_Tile) $
