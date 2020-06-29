@@ -152,7 +152,7 @@ toMap replay commandEvent = do
   dynTurn <- foldDyn (commandReducer (minTurn, maxTurn)) 0 commandEvent
 
   let
-    dynGrid = dynTurn <&> (\i -> history ^?! ix i)
+    dynGrid = dynTurn <&> (\i -> history ^?! ix i $ "history index: " <> show i)
     map = Generals.Map
       { _map_tiles = dynGrid
       , _map_turn = dynTurn

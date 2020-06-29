@@ -8,6 +8,7 @@ import Page.Replay.Types
 import Generals.Map.Types hiding (Map)
 
 import Data.Default
+import Control.Lens.Unsafe
 
 import Control.Monad.Writer.Strict
 import Control.Monad.State.Strict
@@ -58,7 +59,7 @@ toHistory replay =
     logError :: Either Text a -> MaybeT IO a
     logError = \case
       Left text -> print text >> empty
-      Right a -> pure a
+      Right a -> tryTo a
 
     tryTo :: a -> MaybeT IO a
     tryTo = MaybeT . fmap (preview _Right) . try' . evaluate
@@ -128,7 +129,11 @@ advanceTurn (turnIndex, moves) = do
   applyMoves moves
 
 increment :: Index Grid -> Grid -> Grid
-increment i = singular (ix i . _Army . army_size) +~ 1
+increment i = singular
+  ("incrementing army at index: " <> show i)
+  (ix i . _Army . army_size)
+  +~ 1
+
 
 cityGrowth :: SimulateMonadConstraints m => Int -> m ()
 cityGrowth turnIndex =
@@ -157,7 +162,11 @@ swampLoss turnIndex =
   when (turnIndex `mod` 2 == 1) $ do
     replay_swamps <- use $ gameInfo_activeSwamps . to Set.toList
     for_ replay_swamps $ \i -> do
-      updatedArmy <- gameInfo_grid . ixLens i . singular _Army <%=
+      let
+        setter = singular
+          ("swamp decrementing army at index: " <> show i)
+          (gameInfo_grid . ix i . _Army)
+      updatedArmy <- setter <%=
         \army ->
           if army^.army_size > 1
           then army & army_size -~ 1
@@ -171,8 +180,8 @@ applyMoves moves =
   &   runWriterT
   >>= traverse_ applyKill . view _2
 
-ixLens :: (Ixed s) => Index s -> Lens' s (IxValue s)
-ixLens = singular . ix
+ixLens :: (Ixed s, Show (Index s)) => Index s -> Lens' s (IxValue s)
+ixLens i = singular ("index at: " <> show i) $ ix i
 
 applyKill :: MonadState GameInfo m => Kill -> m ()
 applyKill (Kill killer target) = do
@@ -202,7 +211,9 @@ moveReducer move = do
 
   -- subtract army from attacking tile
   tileArmy <-
-    gameInfo_grid . attackingTile move . singular _Army
+    singular
+      ("attacking tile army")
+      (gameInfo_grid . attackingTile move . _Army)
     <<%= over army_size (leaveArmySize $ move ^. move_onlyHalf)
 
   -- build attacking army
@@ -212,11 +223,16 @@ moveReducer move = do
     attackingArmy = attackingPlayer `Army` attackingArmySize
 
   -- determine defending player
-  defendingPlayer <- use (gameInfo_grid . defendingTile move . singular _Army . army_owner)
+  defendingPlayer <- use $
+    singular
+      "defending tile army"
+      (gameInfo_grid . defendingTile move . _Army . army_owner)
 
   -- army leftover after attack
   newArmy <-
-    gameInfo_grid . defendingTile move . singular _Army
+    singular
+      "army leftover after attack"
+      (gameInfo_grid . defendingTile move . _Army)
     <%= attack attackingArmy
 
   let newOwner = newArmy ^. army_owner
@@ -242,8 +258,8 @@ moveReducer move = do
   -- emit kill & convert conquered tile to being a city
   when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
     tell $ pure $ Kill
-      { kill_killer = newOwner ^?! _Player
-      , kill_target = defendingPlayer ^?! _Player
+      { kill_killer = newOwner ^?! _Player $ "Kill: killer"
+      , kill_target = defendingPlayer ^?! _Player $ "Kill: mark"
       }
     gameInfo_grid . ixGrid (move ^. move_endTile) . armyTileType .= City_Tile
 
