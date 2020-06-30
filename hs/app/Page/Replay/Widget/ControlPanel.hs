@@ -59,15 +59,13 @@ controlPanel dynMaxTurn = do
   liftIO $ FFI.registerOnKeydown jsCallback
 
   keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
-
-  -- register input element
   jumpToTurnEvent <- jumpToTurnInputEl
+
+  -- fold commands into dynamic turn
   let commandEvent = keyEvent <> jumpToTurnEvent
-
-  let minTurn = 0
-
-  dynTurn <- foldDyn (commandReducer minTurn) minTurn $
-    alignEventWithMaybe (Just . theseToDefaults) commandEvent $ updated dynMaxTurn
+  let alignViaDefaults = alignEventWithMaybe $ Just . theseToDefaults
+  dynTurn <- foldDyn (commandReducer def) def $
+    alignViaDefaults commandEvent $ updated dynMaxTurn
 
   elClass "div" "turn-marker" $
     dynText (dynTurn <&> ("turn: " <>) . show . halfRoundUp . view _Turn)
