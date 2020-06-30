@@ -50,19 +50,36 @@ data Move = Move
   deriving (Eq, Show, Generic)
 
 data Command
-  = Backwards
+  = DoNothing
+  | Backwards
   | Forwards
-  | JumpTo Int
+  | JumpTo Turn
   deriving (Show)
 
-instance Semigroup Command where
-  JumpTo n <> _replay_ = JumpTo n
-  _ <> JumpTo n = JumpTo n
-  _ <> latest   = latest
 
+instance Semigroup Command where
+  j@(JumpTo _) <> _     = j
+  _ <> j@(JumpTo _)     = j
+  anything <> DoNothing = anything
+  _ <> latest           = latest
+
+
+instance Monoid Command where
+  mempty = DoNothing
+
+instance Default Command where
+  def = DoNothing
+
+newtype Turn = Turn Int
+  deriving stock (Show)
+  deriving newtype (Ord, Eq, Num)
+  deriving (Default, Semigroup, Monoid) via Sum Int
 
 makePrisms ''Server
 makePrisms ''Command
+
+-- iso
+makePrisms ''Turn
 
 makeLenses ''ReplayLocation
 makeLenses ''Replay

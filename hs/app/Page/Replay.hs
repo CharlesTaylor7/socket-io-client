@@ -4,10 +4,11 @@ import Reflex
 
 import Data.Dom
 
-import Page.Replay.Simulate
+import Page.Replay.Simulate (toHistory)
 import Page.Replay.Download (downloadReplay)
 import Page.Replay.Utils (getCachedReplays)
 import Page.Replay.Types
+import Page.Replay.Widget.ControlPanel
 
 import Component.Elastic
 import Component.Grid
@@ -25,80 +26,38 @@ import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 
-
 replay :: Widget t m => m ()
-replay = elClass "div" "replay" $ do
-  cachedReplays :: Event t [ReplayLocation] <-
-    getCachedReplays
+replay =
+  elClass "div" "replay" $ do
+    rec
+      (replayLocationEvent, dynTurn) <- controlPanel dynMaxTurn
 
-  dropdownSelection :: Event t ReplayLocation <-
-    bindEvent cachedReplays $ \replays ->
-      let
-        optionsVector :: Vector ReplayLocation
-        optionsVector = fromList replays
+      replayEvent :: Event t Replay <-
+        bindEvent replayLocationEvent downloadReplay
 
-        optionsMap :: Map Int Text
-        optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
+      dynMaxTurn <-
+        widgetHold (pure 0) $
+          replayEvent <&> gameReplay dynTurn
 
-        initialKey = -1
+    blank
 
-        lookup i = optionsVector ^? ix i
-      in
-        dropdown initialKey (pure optionsMap) def
-        <&> fmapMaybe lookup . _dropdown_change
+gameReplay :: Widget t m => Dynamic t Turn -> Replay -> m Turn
+gameReplay dynTurn replay = do
 
-  widgetHold_ blank $ dropdownSelection <&> \replay ->
-      elAttr "a"
-        ( "href" =:
-          ("http://generals.io/replays/" <> replay ^. replayLocation_id)
-        ) $
-        text "Replay"
-
-  replayEvent :: Event t Replay <-
-    bindEvent dropdownSelection downloadReplay
-
-  widgetHold blank $ replayEvent <&> gameReplay
-  blank
-
-
-toDescription :: ReplayLocation -> Text
-toDescription (ReplayLocation server id) =
-  describe server
-  <> "-"
-  <> id
-  where
-    describe Server_Main = "main"
-    describe Server_Bot = "bot"
-
-
-gameReplay :: Widget t m => Replay -> m ()
-gameReplay replay = do
-  (rawEvent, trigger) <- newTriggerEvent
-
-  jsCallback <- liftIO $ asyncCallback1 trigger
-  liftIO $ FFI.registerOnKeydown jsCallback
-
-  keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
-
-  turnInput <- inputElement $ def
-    & inputElementConfig_initialValue .~ "0"
-    & inputElementConfig_elementConfig . elementConfig_initialAttributes
-    %~
-      ( at (toAttr "type") ?~ "text") .
-      ( at (toAttr "pattern") ?~ "[0-9]*")
-      -- ( at (toAttr "autofocus") ?~ "")
+  history <- toHistory replay
 
   let
-    inputEvent = mapMaybe
-      (preview (to readEither . _Right . to JumpTo))
-      (turnInput ^. inputElement_input)
+    turnIndex = ix . view _Turn
+    dynGrid = dynTurn
+      <&> (\i -> history ^?! turnIndex i
+          $ "history index: " <> show i
+          )
+    map = Generals.Map
+      { _map_tiles = dynGrid
+      , _map_width = replay ^. replay_mapWidth
+      , _map_height = replay ^. replay_mapHeight
+      }
 
-  map <- toMap replay (keyEvent <> inputEvent)
-  elClass "div" "turn-marker" $
-    dynText (map ^. map_turn <&> ("turn: " <>) . show . halfRoundUp)
-
-
-  let
     mapWidth = map ^. map_width . to fromIntegral
     mapHeight = map ^. map_height . to fromIntegral
 
@@ -111,52 +70,6 @@ gameReplay replay = do
     (0.25, 2)
     (gridDynStyle map)
 
-halfRoundUp :: Int -> Int
-halfRoundUp = uncurry (+) . (`divMod` 2)
+  let maxTurn = history & length & subtract 1 & Turn
+  pure maxTurn
 
-toAttr :: Text -> AttributeName
-toAttr = AttributeName Nothing
-
-toKey :: MonadIO m => JSVal -> m KeyCode
-toKey jsval = liftIO $ do
-  keyCode <- jsval ! ("keyCode" :: Text)
-  fromJSValUnchecked keyCode
-
-toCommand :: KeyCode -> Maybe Command
-toCommand code =
-  case keyCodeLookup code of
-    KeyJ -> Just Backwards
-    KeyL -> Just Forwards
-    _    -> Nothing
-
-
-commandReducer :: (Int, Int) -> Command -> Int -> Int
-commandReducer (firstTurn, lastTurn) command =
-  case command of
-    Backwards -> max firstTurn . subtract 1
-    Forwards  -> min lastTurn  . (+ 1)
-    JumpTo n  -> const $ max firstTurn $ min lastTurn n
-
-toMap
-  :: (Reflex t, MonadFix m, MonadHold t m, MonadIO m)
-  => Replay
-  -> Event t Command
-  -> m (Generals.Map t)
-toMap replay commandEvent = do
-  history <- toHistory replay
-
-  let
-    minTurn = 0
-    maxTurn = history & length & subtract 1
-
-  dynTurn <- foldDyn (commandReducer (minTurn, maxTurn)) 0 commandEvent
-
-  let
-    dynGrid = dynTurn <&> (\i -> history ^?! ix i $ "history index: " <> show i)
-    map = Generals.Map
-      { _map_tiles = dynGrid
-      , _map_turn = dynTurn
-      , _map_width = replay ^. replay_mapWidth
-      , _map_height = replay ^. replay_mapHeight
-      }
-  pure map

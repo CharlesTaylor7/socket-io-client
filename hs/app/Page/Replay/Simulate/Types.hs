@@ -2,7 +2,7 @@
 module Page.Replay.Simulate.Types where
 
 import Generals.Map.Types hiding (Map)
-import Page.Replay.Types
+import Page.Replay.Types hiding (Turn)
 
 import Data.IntSet (IntSet)
 import Data.Vector (Vector)

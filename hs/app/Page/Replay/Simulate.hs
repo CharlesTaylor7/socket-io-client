@@ -4,7 +4,7 @@ module Page.Replay.Simulate
  where
 
 import Page.Replay.Simulate.Types
-import Page.Replay.Types
+import Page.Replay.Types hiding (Turn)
 import Generals.Map.Types hiding (Map)
 
 import Data.Default

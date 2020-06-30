@@ -112,6 +112,7 @@ executable generals-app
     , Page.Replay.Download
     , Page.Replay.Types
     , Page.Replay.Utils
+    , Page.Replay.Widget.ControlPanel
     , Generals.Map.Types
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics
