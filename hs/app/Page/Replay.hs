@@ -6,14 +6,12 @@ import Data.Dom
 
 import Page.Replay.Simulate (toHistory)
 import Page.Replay.Download (downloadReplay)
-import Page.Replay.Utils (getCachedReplays)
 import Page.Replay.Types
 import Page.Replay.Widget.ControlPanel
 
 import Component.Elastic
 import Component.Grid
 
-import Js.Imports (JSVal, asyncCallback1, (!), fromJSValUnchecked)
 import Js.Types
 import Js.Utils
 import qualified Js.FFI as FFI
