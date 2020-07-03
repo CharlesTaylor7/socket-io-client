@@ -53,7 +53,8 @@ library generals-prelude
     , vector
     , containers
     , mtl
-    -- , data-default
+    , data-default
+    , these
 
 executable generals-app
   import: common
@@ -67,12 +68,10 @@ executable generals-app
     , ghcjs-dom
     , jsaddle
     , aeson
-    , data-default
     , vector
     , containers
     , mtl
     , groups
-    , these
     , primitive
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   default-extensions:

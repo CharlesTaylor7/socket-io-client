@@ -22,6 +22,12 @@ import Data.IntSet as X (IntSet)
 -- vector
 import Data.Vector as X (Vector)
 
+-- these
+import Data.These as X
+
+-- data-default
+import Data.Default as X
+
 -- lens
 import Control.Lens.At as X
 import Control.Lens.Cons as X

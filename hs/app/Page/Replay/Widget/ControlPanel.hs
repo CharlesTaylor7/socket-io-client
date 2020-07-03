@@ -20,57 +20,62 @@ import Js.Types
 import Js.Utils
 import qualified Js.FFI as FFI
 
-import Data.Default
-import Data.These
-
 
 controlPanel :: Widget t m => Dynamic t Turn -> m (Event t ReplayLocation, Dynamic t Turn)
 controlPanel dynMaxTurn = do
   cachedReplays :: Event t [ReplayLocation] <-
     getCachedReplays
 
-  dropdownSelection :: Event t ReplayLocation <-
-    bindEvent cachedReplays $ \replays ->
-      let
-        optionsVector :: Vector ReplayLocation
-        optionsVector = fromList replays
+  replayLocationEv :: Event t ReplayLocation <-
+    replayDropdown cachedReplays
 
-        optionsMap :: Map Int Text
-        optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
+  replayUrlHref replayLocationEv
 
-        initialKey = -1
+  jumpToTurnEvent :: Event t Command <-
+    jumpToTurnInputEl
 
-        lookup i = optionsVector ^? ix i
-      in
-        dropdown initialKey (pure optionsMap) def
-        <&> fmapMaybe lookup . _dropdown_change
-
-  widgetHold_ blank $ dropdownSelection <&> \replay ->
-      elAttr "a"
-        ( "href" =:
-          ("http://generals.io/replays/" <> replay ^. replayLocation_id)
-        ) $
-        text "Replay"
-
-  -- Register j & k key commands
-  (rawEvent, trigger) <- newTriggerEvent
-
-  jsCallback <- liftIO $ asyncCallback1 trigger
-  liftIO $ FFI.registerOnKeydown jsCallback
-
-  keyEvent <- (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
-  jumpToTurnEvent <- jumpToTurnInputEl
+  keyEvent :: Event t Command <-
+    registerKeyCommands
 
   -- fold commands into dynamic turn
   let commandEvent = keyEvent <> jumpToTurnEvent
-  let alignViaDefaults = alignEventWithMaybe $ Just . theseToDefaults
-  dynTurn <- foldDyn (commandReducer def) def $
-    alignViaDefaults commandEvent $ updated dynMaxTurn
+
+  dynTurn :: Dynamic t Turn <-
+    buildDynTurn commandEvent
 
   elClass "div" "turn-marker" $
     dynText (dynTurn <&> ("turn: " <>) . show . halfRoundUp . view _Turn)
 
   pure (dropdownSelection, dynTurn)
+
+
+replayDropdown :: Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
+replayDropdown cachedReplays =
+  bindEvent cachedReplays $ \replays ->
+  let
+    optionsVector :: Vector ReplayLocation
+    optionsVector = fromList replays
+
+    optionsMap :: Map Int Text
+    optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
+
+    initialKey = -1
+
+    lookup i = optionsVector ^? ix i
+  in
+    dropdown initialKey (pure optionsMap) def
+    <&> fmapMaybe lookup . _dropdown_change
+
+
+replayUrlHref :: Widget t m => Event t ReplayLocation -> m ()
+replayUrlHref i = widgetHold_ blank $ i <&>
+  \replay ->
+  elAttr "a"
+    ( "href" =:
+      ("http://generals.io/replays/" <> replay ^. replayLocation_id)
+    ) $
+    text "Replay"
+
 
 jumpToTurnInputEl :: Widget t m => m (Event t Command)
 jumpToTurnInputEl = do
@@ -89,9 +94,29 @@ jumpToTurnInputEl = do
 
   pure inputEvent
 
+
+registerKeyCommands :: Event t Command
+registerKeyCommands =
+-- Register j & k key commands
+  (rawEvent, trigger) <- newTriggerEvent
+
+  jsCallback <- liftIO $ asyncCallback1 trigger
+  liftIO $ FFI.registerOnKeydown jsCallback
+
+  (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
+
+
+buildDynTurn :: Event t Command -> Dynamic t Turn
+buildDynTurn = do
+    foldDyn (commandReducer def) def $
+    alignViaDefaults commandEvent $ updated dynMaxTurn
+  where
+    alignViaDefaults =
+      alignEventWithMaybe $ Just . theseToDefaults
+
+
 toAttr :: Text -> AttributeName
 toAttr = AttributeName Nothing
-
 
 toDescription :: ReplayLocation -> Text
 toDescription (ReplayLocation server id) =
