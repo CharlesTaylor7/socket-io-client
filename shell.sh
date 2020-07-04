@@ -1,1 +1,1 @@
-work-on ghcjs "./hs/"
+./reflex-platform/scripts/work-on ghcjs "./hs/"
