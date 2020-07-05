@@ -68,5 +68,6 @@ gameReplay dynTurn replay = do
     (gridDynStyle map)
 
   let maxTurn = history & length & subtract 1 & Turn
+  print maxTurn
   pure maxTurn
 
