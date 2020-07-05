@@ -71,8 +71,10 @@ replayUrlHref :: Widget t m => Event t ReplayLocation -> m ()
 replayUrlHref i = widgetHold_ blank $ i <&>
   \replay ->
   elAttr "a"
-    ( "href" =:
-      ("http://generals.io/replays/" <> replay ^. replayLocation_id)
+    ( mempty
+    & at "href" ?~
+      "http://generals.io/replays/" <> replay ^. replayLocation_id
+    & at "target" ?~ "_blank"
     ) $
     text "Replay"
 
