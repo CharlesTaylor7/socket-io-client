@@ -43,10 +43,10 @@ tileElement
 tileElement map coords =
   let
     gridIx :: (Int, Int) -> Traversal' Grid Tile
-    gridIx = ix . linearize
+    gridIx (i, j) = _Grid . ix index
       where
-        linearize (i, j) = (j - 1) * mapWidth + (i - 1)
         mapWidth = map ^. map_width
+        index = (j - 1) * mapWidth + (i - 1)
 
     tileTraversal :: Traversal' Grid Tile
     tileTraversal = gridIx coords

@@ -90,7 +90,9 @@ initialGameInfo replay = GameInfo
   where
     singleton :: Int -> IntSet
     singleton tile = mempty & contains tile .~ True
-    map = fold
+
+    map :: Grid
+    map = Grid $ fold
       [ mountainsMap
       , citiesMap
       , generalsMap
@@ -131,10 +133,10 @@ advanceTurn (turnIndex, moves) = do
   swampLoss turnIndex
   applyMoves moves
 
-increment :: Index Grid -> Grid -> Grid
+increment :: Int -> Grid -> Grid
 increment i = singular
   ("incrementing army at index: " <> show i)
-  (ix i . _Army . army_size)
+  (_Grid . ix i . _Army . army_size)
   +~ 1
 
 
@@ -168,7 +170,7 @@ swampLoss turnIndex =
       let
         setter = singular
           ("swamp decrementing army at index: " <> show i)
-          (gameInfo_grid . ix i . _Army)
+          (gameInfo_grid . _Grid . ix i . _Army)
       updatedArmy <- setter <%=
         \army ->
           if army^.army_size > 1
@@ -199,7 +201,7 @@ applyKill (Kill killer target) = do
 
   -- halve the armies in the transferred territory
   for_ (Set.toList territory) $ \i ->
-    gameInfo_grid . ix i . _Army . army_size %= halfRoundUp
+    gameInfo_grid . _Grid . ix i . _Army . army_size %= halfRoundUp
 
 
 moveReducer

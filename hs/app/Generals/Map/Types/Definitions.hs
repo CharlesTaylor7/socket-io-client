@@ -53,7 +53,7 @@ newtype GridIndex = GridIndex Int
   deriving newtype (Eq, Ord, FromJSON)
   deriving stock (Show)
 
-type Grid = IntMap Tile
+newtype Grid = Grid (IntMap Tile)
 
 data Map t = Map
   { _map_tiles :: !(Dynamic t Grid)
@@ -66,6 +66,7 @@ makePrisms ''Owner
 makePrisms ''Tile
 makePrisms ''ArmyTileType
 makePrisms ''GridIndex
+makePrisms ''Grid
 
 makeLenses ''Army
 makeLenses ''Map

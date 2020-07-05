@@ -23,32 +23,21 @@ import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 
-replay :: Widget t m => m ()
-replay =
-  elClass "div" "replay" $ do
-    rec
-      (replayLocationEvent, dynTurn) <- controlPanel dynMaxTurn
+type History = Vector Grid
 
-      replayEvent :: Event t Replay <-
-        bindEvent replayLocationEvent downloadReplay
-
-      dynMaxTurn <-
-        widgetHold (pure 0) $
-          replayEvent <&> gameReplay dynTurn
-
-    blank
-
-gameReplay :: Widget t m => Dynamic t Turn -> Replay -> m Turn
-gameReplay dynTurn replay = do
-
-  history <- toHistory replay
-
+replayGrid :: Widget t m => Replay -> History -> Dynamic t Turn -> m ()
+replayGrid replay history dynTurn = do
   let
+    turnIndex :: Turn -> Traversal' History Grid
     turnIndex = ix . view _Turn
+
+    -- dynGrid :: Dynamic t Grid
     dynGrid = dynTurn
       <&> (\i -> history ^?! turnIndex i
           $ "history index: " <> show i
           )
+
+    -- map :: Generals.Map t
     map = Generals.Map
       { _map_tiles = dynGrid
       , _map_width = replay ^. replay_mapWidth
@@ -67,7 +56,35 @@ gameReplay dynTurn replay = do
     (0.25, 2)
     (gridDynStyle map)
 
-  let maxTurn = history & length & subtract 1 & Turn
-  print maxTurn
-  pure maxTurn
+  blank
+
+
+replay :: Widget t m => m ()
+replay =
+  elClass "div" "replay" $ do
+    rec
+      (replayLocationEvent, dynTurn) <-
+        controlPanel dynMaxTurn
+
+      replayEvent :: Event t Replay <-
+        bindEvent replayLocationEvent downloadReplay
+
+      let
+        historyEvent :: _
+        historyEvent =
+          pushAlways toHistory replayEvent
+
+      let
+        toMaxTurn = Turn . subtract 1 . length
+
+        alignAlways :: Reflex t => Event t a -> Event t b -> Event t (a, b)
+        alignAlways = alignEventWithMaybe $ \(These a b) -> Just (a, b)
+
+      dynMaxTurn <-
+        holdDyn 0 $ fmapCheap toMaxTurn historyEvent
+
+    widgetHold_ blank $
+      (alignAlways replayEvent historyEvent) <&> \(replay, history) -> do
+        replayGrid replay history dynTurn
+
 

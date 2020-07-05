@@ -5,10 +5,10 @@ import Control.Lens.Unsafe (singular, (^?!))
 
 
 ixGrid :: GridIndex -> Lens' Grid Tile
-ixGrid i = i
-  & coerce
-  & ix
-  & singular ("Grid index: " <> show i)
+ixGrid (GridIndex i) =
+  singular
+  ("Grid index: " <> show i)
+  (_Grid . ix i)
 
 
 match :: Traversal' s a -> Traversal' s s

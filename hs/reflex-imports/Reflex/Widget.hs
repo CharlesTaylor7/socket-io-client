@@ -26,5 +26,6 @@ type Widget t m
   , TriggerEvent t m
   , PerformEvent t m
   , MonadIO (Performable m)
+  , MonadIO (PushM t)
   , RawElement (DomBuilderSpace m) ~ DOM.Element
   )
