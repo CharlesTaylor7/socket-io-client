@@ -2,7 +2,6 @@
 module Page.Replay.Types where
 
 import Data.Aeson (Array(..), FromJSON(..))
-import Data.Default (Default(..))
 
 import Generals.Map.Types hiding (Map)
 

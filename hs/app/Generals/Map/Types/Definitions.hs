@@ -6,7 +6,6 @@ import qualified Prelude as Containers
 
 import Data.Aeson (FromJSON(..))
 import Reflex
-import Data.Default
 
 import Types
 

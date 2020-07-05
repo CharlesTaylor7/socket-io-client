@@ -16,7 +16,6 @@ import Js.Types
 import Js.Utils
 import qualified Js.FFI as FFI
 
-import Data.Default
 import Control.Lens.Unsafe ((^?!))
 import Data.Vector (Vector)
 

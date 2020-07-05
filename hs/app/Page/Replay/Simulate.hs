@@ -7,7 +7,6 @@ import Page.Replay.Simulate.Types
 import Page.Replay.Types hiding (Turn)
 import Generals.Map.Types hiding (Map)
 
-import Data.Default
 import Control.Lens.Unsafe (singular)
 
 import Control.Monad.Writer.Strict

@@ -3,11 +3,9 @@ module Js.Types
   , Promise
   ) where
 
-import Data.Default
-
 import Js.Imports
 
-newtype Url = Url Text
+newtype Url = Url JSString
 
 instance Default Url where
   def = Url ""

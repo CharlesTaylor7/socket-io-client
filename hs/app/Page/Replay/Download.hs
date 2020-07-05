@@ -29,8 +29,8 @@ downloadReplay location = do
 
 replayUrl :: ReplayLocation -> Url
 replayUrl replay
-  = Url $
-     "https://generalsio-replays-"
+  = Url $ toJSString $
+    "https://generalsio-replays-"
   <> replay ^. replayLocation_server . to urlSuffix
   <> ".s3.amazonaws.com/"
   <> replay ^. replayLocation_id

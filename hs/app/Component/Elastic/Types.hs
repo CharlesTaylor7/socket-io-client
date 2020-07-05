@@ -12,8 +12,7 @@ import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
 
 import Data.Group
-import Data.These
-import Data.Default
+
 
 data Point a = Point !a !a
   deriving stock (Show, Functor, Foldable, Traversable)

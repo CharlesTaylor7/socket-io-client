@@ -41,12 +41,12 @@ controlPanel dynMaxTurn = do
   let commandEvent = keyEvent <> jumpToTurnEvent
 
   dynTurn :: Dynamic t Turn <-
-    buildDynTurn commandEvent
+    buildDynTurn commandEvent dynMaxTurn
 
   elClass "div" "turn-marker" $
     dynText (dynTurn <&> ("turn: " <>) . show . halfRoundUp . view _Turn)
 
-  pure (dropdownSelection, dynTurn)
+  pure (replayLocationEv, dynTurn)
 
 
 replayDropdown :: Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
@@ -89,14 +89,18 @@ jumpToTurnInputEl = do
 
   let
     inputEvent = mapMaybe
-      (preview $ to readEither . _Right . re (_JumpTo . _Turn))
+      (flip (^?) $ unpacked . to readEither . _Right . re (_JumpTo . _Turn))
       (turnInput ^. inputElement_input)
 
   pure inputEvent
 
+  where
+    toAttr :: Text -> AttributeName
+    toAttr = AttributeName Nothing
 
-registerKeyCommands :: Event t Command
-registerKeyCommands =
+
+registerKeyCommands :: Widget t m => m (Event t Command)
+registerKeyCommands = do
 -- Register j & k key commands
   (rawEvent, trigger) <- newTriggerEvent
 
@@ -106,17 +110,14 @@ registerKeyCommands =
   (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
 
 
-buildDynTurn :: Event t Command -> Dynamic t Turn
-buildDynTurn = do
+buildDynTurn :: (Reflex t, MonadHold t m, MonadFix m) => Event t Command -> Dynamic t Turn -> m (Dynamic t Turn)
+buildDynTurn commandEvent dynMaxTurn =
     foldDyn (commandReducer def) def $
     alignViaDefaults commandEvent $ updated dynMaxTurn
   where
     alignViaDefaults =
       alignEventWithMaybe $ Just . theseToDefaults
 
-
-toAttr :: Text -> AttributeName
-toAttr = AttributeName Nothing
 
 toDescription :: ReplayLocation -> Text
 toDescription (ReplayLocation server id) =

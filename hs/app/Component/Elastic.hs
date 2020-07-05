@@ -7,8 +7,6 @@ import Reflex hiding (elDynClass)
 import Types
 
 import Data.Group
-import Data.These
-import Data.Default
 import Data.Dom
 import qualified Data.Dom as Dom
 
