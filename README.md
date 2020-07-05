@@ -5,6 +5,7 @@
 - init submodules
 - run `yarn` to install node dependencies
 - run `./scripts/shell.sh` this step will take a while the first time.
+- run `./scripts/build-hs.sh` in the nix-shell. then manually copy static ghcjs dependenices listed in index.html to the right place.
 
 ## Running the dev server
 - open a WSL terminal. Run `./scripts/shell.sh`. Then inside the virtual reflex shell, run `./scripts/watch-hs.sh`
@@ -14,22 +15,25 @@
 Congrats, you should have built all the sources and have a server running at localhost:8000.
 
 ## To do
-### Ops
-- remove dependencies on js ffi and external scripts
-- don't rely on browser cache or service worker
-- get jsaddle-warp working
+### Bugs
+- dynMaxTurn won't update
+- bugs in simulation that causes crashing
+  - debug menu for showing the game info cache
+- enforce uniform tile size (empty tiles get squished on zoom out)
+- restore tile icons
 
-### Replays
+### Features
+- make control panel not an eyesore
+- get jsaddle-warp + ghci working
+  - remove dependencies on js ffi and external scripts
+  - don't rely on browser cache or service worker
+  - Cache replays at the app level
+- replace unsafe lens with alternatives that run in MonadError
 - View replays from global perspective
 - view replays from player perspectives
-- Cache replays at the app level?
-- fix bug in simulate that causes crashing
-- fix css
 - ui for importing a replay? paste a url in an input?
-- loading animation while replay loads?
+- loading animation while replay loads
 - handle afks
-
-### Bot
 - Port old bot client to Haskell
 - Hot reloading of bot strategies (strategies in haskell)
 
