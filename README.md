@@ -4,6 +4,7 @@
 - clone repo
 - init submodules
 - run `yarn` to install node dependencies
+- run `./scripts/shell.sh` this step will take a while the first time.
 
 ## Running the dev server
 - open a WSL terminal. Run `./scripts/shell.sh`. Then inside the virtual reflex shell, run `./scripts/watch-hs.sh`
