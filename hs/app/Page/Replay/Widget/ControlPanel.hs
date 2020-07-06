@@ -51,20 +51,20 @@ controlPanel dynMaxTurn = do
 
 replayDropdown :: Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
 replayDropdown cachedReplays =
-  bindEvent cachedReplays $ \replays ->
-  let
-    optionsVector :: Vector ReplayLocation
-    optionsVector = fromList replays
+  bindEventToWidget cachedReplays $
+  \replays -> do
+    let
+      optionsVector :: Vector ReplayLocation
+      optionsVector = fromList replays
 
-    optionsMap :: Map Int Text
-    optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
+      optionsMap :: Map Int Text
+      optionsMap = fromList $ replays ^.. ifolded . to toDescription . withIndex
 
-    initialKey = -1
+      initialKey = -1
 
-    lookup i = optionsVector ^? ix i
-  in
+      lookup i = optionsVector ^? ix i
     dropdown initialKey (pure optionsMap) def
-    <&> fmapMaybe lookup . _dropdown_change
+      <&> fmapMaybe lookup . _dropdown_change
 
 
 replayUrlHref :: Widget t m => Event t ReplayLocation -> m ()

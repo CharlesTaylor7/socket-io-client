@@ -10,12 +10,13 @@ import Js.Types (Promise)
 
 import qualified Js.FFI as FFI
 
+
 type PromiseToEvent t m =
   ( Reflex t
-  , PerformEvent t m
   , TriggerEvent t m
   , MonadIO m
   , MonadIO (Performable m)
+  , MonadIO (PushM t)
   )
 
 promiseToEventVia
@@ -34,14 +35,12 @@ promiseToEventVia convert promise = do
 
   -- get the underlying value of the jsVal via performEvent & FromJSVal typeclass
   -- FromJSVall requires monadic context, hence why this isn't just fmap
-  doneEvent <- performEvent $
-    event <&> \jsVal -> liftIO $ do
+  pure $ flip pushAlways event $
+    \jsVal -> liftIO $ do
       -- release js callback
       releaseCallback jsCallback
       -- convert js reference to haskell data type
       convert jsVal
-
-  pure doneEvent
 
 
 promiseToEvent

@@ -25,20 +25,14 @@ switchEvent
   :: (Reflex t, MonadHold t m)
   => Event t (Event t a)
   -> m (Event t a)
-switchEvent nested = switchDyn <$> holdDyn never nested
+switchEvent = switchHold never
 
-switchWidgetEvent
-  :: (Reflex t, MonadHold t m, Adjustable t m)
-  => Event t (m (Event t a))
-  -> m (Event t a)
-switchWidgetEvent nested = switchDyn <$> widgetHold (pure never) nested
-
-bindEvent
+bindEventToWidget
   :: (Adjustable t m, MonadHold t m)
   => Event t a
   -> (a -> m (Event t b))
   -> m (Event t b)
-bindEvent event operation =
+bindEventToWidget event operation =
   fmap switchDyn $
   widgetHold (pure never) $
   event <&> operation

@@ -25,19 +25,49 @@ import qualified Generals.Map.Types as Generals
 
 type History = Vector Grid
 
-replayGrid :: Widget t m => Replay -> History -> Dynamic t Turn -> m ()
+
+replay :: forall t m. Widget t m => m ()
+replay =
+  elClass "div" "replay" $ do
+    rec
+      (replayLocationEvent, dynTurn) <-
+        controlPanel dynMaxTurn
+
+      dynMaxTurn <-
+        holdDyn 0 $ fmapCheap toMaxTurn historyEvent
+
+      replayEvent :: Event t Replay <-
+        bindEventToWidget replayLocationEvent downloadReplay
+
+      let
+        historyEvent :: Event t History
+        historyEvent =
+          pushAlways toHistory replayEvent
+
+        toMaxTurn :: History -> Turn
+        toMaxTurn = Turn . subtract 1 . length
+
+        alignAlways :: Reflex t => Event t a -> Event t b -> Event t (a, b)
+        alignAlways = alignEventWithMaybe $ \(These a b) -> Just (a, b)
+
+    widgetHold_ blank $
+      (alignAlways replayEvent historyEvent) <&> \(replay, history) -> do
+        replayGrid replay history dynTurn
+
+
+replayGrid :: forall t m. Widget t m => Replay -> History -> Dynamic t Turn -> m ()
 replayGrid replay history dynTurn = do
   let
     turnIndex :: Turn -> Traversal' History Grid
     turnIndex = ix . view _Turn
 
-    -- dynGrid :: Dynamic t Grid
+    dynGrid :: Dynamic t Grid
     dynGrid = dynTurn
       <&> (\i -> history ^?! turnIndex i
           $ "history index: " <> show i
           )
 
-    -- map :: Generals.Map t
+    map :: Generals.Map t
     map = Generals.Map
       { _map_tiles = dynGrid
       , _map_width = replay ^. replay_mapWidth
@@ -56,35 +86,5 @@ replayGrid replay history dynTurn = do
     (0.25, 2)
     (gridDynStyle map)
 
-  blank
-
-
-replay :: Widget t m => m ()
-replay =
-  elClass "div" "replay" $ do
-    rec
-      (replayLocationEvent, dynTurn) <-
-        controlPanel dynMaxTurn
-
-      replayEvent :: Event t Replay <-
-        bindEvent replayLocationEvent downloadReplay
-
-      let
-        historyEvent :: _
-        historyEvent =
-          pushAlways toHistory replayEvent
-
-      let
-        toMaxTurn = Turn . subtract 1 . length
-
-        alignAlways :: Reflex t => Event t a -> Event t b -> Event t (a, b)
-        alignAlways = alignEventWithMaybe $ \(These a b) -> Just (a, b)
-
-      dynMaxTurn <-
-        holdDyn 0 $ fmapCheap toMaxTurn historyEvent
-
-    widgetHold_ blank $
-      (alignAlways replayEvent historyEvent) <&> \(replay, history) -> do
-        replayGrid replay history dynTurn
 
 

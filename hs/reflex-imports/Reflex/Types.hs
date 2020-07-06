@@ -4,8 +4,9 @@
 , TypeFamilies
 , ConstraintKinds
 #-}
-module Reflex.Widget
+module Reflex.Types
   ( Widget
+  , PushMonad
   )
   where
 
@@ -26,6 +27,12 @@ type Widget t m
   , TriggerEvent t m
   , PerformEvent t m
   , MonadIO (Performable m)
-  , MonadIO (PushM t)
+  , PushMonad (PushM t)
   , RawElement (DomBuilderSpace m) ~ DOM.Element
+  )
+
+type PushMonad m
+  =
+  ( MonadIO m
+  , MonadFix m
   )

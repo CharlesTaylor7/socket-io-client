@@ -27,10 +27,10 @@ library reflex-imports
       Reflex
   other-modules:
       Reflex.Element
-    , Reflex.Optics
-    , Reflex.Utils
-    , Reflex.Widget
     , Reflex.Instances
+    , Reflex.Optics
+    , Reflex.Types
+    , Reflex.Utils
   build-depends:
       base >= 4.7 && <5.0
     , reflex-dom
