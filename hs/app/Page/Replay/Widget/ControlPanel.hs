@@ -44,7 +44,14 @@ controlPanel dynMaxTurn = do
     buildDynTurn commandEvent dynMaxTurn
 
   elClass "div" "turn-marker" $
-    dynText (dynTurn <&> ("turn: " <>) . show . halfRoundUp . view _Turn)
+    dynText (dynTurn <&> \(Turn turn) ->
+      "turn: "
+      <> show turn
+      <> " ("
+      <> show (halfRoundUp turn)
+      <> ")"
+
+    )
 
   pure (replayLocationEv, dynTurn)
 
