@@ -27,7 +27,7 @@ parseServer "bot" = Just Server_Bot
 parseServer _ = Nothing
 
 
-getCachedReplays :: Widget t m => m (Event t [ReplayLocation])
+getCachedReplays :: Effects t m => m (Event t [ReplayLocation])
 getCachedReplays = do
   cached <- liftIO FFI.cachedReplays
   promiseToEventVia fromJSValUncheckedListOf cached

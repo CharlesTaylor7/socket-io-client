@@ -1,0 +1,33 @@
+.control-panel {
+  border: 1px solid black;
+  width: 250px;
+  display: grid;
+  row-gap: 10px;
+  padding: 10px;
+  justify-content: space-between;
+  align-content: space-between;
+
+  grid-template-areas:
+    "select-replay replay-url"
+    "select-turn   turn-marker";
+}
+
+.replay-dropdown {
+  grid-area: select-replay;
+  width: 135px;
+}
+
+.jump-to-turn {
+  grid-area: select-turn;
+  justify-self: center;
+  width: 90px;
+}
+
+.replay-url {
+  grid-area: replay-url;
+}
+
+.turn-marker {
+  grid-area: turn-marker;
+}
+

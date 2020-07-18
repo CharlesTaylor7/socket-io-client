@@ -6,6 +6,7 @@
 #-}
 module Reflex.Types
   ( Widget
+  , Effects
   , PushMonad
   )
   where
@@ -15,7 +16,7 @@ import Control.Monad.Fix (MonadFix)
 import Control.Monad.IO.Class (MonadIO)
 import qualified GHCJS.DOM.Types as DOM
 
-type Widget t m
+type Effects t m
   =
   ( MonadIO m
   , MonadFix m
@@ -29,6 +30,12 @@ type Widget t m
   , MonadIO (Performable m)
   , PushMonad (PushM t)
   , RawElement (DomBuilderSpace m) ~ DOM.Element
+  )
+
+type Widget t m
+  =
+  ( Effects t m
+  , DomBuilder t m
   )
 
 type PushMonad m

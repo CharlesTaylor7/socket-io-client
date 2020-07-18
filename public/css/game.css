@@ -1,3 +1,4 @@
+
 .grid {
   color: black;
   background: rgb(97, 120, 194);
@@ -29,10 +30,6 @@
   min-width: 26.7px;
   min-height: 26.7px;
   line-height: 26.7px;
-}
-
-.turn-marker {
-  font-size: 50px;
 }
 
 .mountain {
