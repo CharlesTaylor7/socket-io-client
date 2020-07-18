@@ -38,7 +38,7 @@ controlPanel dynMaxTurn = do
     registerKeyCommands
 
   -- fold commands into dynamic turn
-  let commandEvent = keyEvent <> jumpToTurnEvent & traceEventWith (\e -> show e)
+  let commandEvent = keyEvent <> jumpToTurnEvent
 
   dynTurn :: Dynamic t Turn <-
     buildDynTurn commandEvent dynMaxTurn
@@ -114,10 +114,7 @@ registerKeyCommands = do
 buildDynTurn :: (Reflex t, MonadHold t m, MonadFix m) => Event t Command -> Dynamic t Turn -> m (Dynamic t Turn)
 buildDynTurn commandEvent dynMaxTurn =
     foldDyn (commandReducer def) def $
-    alignViaDefaults commandEvent $ updated dynMaxTurn & traceEventWith show
-  where
-    alignViaDefaults =
-      alignEventWithMaybe $ Just . theseToDefaults
+    attach (current dynMaxTurn) commandEvent
 
 
 toDescription :: ReplayLocation -> Text
@@ -145,8 +142,8 @@ toCommand code =
     KeyL -> Just Forwards
     _    -> Nothing
 
-commandReducer :: Turn -> (Command, Turn) -> Turn -> Turn
-commandReducer minTurn (command, maxTurn) =
+commandReducer :: Turn -> (Turn, Command) -> Turn -> Turn
+commandReducer minTurn (maxTurn, command) =
   case command of
     DoNothing -> min maxTurn
     Backwards -> max minTurn . min maxTurn . subtract 1
