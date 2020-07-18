@@ -65,7 +65,8 @@ tileElement map coords =
         >>> maybe "" identity
         )
   in
-    elDynClass (Dom.Node "td") dynClass $ dynText dynArmyText
+    elDynClass (Dom.Node "td") dynClass $
+        dynText dynArmyText
 
 
 toClass :: Maybe Tile -> CSSClass

@@ -56,7 +56,7 @@ body {
 
 .grid td.city {
   background-color: gray;
-  background-image: url('/city.png')
+  background-image: url('/img/city.png')
 }
 
 .grid td.neutral {
@@ -68,16 +68,16 @@ body {
 }
 
 .grid td.mountain {
-  background-image: url('/mountain.png');
+  background-image: url('/img/mountain.png');
   background-color: #bbb
 }
 
 .grid td.obstacle {
-  background-image: url('/obstacle.png')
+  background-image: url('/img/obstacle.png')
 }
 
 .grid td.swamp {
-  background-image: url('/swamp.png');
+  background-image: url('/img/swamp.png');
   background-color: gray
 }
 
