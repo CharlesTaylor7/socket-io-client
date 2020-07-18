@@ -111,11 +111,15 @@ registerKeyCommands = do
   (performEvent $ rawEvent <&> toKey) <&> mapMaybe toCommand
 
 
-buildDynTurn :: (Reflex t, MonadHold t m, MonadFix m) => Event t Command -> Dynamic t Turn -> m (Dynamic t Turn)
-buildDynTurn commandEvent dynMaxTurn =
-    foldDyn (commandReducer def) def $
-    attach (current dynMaxTurn) commandEvent
-
+buildDynTurn :: forall t m. (Reflex t, MonadHold t m, MonadFix m) => Event t Command -> Dynamic t Turn -> m (Dynamic t Turn)
+buildDynTurn commandEvent dynMaxTurn = do
+  let
+    maxTurnOrCommandEv :: Event t (Turn, Command)
+    maxTurnOrCommandEv = leftmost
+      [ attach (current dynMaxTurn) commandEvent
+      , updated dynMaxTurn & fmapCheap (,DoNothing)
+      ]
+  foldDyn (commandReducer def) def $ maxTurnOrCommandEv
 
 toDescription :: ReplayLocation -> Text
 toDescription (ReplayLocation server id) =
