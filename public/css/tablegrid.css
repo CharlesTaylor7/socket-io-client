@@ -49,8 +49,8 @@ body {
   opacity: .4
 }
 
-.grid td.neutral {
-  background-color: gray;
+.grid td.clear {
+  background-color: #dcdcdc;
 }
 
 .grid td.city,.grid td.general,.grid td.mountain,.grid td.obstacle,.grid td.swamp {
@@ -60,6 +60,7 @@ body {
 }
 .grid td.city {
   background-image: url(http://generals.io/city.png);
+  background-color: gray;
 }
 
 .grid td.general {
