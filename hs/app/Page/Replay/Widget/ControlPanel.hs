@@ -46,24 +46,7 @@ controlPanel =
       turnMarker dynTurn
 
       perspectiveEvents :: Dynamic t (Event t Perspective) <-
-        elClass "span" "perspective-toggle" $ do
-          let
-            toPerspectives :: Replay -> [(Perspective, Text)]
-            toPerspectives replay =
-              (Global, show Global)
-              : replay
-              ^.. replay_usernames
-              . folded
-              . withIndex
-              . alongside (to Perspective) identity
-
-          widgetHold (pure never) $
-            (replayEvent <&> \replay ->
-              replay
-              & toPerspectives
-              & traverse (uncurry perspectiveButton)
-              & fmap leftmost
-            )
+        perspectiveToggle
 
       -- effects
       cachedReplays :: Event t [ReplayLocation] <-
@@ -230,6 +213,25 @@ commandReducer minTurn (maxTurn, command) =
     Forwards  -> min maxTurn  . (+ 1)
     JumpTo n  -> const $ max minTurn $ min maxTurn n
 
+perspectiveToggle :: forall t m. Widget t m => Event t Replay -> m _
+pperspectiveToggle replayEvent =
+  elClass "span" "perspective-toggle" $
+    widgetHold (pure never) $
+      (replayEvent <&> \replay ->
+        replay
+        & toPerspectives
+        & traverse (uncurry perspectiveButton)
+        & fmap leftmost
+      )
+  where
+    toPerspectives :: Replay -> [(Perspective, Text)]
+    toPerspectives replay =
+      (Global, show Global)
+      : replay
+      ^.. replay_usernames
+      . folded
+      . withIndex
+      . alongside (to Perspective) identity
 
 perspectiveButton :: forall t m. Widget t m => Perspective -> Text -> m (Event t Perspective)
 perspectiveButton perspective label = do
@@ -240,7 +242,6 @@ perspectiveButton perspective label = do
   pure $ domEvent Click buttonElement $> perspective
   where
     perspectiveClass =
-      "perspective-toggle" <>
       case perspective of
         Global -> "global"
         Perspective id -> "player-" <> show id
