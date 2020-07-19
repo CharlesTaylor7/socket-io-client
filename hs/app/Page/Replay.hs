@@ -21,7 +21,7 @@ import Data.Vector (Vector)
 
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
-import Page.Replay.Simulate.Types (History, gameInfo_grid)
+import Page.Replay.Simulate.Types (History, GameInfo, gameInfo_grid)
 
 
 replay :: forall t m. Widget t m => m ()
@@ -44,15 +44,15 @@ replayGrid
   -> m ()
 replayGrid replay history turnDyn perspectiveDyn = do
   let
-    gridDyn :: Dynamic t Grid
-    gridDyn = turnDyn
-      <&> (\(Turn i) -> history ^?!  ix i . gameInfo_grid
+    gameInfoDyn :: Dynamic t GameInfo
+    gameInfoDyn = turnDyn
+      <&> (\(Turn i) -> history ^?! ix i
           $ "history index: " <> show i
           )
 
-    gridWithPerspective :: Dynamic t Grid
-    gridWithPerspective =
-      zipDynWith applyPerspective gridDyn perspectiveDyn
+    gridDyn :: Dynamic t GameInfo
+    gridDyn =
+      zipDynWith applyPerspective gridInfoDyn perspectiveDyn
 
     dimensions :: (Int, Int)
     dimensions =
@@ -69,8 +69,18 @@ replayGrid replay history turnDyn perspectiveDyn = do
 
 
 applyPerspective
-  :: Grid
-  -> Perspective
+  :: Perspective
+  -> GameInfo
   -> Grid
-applyPerspective grid perspective = grid
+applyPerspective Global gameInfo =
+  gameInfo ^. gameInfo_grid
+
+applyPerspective (Perspective playerId) gameInfo =
+  let
+    -- check tile & each of its 8 neighbors in the player owned cached
+    isfog = undefined
+  in
+    -- enumerate fog tiles & mark them as such
+    undefined
+
 
