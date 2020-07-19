@@ -16,16 +16,21 @@ Congrats, you should have built all the sources and have a server running at loc
 
 ## To do
 ### Features
-- Add perspective toggle to control panel
-- make control panel not an eyesore
+- style replay toggle to make it clear which perspective is active
+- handle afks / surrenders
+
 - get jsaddle-warp + ghci working
   - remove dependencies on js ffi and external scripts
   - don't rely on browser cache or service worker
-  - Cache replays at the app level
-- replace unsafe lens with alternatives that run in MonadError
-- ui for importing a replay? paste a url in an input?
+  - Cache replays at the app levels
+
+- replay management
+  - delete a replay
+  - import a replay
 - loading animation while replay loads
-- handle afks
 - Port old bot client to Haskell
 - Hot reloading of bot strategies (strategies in haskell)
+
+### Debugging
 - debug menu for showing the game info cache
+- replace unsafe lens with alternatives that run in MonadError
