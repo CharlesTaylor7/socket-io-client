@@ -49,36 +49,35 @@ body {
   opacity: .4
 }
 
+.grid td.neutral {
+  background-color: gray;
+}
+
 .grid td.city,.grid td.general,.grid td.mountain,.grid td.obstacle,.grid td.swamp {
   background-position: center;
-  background-repeat: no-repeat
+  background-repeat: no-repeat;
+  background-size: 100%;
 }
-
 .grid td.city {
-  background-color: gray;
-  background-image: url('/img/city.png')
-}
-
-.grid td.neutral {
-  background-color: gray
+  background-image: url(http://generals.io/city.png);
 }
 
 .grid td.general {
-  background-image: url('/crown.png')
+  background-image: url(http://generals.io/crown.png);
 }
 
 .grid td.mountain {
-  background-image: url('/img/mountain.png');
-  background-color: #bbb
+  background-image: url('http://generals.io/mountain.png');
+  background-color: #bbb;
 }
 
 .grid td.obstacle {
-  background-image: url('/img/obstacle.png')
+  background-image: url('http://generals.io/obstacle.png');
 }
 
 .grid td.swamp {
-  background-image: url('/img/swamp.png');
-  background-color: gray
+  background-image: url('http://generals.io/swamp.png');
+  background-color: gray;
 }
 
 .grid td.fog {
@@ -87,5 +86,5 @@ body {
 }
 
 .grid td.fog.selected {
-  border: 1px solid white
+  border: 1px solid white;
 }
