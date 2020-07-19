@@ -20,17 +20,13 @@ import Js.Types
 import Js.Utils
 import qualified Js.FFI as FFI
 
-import Generals.Map.Types (Grid)
-
-type History = Vector Grid
-
-data Perspective
-  = Global
-  | Perspective Int
-  deriving Show
+import Generals.Map.Types
+import Page.Replay.Simulate.Types (History)
 
 
-controlPanel :: forall t m. Widget t m => m (Event t Replay, Event t History, Dynamic t Turn)
+controlPanel
+  :: forall t m. Widget t m
+  => m (Event t (Replay, History), Dynamic t Turn, Dynamic t Perspective)
 controlPanel =
   elClass "div" "control-panel" $ do
     rec
@@ -43,7 +39,7 @@ controlPanel =
       jumpToTurnEvent :: Event t Command <-
         jumpToTurnInputEl
 
-      turnMarker dynTurn
+      turnMarker turnDyn
 
       perspectiveEvents :: Dynamic t (Event t Perspective) <-
         perspectiveToggle replayEvent
@@ -55,7 +51,7 @@ controlPanel =
       keyEvent :: Event t Command <-
         registerKeyCommands
 
-      dynTurn :: Dynamic t Turn <-
+      turnDyn :: Dynamic t Turn <-
         buildDynTurn commandEvent dynMaxTurn
 
       dynMaxTurn <-
@@ -64,7 +60,7 @@ controlPanel =
       replayEvent :: Event t Replay <-
         bindEvent replayLocationEvent downloadReplay
 
-      perspectiveDynamic :: Dynamic t Perspective <-
+      perspectiveDyn :: Dynamic t Perspective <-
         holdDyn Global $
         switchDyn perspectiveEvents
 
@@ -79,7 +75,11 @@ controlPanel =
         commandEvent :: Event t Command
         commandEvent = keyEvent <> jumpToTurnEvent
 
-    pure (replayEvent, historyEvent, dynTurn)
+    pure (alignAlways replayEvent historyEvent, turnDyn, perspectiveDyn)
+
+  where
+    theseToPair (These a b) = Just (a, b)
+    alignAlways = alignEventWithMaybe theseToPair
 
 replayDropdown :: forall t m. Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
 replayDropdown cachedReplays =
@@ -169,9 +169,9 @@ buildDynTurn commandEvent dynMaxTurn = do
   foldDyn (commandReducer def) def $ maxTurnOrCommandEv
 
 turnMarker :: forall t m. Widget t m => Dynamic t Turn -> m ()
-turnMarker dynTurn =
+turnMarker turnDyn =
   elClass "span" "turn-marker" $
-  dynText (dynTurn <&> \(Turn turn) ->
+  dynText (turnDyn <&> \(Turn turn) ->
     "turn: "
     <> show turn
     <> " ("

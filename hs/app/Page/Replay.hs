@@ -21,56 +21,56 @@ import Data.Vector (Vector)
 
 import Generals.Map.Types hiding (Map)
 import qualified Generals.Map.Types as Generals
-
-
-type History = Vector Grid
+import Page.Replay.Simulate.Types (History, gameInfo_grid)
 
 
 replay :: forall t m. Widget t m => m ()
 replay =
   elClass "div" "replay" $ do
-    (replayEvent, historyEvent, dynTurn) <-
+    (replayAndHistoryEvent, turnDyn, perspectiveDyn) <-
       controlPanel
 
-    let
-      alignAlways :: Reflex t => Event t a -> Event t b -> Event t (a, b)
-      alignAlways = alignEventWithMaybe $ \(These a b) -> Just (a, b)
-
     widgetHold_ blank $
-      (alignAlways replayEvent historyEvent) <&> \(replay, history) -> do
-        replayGrid replay history dynTurn
+      replayAndHistoryEvent <&> \(replay, history) -> do
+        replayGrid replay history turnDyn perspectiveDyn
 
 
-replayGrid :: forall t m. Widget t m => Replay -> History -> Dynamic t Turn -> m ()
-replayGrid replay history dynTurn = do
+replayGrid
+  :: forall t m. Widget t m
+  => Replay
+  -> History
+  -> Dynamic t Turn
+  -> Dynamic t Perspective
+  -> m ()
+replayGrid replay history turnDyn perspectiveDyn = do
   let
-    turnIndex :: Turn -> Traversal' History Grid
-    turnIndex = ix . view _Turn
-
-    dynGrid :: Dynamic t Grid
-    dynGrid = dynTurn
-      <&> (\i -> history ^?! turnIndex i
+    gridDyn :: Dynamic t Grid
+    gridDyn = turnDyn
+      <&> (\(Turn i) -> history ^?!  ix i . gameInfo_grid
           $ "history index: " <> show i
           )
 
-    map :: Generals.Map t
-    map = Generals.Map
-      { _map_tiles = dynGrid
-      , _map_width = replay ^. replay_mapWidth
-      , _map_height = replay ^. replay_mapHeight
-      }
+    gridWithPerspective :: Dynamic t Grid
+    gridWithPerspective =
+      zipDynWith applyPerspective gridDyn perspectiveDyn
 
-    mapWidth = map ^. map_width . to fromIntegral
-    mapHeight = map ^. map_height . to fromIntegral
+    dimensions :: (Int, Int)
+    dimensions =
+      (replay ^. replay_mapWidth, replay ^. replay_mapHeight)
 
     minTileSize :: Pixels
     minTileSize = 15
     initialSize = 4 * minTileSize
 
   elastic
-    (initialSize * mapWidth, initialSize * mapHeight)
+    (dimensions & both %~ (initialSize *) . fromIntegral)
     (0.25, 2)
-    (gridDynStyle map)
+    (gridDynStyle dimensions gridWithPerspective)
 
 
+applyPerspective
+  :: Grid
+  -> Perspective
+  -> Grid
+applyPerspective grid perspective = grid
 

@@ -55,12 +55,6 @@ newtype GridIndex = GridIndex Int
 
 newtype Grid = Grid (IntMap Tile)
 
-data Map t = Map
-  { _map_tiles :: !(Dynamic t Grid)
-  , _map_width :: !Int
-  , _map_height :: !Int
-  }
-
 
 makePrisms ''Owner
 makePrisms ''Tile
@@ -69,4 +63,3 @@ makePrisms ''GridIndex
 makePrisms ''Grid
 
 makeLenses ''Army
-makeLenses ''Map

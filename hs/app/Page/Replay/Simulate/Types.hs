@@ -22,4 +22,7 @@ data GameInfo = GameInfo
   , _gameInfo_owned        :: !(IntMap IntSet)
   }
 
+type History = Vector GameInfo
+
+
 makeLenses ''GameInfo

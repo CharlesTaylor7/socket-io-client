@@ -32,7 +32,7 @@ unstream = Vector.freeze <=< MVector.munstream
 toHistory
   :: MonadIO m
   => Replay
-  -> m (Vector Grid)
+  -> m (Vector GameInfo)
 toHistory replay =
   Stream.unfoldrM
     (\(gameInfo, turns) ->
@@ -47,7 +47,6 @@ toHistory replay =
     )
     (seed, replay ^. replay_moves . to turns)
     & Stream.cons seed
-    & fmap (view gameInfo_grid)
     & unstream
     & liftIO
 

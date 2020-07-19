@@ -74,8 +74,16 @@ newtype Turn = Turn Int
   deriving newtype (Ord, Eq, Num)
   deriving (Default, Semigroup, Monoid) via Sum Int
 
+
+data Perspective
+  = Global
+  | Perspective Int
+  deriving Show
+
+
 makePrisms ''Server
 makePrisms ''Command
+makePrisms ''Perspective
 
 -- iso
 makePrisms ''Turn
