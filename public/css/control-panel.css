@@ -1,5 +1,7 @@
 .control-panel {
+  position: fixed;
   border: 1px solid black;
+  background: gray;
   width: 250px;
   display: grid;
   row-gap: 10px;

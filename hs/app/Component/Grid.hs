@@ -73,8 +73,8 @@ toClass tile =
         General _ ->    Class "general"
         Swamp _ ->      Class "swamp"
         Mountain ->     Class "mountain"
-        Fog_Clear ->    Class "fog-clear"
-        Fog_Obstacle -> Class "fog-obstacle"
+        Fog_Clear ->    Class "fog clear"
+        Fog_Obstacle -> Class "fog obstacle"
     owner =
       case tile ^? _Owner of
         Just (Player id) -> Class $ "player-" <> show id
