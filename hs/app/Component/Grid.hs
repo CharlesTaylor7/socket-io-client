@@ -56,7 +56,7 @@ tileElement map coords =
 
     dynClass :: Dynamic t CSSClass
     dynClass = map ^. map_tiles
-      <&> (preview tileTraversal >>> toClass)
+      <&> (preview tileTraversal >>> maybe mempty toClass)
 
     dynArmyText :: Dynamic t Text
     dynArmyText = map ^. map_tiles
@@ -69,14 +69,22 @@ tileElement map coords =
         dynText dynArmyText
 
 
-toClass :: Maybe Tile -> CSSClass
+toClass :: Tile -> CSSClass
 toClass tile =
-  case tile of
-    Just (Clear _) ->    Class "clear"
-    Just (City _) ->     Class "city"
-    Just (General _) ->  Class "general"
-    Just (Swamp _) ->    Class "swamp"
-    Just Mountain ->     Class "mountain"
-    Just Fog_Clear ->    Class "fog-clear"
-    Just Fog_Obstacle -> Class "fog-obstacle"
-    _ ->                 Class "unknown"
+  let
+    terrain =
+      case tile of
+        Clear _ ->      Class "clear"
+        City _ ->       Class "city"
+        General _ ->    Class "general"
+        Swamp _ ->      Class "swamp"
+        Mountain ->     Class "mountain"
+        Fog_Clear ->    Class "fog-clear"
+        Fog_Obstacle -> Class "fog-obstacle"
+    owner =
+      case tile ^? _Owner of
+        Just (Player id) -> Class $ "player-" <> show id
+        Just Neutral -> Class "neutral"
+        Nothing -> mempty
+  in
+    terrain <> owner

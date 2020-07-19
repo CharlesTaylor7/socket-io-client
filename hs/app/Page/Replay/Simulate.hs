@@ -230,7 +230,7 @@ moveReducer move = do
   defendingPlayer <- use $
     singular
       "defending tile army"
-      (gameInfo_grid . defendingTile move . _Army . army_owner)
+      (gameInfo_grid . defendingTile move . _Owner)
 
   -- army leftover after attack
   newArmy <-

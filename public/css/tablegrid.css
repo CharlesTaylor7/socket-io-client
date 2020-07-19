@@ -89,3 +89,36 @@ body {
 .grid td.fog.selected {
   border: 1px solid white;
 }
+
+.grid td.player-0 {
+  background-color: red;
+}
+
+.grid td.player-1 {
+  background-color: blue;
+}
+
+.grid td.player-2 {
+  background-color: green;
+}
+
+.grid td.player-3 {
+  background-color: purple;
+}
+
+.grid td.player-4 {
+  background-color: teal;
+}
+
+.grid td.player-5 {
+  background-color: orange;
+}
+
+.grid td.player-6 {
+  background-color: brown;
+}
+
+.grid td.player-7 {
+  background-color: yellow;
+}
+
