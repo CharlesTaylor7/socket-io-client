@@ -85,31 +85,9 @@ controlPanel =
                 )
 
       -- track perspective
-      perspectiveToggleDyn :: Dynamic t Perspective <-
-        holdDyn Global $
-        switchDyn perspectiveEvents
-
-      perspectiveShiftDueToKillEvent :: Event t Perspective <-
-        replayAndGameInfoDynEvent
-        & fmapCheap (updated . snd)
-        & switchEvent
-        <&> fmapCheap (view gameInfo_kills)
-        >>= changed
-        <&> push
-          ( \kills -> do
-              perspective <- sample $ current perspectiveToggleDyn
-              pure $ do
-                playerId <- perspective ^? _Perspective
-                kills
-                  ^? folded
-                  . filtered ((== playerId) . view kill_target)
-                  . kill_killer
-                  . to Perspective
-          )
-
       perspectiveDyn :: Dynamic t Perspective <-
         holdDyn Global $
-        leftmost [perspectiveShiftDueToKillEvent, updated perspectiveToggleDyn]
+        switchDyn perspectiveEvents
 
       let
         historyEvent :: Event t History
