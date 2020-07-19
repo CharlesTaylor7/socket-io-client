@@ -33,6 +33,7 @@ import Control.Lens.At as X
 import Control.Lens.Cons as X
 import Control.Lens.Each as X
 import Control.Lens.Extras as X (is)
+import Control.Lens.Empty as X
 import Control.Lens.Fold as X hiding ((^?!))
 import Control.Lens.Getter as X
 import Control.Lens.Indexed as X
@@ -50,7 +51,6 @@ import Data.Text.Lens as X hiding (text)
 import Data.IntSet.Lens as X
 import Numeric.Lens as X
 -- unused
--- import Control.Lens.Empty as X
 -- import Control.Lens.Equality as X
 -- import Control.Lens.Level as X
 -- import Control.Lens.Plated as X

@@ -28,14 +28,12 @@ import qualified Data.IntSet as Set
 replay :: forall t m. Widget t m => m ()
 replay =
   elClass "div" "replay" $ do
-    (gameInfoDynEvent, perspectiveDyn) <-
+    (replayAndGameInfoDynEvent, perspectiveDyn) <-
       controlPanel
 
     widgetHold_ blank $
-      gameInfoDynEvent <&>
-        \gameInfoDyn -> do
-          replay <- view gameInfo_replay <$> (sample $ current gameInfoDyn)
-
+      replayAndGameInfoDynEvent <&>
+        \(replay, gameInfoDyn) -> do
           let
             gridDyn :: Dynamic t Grid
             gridDyn = zipDynWith applyPerspective perspectiveDyn gameInfoDyn

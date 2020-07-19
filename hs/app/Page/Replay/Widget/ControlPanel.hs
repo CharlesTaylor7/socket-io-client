@@ -28,7 +28,7 @@ import Control.Lens.Unsafe ((^?!))
 
 controlPanel
   :: forall t m. Widget t m
-  => m _ --(Event t (Replay, History), Dynamic t Turn, Dynamic t Perspective)
+  => m _
 controlPanel =
   elClass "div" "control-panel" $ do
     rec
@@ -43,8 +43,8 @@ controlPanel =
 
       turnMarker turnDyn
 
-      perspectiveEvents :: Dynamic t (Event t Perspective) <-
-        perspectiveToggle replayEvent
+      perspectiveEvents <-
+        perspectiveToggle replayAndGameInfoDynEvent
 
       -- effects
       cachedReplays :: Event t [ReplayLocation] <-
@@ -67,12 +67,16 @@ controlPanel =
         switchDyn perspectiveEvents
 
       let
-        gameInfoDynEvent :: Event t (Dynamic t GameInfo)
-        gameInfoDynEvent =
-          historyEvent <&>
-            \history -> turnDyn <&>
-              \(Turn turn) ->
-                history ^?! ix turn $ "history index: " <> show turn
+        replayAndGameInfoDynEvent :: Event t (Replay, Dynamic t GameInfo)
+        replayAndGameInfoDynEvent =
+          unsafeAlignWith combine replayEvent historyEvent
+          where
+            combine =
+              \replay history ->
+                ( replay
+                , turnDyn <&> \(Turn turn) ->
+                    history ^?! ix turn $ "history index: " <> show turn
+                )
 
         historyEvent :: Event t History
         historyEvent =
@@ -84,7 +88,10 @@ controlPanel =
         commandEvent :: Event t Command
         commandEvent = keyEvent <> jumpToTurnEvent
 
-    pure (gameInfoDynEvent, perspectiveDyn)
+    pure (replayAndGameInfoDynEvent, perspectiveDyn)
+
+unsafeAlignWith :: Reflex t => (a -> b -> c) -> Event t a -> Event t b -> Event t c
+unsafeAlignWith f = alignEventWithMaybe (\(These a b) -> Just (f a b))
 
 replayDropdown :: forall t m. Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
 replayDropdown cachedReplays =
@@ -219,17 +226,29 @@ commandReducer minTurn (maxTurn, command) =
     Forwards  -> min maxTurn  . (+ 1)
     JumpTo n  -> const $ max minTurn $ min maxTurn n
 
-perspectiveToggle :: forall t m. Widget t m => Event t Replay -> m _
-perspectiveToggle replayEvent =
+perspectiveToggle
+  :: forall t m. Widget t m
+  => Event t (Replay, Dynamic t GameInfo)
+  -> m _
+perspectiveToggle event =
   elClass "div" "perspective-toggle" $
     widgetHold (pure never) $
-      (replayEvent <&> \replay ->
+      (event <&> \(replay, gameInfoDyn) ->
         replay
         & toPerspectives
-        & traverse (uncurry perspectiveButton)
+        & traverse
+          ( \(p, t) ->
+            perspectiveButton p t (gameInfoDyn <&>
+              (\g -> isDisabled p g & traceShow (p, isDisabled p g)))
+          )
         & fmap leftmost
       )
   where
+    isDisabled :: Perspective -> GameInfo -> Bool
+    isDisabled Global = const False
+    isDisabled (Perspective playerId) =
+      orOf $ gameInfo_owned . at playerId . failing (_Nothing . like True) (_Just . _Empty . like True)
+
     toPerspectives :: Replay -> [(Perspective, Text)]
     toPerspectives replay =
       (Global, show Global)
@@ -239,15 +258,27 @@ perspectiveToggle replayEvent =
       . withIndex
       . alongside (to Perspective) identity
 
-perspectiveButton :: forall t m. Widget t m => Perspective -> Text -> m (Event t Perspective)
-perspectiveButton perspective label = do
+
+
+perspectiveButton
+  :: forall t m. Widget t m
+  => Perspective
+  -> Text
+  -> Dynamic t Bool
+  -> m (Event t Perspective)
+perspectiveButton perspective label disabledDyn = do
   (buttonElement, _) <-
-    elClass' "button" perspectiveClass $
+    elDynAttr' "button" attrs $
       text label
 
   pure $ domEvent Click buttonElement $> perspective
   where
-    perspectiveClass =
+    attrs = disabledDyn <&>
+      \disabled -> def
+        & at "class" ?~ className
+        & at "disabled" .~ bool Nothing (Just "disabled") disabled
+
+    className =
       case perspective of
         Global -> "global"
         Perspective id -> "player-" <> show id
