@@ -85,6 +85,7 @@ initialGameInfo replay = GameInfo
   , _gameInfo_activeCities = fromList $ replay ^.. replay_generals . folded
   , _gameInfo_activeSwamps = mempty
   , _gameInfo_owned = fromList $ replay ^.. replay_generals . ifolded . withIndex  . alongside identity (to singleton)
+  , _gameInfo_kills = []
   , _gameInfo_numTiles = numTiles
   , _gameInfo_replay = replay
   }
@@ -187,7 +188,7 @@ applyMoves moves =
   >>= traverse_ applyKill . view _2
 
 applyKill :: SimulateMonadConstraints m => Kill -> m ()
-applyKill (Kill killer target) = do
+applyKill kill@(Kill killer target) = do
   -- remove all territory belonging to target
   maybe_territory <- gameInfo_owned . at target <<.= Nothing
 
@@ -207,6 +208,8 @@ applyKill (Kill killer target) = do
       . set (army_owner . _Player) killer
       )
 
+  -- prepend kill to game log
+  gameInfo_kills %= (kill :)
 
 moveReducer
   :: (SimulateMonadConstraints m, MonadWriter [Kill] m)
@@ -270,8 +273,8 @@ moveReducer move = do
 
     -- emit kill
     tell $ singleton $ Kill
-      { kill_killer = killer
-      , kill_target = mark
+      { _kill_killer = killer
+      , _kill_target = mark
       }
     -- convert conquered general to a city
     gameInfo_grid . ixGrid (move ^. move_endTile) . armyTileType .= City_Tile

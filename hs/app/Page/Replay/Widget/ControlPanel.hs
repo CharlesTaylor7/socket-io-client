@@ -62,10 +62,35 @@ controlPanel =
       replayEvent :: Event t Replay <-
         bindEvent replayLocationEvent downloadReplay
 
-      perspectiveDyn :: Dynamic t Perspective <-
+      perspectiveToggleDyn :: Dynamic t Perspective <-
         holdDyn Global $
         switchDyn perspectiveEvents
 
+      gameInfoEvent :: Event t GameInfo <-
+          replayAndGameInfoDynEvent
+          & fmapCheap (updated . snd)
+          & switchEvent
+
+      changePerspectiveDueToKillDynamic :: Dynamic t (Maybe Perspective) <-
+        holdMaybe $
+        flip push gameInfoEvent
+          (\gameInfo -> do
+            p :: Perspective <-
+              sample $ current perspectiveToggleDyn
+            pure $ do
+              playerId <- p ^? _Perspective
+              if is _Just $ gameInfo ^? gameInfo_owned . ix playerId
+              then Nothing
+              else do
+                let
+                  filter :: Kill -> Bool
+                  filter = (== playerId) . view kill_target
+
+                  answer =  gameInfo
+                    ^?! (gameInfo_kills . folded . filtered filter . kill_killer . to Perspective)
+                    $ "Expected kill for perspective shift"
+                Just answer
+          )
       let
         replayAndGameInfoDynEvent :: Event t (Replay, Dynamic t GameInfo)
         replayAndGameInfoDynEvent =
@@ -88,8 +113,30 @@ controlPanel =
         commandEvent :: Event t Command
         commandEvent = keyEvent <> jumpToTurnEvent
 
+        perspectiveDyn :: Dynamic t Perspective
+        perspectiveDyn = zipDynWith combine perspectiveToggleDyn changePerspectiveDueToKillDynamic
+          where
+            combine :: Perspective -> Maybe Perspective -> Perspective
+            combine _ (Just p2) = p2
+            combine p1 _        = p1
+
     pure (replayAndGameInfoDynEvent, perspectiveDyn)
 
+changed :: (MonadHold t m, Reflex t, Eq a) => Event t a -> m (Event t a)
+changed event = do
+  behavior <- hold Nothing $ fmapCheap Just event
+  pure $ push
+    (\new -> do
+      old <- sample behavior
+      if old == Just new
+      then pure $ Nothing
+      else pure $ Just new
+    )
+    event
+
+holdMaybe :: (Reflex t, MonadHold t m) => Event t a -> m (Dynamic t (Maybe a))
+holdMaybe event = holdDyn Nothing $ fmapCheap Just event
+--
 unsafeAlignWith :: Reflex t => (a -> b -> c) -> Event t a -> Event t b -> Event t c
 unsafeAlignWith f = alignEventWithMaybe (\(These a b) -> Just (f a b))
 
@@ -238,8 +285,7 @@ perspectiveToggle event =
         & toPerspectives
         & traverse
           ( \(p, t) ->
-            perspectiveButton p t (gameInfoDyn <&>
-              (\g -> isDisabled p g & traceShow (p, isDisabled p g)))
+            perspectiveButton p t (gameInfoDyn <&> isDisabled p)
           )
         & fmap leftmost
       )
@@ -247,7 +293,11 @@ perspectiveToggle event =
     isDisabled :: Perspective -> GameInfo -> Bool
     isDisabled Global = const False
     isDisabled (Perspective playerId) =
-      orOf $ gameInfo_owned . at playerId . failing (_Nothing . like True) (_Just . _Empty . like True)
+      orOf
+      $ gameInfo_owned
+      . at playerId
+      . failing _Nothing (_Just . _Empty)
+      . like True
 
     toPerspectives :: Replay -> [(Perspective, Text)]
     toPerspectives replay =

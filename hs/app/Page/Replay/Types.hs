@@ -78,7 +78,7 @@ newtype Turn = Turn Int
 data Perspective
   = Global
   | Perspective Int
-  deriving Show
+  deriving (Show, Eq)
 
 
 makePrisms ''Server
