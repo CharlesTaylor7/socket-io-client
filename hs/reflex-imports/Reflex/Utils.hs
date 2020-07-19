@@ -36,3 +36,15 @@ bindEvent event operation =
   fmap switchDyn $
   widgetHold (pure never) $
   event <&> operation
+
+changed :: (MonadHold t m, Reflex t, Eq a) => Event t a -> m (Event t a)
+changed event = do
+  behavior <- hold Nothing $ fmapCheap Just event
+  pure $ push
+    (\new -> do
+      old <- sample behavior
+      if old == Just new
+      then pure $ Nothing
+      else pure $ Just new
+    )
+    event

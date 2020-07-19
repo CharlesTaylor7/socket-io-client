@@ -99,18 +99,6 @@ controlPanel =
 
     pure (replayAndGameInfoDynEvent, perspectiveDyn)
 
-changed :: (MonadHold t m, Reflex t, Eq a) => Event t a -> m (Event t a)
-changed event = do
-  behavior <- hold Nothing $ fmapCheap Just event
-  pure $ push
-    (\new -> do
-      old <- sample behavior
-      if old == Just new
-      then pure $ Nothing
-      else pure $ Just new
-    )
-    event
-
 unsafeAlignWith :: Reflex t => (a -> b -> c) -> Event t a -> Event t b -> Event t c
 unsafeAlignWith f = alignEventWithMaybe (\(These a b) -> Just (f a b))
 
