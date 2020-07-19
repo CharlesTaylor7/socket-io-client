@@ -15,10 +15,6 @@
 Congrats, you should have built all the sources and have a server running at localhost:8000.
 
 ## To do
-### Bugs
-  - debug menu for showing the game info cache
-- enforce uniform tile size (empty tiles get squished on zoom out)
-
 ### Features
 - make control panel not an eyesore
 - get jsaddle-warp + ghci working
@@ -33,4 +29,4 @@ Congrats, you should have built all the sources and have a server running at loc
 - handle afks
 - Port old bot client to Haskell
 - Hot reloading of bot strategies (strategies in haskell)
-
+- debug menu for showing the game info cache

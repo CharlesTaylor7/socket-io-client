@@ -6,8 +6,6 @@ body {
 .grid {
   table-layout: fixed;
   border-collapse: collapse;
-  --table-cell-side-length: 15px;
-
 }
 
 .grid td {
@@ -22,6 +20,9 @@ body {
   text-overflow: ellipsis;
   text-align: center;
   white-space: nowrap;
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
 }
 
 .grid td.selectable,.grid td.attackable {
