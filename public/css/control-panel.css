@@ -39,6 +39,10 @@
   grid-auto-flow: row;
 }
 
+.global {
+  background-color: white;
+}
+
 .player-0 {
   background-color: red;
 }
