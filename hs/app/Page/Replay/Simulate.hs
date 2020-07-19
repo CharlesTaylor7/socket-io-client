@@ -199,9 +199,12 @@ applyKill (Kill killer target) = do
     (gameInfo_owned . ix killer)
     <>= territory
 
-  -- halve the armies in the transferred territory
+  -- halve the armies & transfer ownership
   for_ (Set.toList territory) $ \i ->
-    gameInfo_grid . _Grid . ix i . _Army . army_size %= halfRoundUp
+    gameInfo_grid . _Grid . ix i . _Army %=
+      ( over army_size halfRoundUp
+      . set (army_owner . _Player) killer
+      )
 
 
 moveReducer
