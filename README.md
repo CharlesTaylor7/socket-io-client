@@ -16,11 +16,8 @@ Congrats, you should have built all the sources and have a server running at loc
 
 ## To do
 ### Bugs
-- dynMaxTurn won't update
-- bugs in simulation that causes crashing
   - debug menu for showing the game info cache
 - enforce uniform tile size (empty tiles get squished on zoom out)
-- restore tile icons
 
 ### Features
 - make control panel not an eyesore
