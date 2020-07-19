@@ -89,6 +89,13 @@ controlPanel =
         holdDyn Global $
         switchDyn perspectiveEvents
 
+      killsChangedEvent :: Event t [Kill] <-
+        replayAndGameInfoDynEvent
+        & fmapCheap (updated . snd)
+        & switchEvent
+        <&> fmapCheap (view gameInfo_kills)
+        >>= changed
+
       let
         historyEvent :: Event t History
         historyEvent =
