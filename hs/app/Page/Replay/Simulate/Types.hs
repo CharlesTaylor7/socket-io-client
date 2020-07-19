@@ -10,6 +10,8 @@ import Data.Vector (Vector)
 type Turn = (Int, [Move])
 type Turns = [Turn]
 
+type History = Vector GameInfo
+
 data Kill = Kill
   { kill_killer :: Int
   , kill_target :: Int
@@ -21,17 +23,19 @@ data GameInfo = GameInfo
   , _gameInfo_activeSwamps :: !IntSet
   , _gameInfo_owned        :: !(IntMap IntSet)
   -- get only
-  , _gameInfo_gridWidth    :: !Int
   , _gameInfo_numTiles     :: !Int
+  , _gameInfo_gridWidth    :: !Int
+  , _gameInfo_gridHeight   :: !Int
   }
 
-type History = Vector GameInfo
+gameInfo_numTiles :: Getter GameInfo Int
+gameInfo_numTiles = to _gameInfo_numTiles
 
 gameInfo_gridWidth :: Getter GameInfo Int
 gameInfo_gridWidth = to _gameInfo_gridWidth
 
-gameInfo_numTiles :: Getter GameInfo Int
-gameInfo_numTiles = to _gameInfo_numTiles
+gameInfo_gridHeight :: Getter GameInfo Int
+gameInfo_gridHeight = to _gameInfo_gridHeight
 
 makeLensesFor
   [ ("_gameInfo_grid", "gameInfo_grid")

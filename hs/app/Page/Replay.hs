@@ -28,48 +28,34 @@ import qualified Data.IntSet as Set
 replay :: forall t m. Widget t m => m ()
 replay =
   elClass "div" "replay" $ do
-    (replayAndHistoryEvent, turnDyn, perspectiveDyn) <-
+    (gameInfoDynEvent, perspectiveDyn) <-
       controlPanel
 
     widgetHold_ blank $
-      replayAndHistoryEvent <&> \(replay, history) -> do
-        replayGrid replay history turnDyn perspectiveDyn
+      gameInfoDynEvent <&>
+        \gameInfoDyn -> do
+          gameInfo <- sample $ current gameInfoDyn
 
+          let
+            gridDyn :: Dynamic t Grid
+            gridDyn = zipDynWith applyPerspective perspectiveDyn gameInfoDyn
 
-replayGrid
-  :: forall t m. Widget t m
-  => Replay
-  -> History
-  -> Dynamic t Turn
-  -> Dynamic t Perspective
-  -> m ()
-replayGrid replay history turnDyn perspectiveDyn = do
-  let
-    gameInfoDyn :: Dynamic t GameInfo
-    gameInfoDyn = turnDyn
-      <&> (\(Turn i) -> history ^?! ix i
-          $ "history index: " <> show i
-          )
+            dimensions :: (Int, Int)
+            dimensions =
+              (gameInfo ^. gameInfo_gridWidth, gameInfo ^. gameInfo_gridHeight)
 
-    gridDyn :: Dynamic t Grid
-    gridDyn =
-      zipDynWith applyPerspective perspectiveDyn gameInfoDyn
+            minTileSize :: Pixels
+            minTileSize = 15
+            initialSize = 4 * minTileSize
 
-    dimensions :: (Int, Int)
-    dimensions =
-      (replay ^. replay_mapWidth, replay ^. replay_mapHeight)
+            initialMapDimensions :: (Pixels, Pixels)
+            initialMapDimensions =
+              dimensions & both %~ (initialSize *) . fromIntegral
 
-    minTileSize :: Pixels
-    minTileSize = 15
-    initialSize = 4 * minTileSize
-
-    initialMapDimensions :: (Pixels, Pixels)
-    initialMapDimensions = dimensions & both %~ (initialSize *) . fromIntegral
-
-  elastic
-    initialMapDimensions
-    (0.25, 2)
-    (gridDynStyle dimensions gridDyn)
+          elastic
+            initialMapDimensions
+            (0.25, 2)
+            (gridDynStyle dimensions gridDyn)
 
 
 applyPerspective

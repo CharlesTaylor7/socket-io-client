@@ -21,12 +21,14 @@ import Js.Utils
 import qualified Js.FFI as FFI
 
 import Generals.Map.Types
-import Page.Replay.Simulate.Types (History)
+import Page.Replay.Simulate.Types hiding (Turn, Turns)
+
+import Control.Lens.Unsafe ((^?!))
 
 
 controlPanel
   :: forall t m. Widget t m
-  => m (Event t (Replay, History), Dynamic t Turn, Dynamic t Perspective)
+  => m _ --(Event t (Replay, History), Dynamic t Turn, Dynamic t Perspective)
 controlPanel =
   elClass "div" "control-panel" $ do
     rec
@@ -65,6 +67,13 @@ controlPanel =
         switchDyn perspectiveEvents
 
       let
+        gameInfoDynEvent :: Event t (Dynamic t GameInfo)
+        gameInfoDynEvent =
+          historyEvent <&>
+            \history -> turnDyn <&>
+              \(Turn turn) ->
+                history ^?! ix turn $ "history index: " <> show turn
+
         historyEvent :: Event t History
         historyEvent =
           pushAlways toHistory replayEvent
@@ -75,11 +84,7 @@ controlPanel =
         commandEvent :: Event t Command
         commandEvent = keyEvent <> jumpToTurnEvent
 
-    pure (alignAlways replayEvent historyEvent, turnDyn, perspectiveDyn)
-
-  where
-    theseToPair (These a b) = Just (a, b)
-    alignAlways = alignEventWithMaybe theseToPair
+    pure (gameInfoDynEvent, perspectiveDyn)
 
 replayDropdown :: forall t m. Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
 replayDropdown cachedReplays =
@@ -167,6 +172,7 @@ buildDynTurn commandEvent dynMaxTurn = do
       , updated dynMaxTurn & fmapCheap (,DoNothing)
       ]
   foldDyn (commandReducer def) def $ maxTurnOrCommandEv
+
 
 turnMarker :: forall t m. Widget t m => Dynamic t Turn -> m ()
 turnMarker turnDyn =
