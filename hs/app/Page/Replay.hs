@@ -93,11 +93,16 @@ applyPerspective (Perspective playerId) gameInfo =
 
     visibleFrom :: Int -> [Int]
     visibleFrom i =
-      [ i - 1 - w, i - w, i + 1 - w
-      , i - 1,     i,     i + 1
-      , i - 1 + w, i + w, i + 1 + w
-      ]
-      where w = gameInfo ^. gameInfo_gridWidth
+      let
+        w = gameInfo ^. gameInfo_gridWidth
+        column = [i - w, i, i + w]
+        next = column <&> (+ 1)
+        prev = column <&> subtract 1
+      in
+        case i `rem` w of
+          0              -> column <> next
+          r | r == (w-1) -> column <> prev
+          _              -> column <> next <> prev
 
     fog :: IntSet
     fog = Set.difference allTiles visible
