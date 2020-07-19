@@ -29,26 +29,12 @@ type History = Vector Grid
 replay :: forall t m. Widget t m => m ()
 replay =
   elClass "div" "replay" $ do
-    rec
-      (replayLocationEvent, dynTurn) <-
-        controlPanel dynMaxTurn
+    (replayEvent, historyEvent, dynTurn) <-
+      controlPanel
 
-      dynMaxTurn <-
-        holdDyn 0 $ fmapCheap toMaxTurn historyEvent
-
-      replayEvent :: Event t Replay <-
-        bindEventToWidget replayLocationEvent downloadReplay
-
-      let
-        historyEvent :: Event t History
-        historyEvent =
-          pushAlways toHistory replayEvent
-
-        toMaxTurn :: History -> Turn
-        toMaxTurn = Turn . subtract 1 . length
-
-        alignAlways :: Reflex t => Event t a -> Event t b -> Event t (a, b)
-        alignAlways = alignEventWithMaybe $ \(These a b) -> Just (a, b)
+    let
+      alignAlways :: Reflex t => Event t a -> Event t b -> Event t (a, b)
+      alignAlways = alignEventWithMaybe $ \(These a b) -> Just (a, b)
 
     widgetHold_ blank $
       (alignAlways replayEvent historyEvent) <&> \(replay, history) -> do

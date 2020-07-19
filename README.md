@@ -16,14 +16,13 @@ Congrats, you should have built all the sources and have a server running at loc
 
 ## To do
 ### Features
+- Add perspective toggle to control panel
 - make control panel not an eyesore
 - get jsaddle-warp + ghci working
   - remove dependencies on js ffi and external scripts
   - don't rely on browser cache or service worker
   - Cache replays at the app level
 - replace unsafe lens with alternatives that run in MonadError
-- View replays from global perspective
-- view replays from player perspectives
 - ui for importing a replay? paste a url in an input?
 - loading animation while replay loads
 - handle afks

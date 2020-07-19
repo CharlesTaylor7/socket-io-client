@@ -22,7 +22,7 @@ data Replay = Replay
   { _replay_id :: Text
   , _replay_mapWidth :: Int
   , _replay_mapHeight :: Int
-  , _replay_usernames :: Array
+  , _replay_usernames :: Vector Text
 
   , _replay_cities :: GridLocations
   , _replay_cityArmies :: GridLocations

@@ -27,12 +27,12 @@ switchEvent
   -> m (Event t a)
 switchEvent = switchHold never
 
-bindEventToWidget
+bindEvent
   :: (Adjustable t m, MonadHold t m)
   => Event t a
   -> (a -> m (Event t b))
   -> m (Event t b)
-bindEventToWidget event operation =
+bindEvent event operation =
   fmap switchDyn $
   widgetHold (pure never) $
   event <&> operation

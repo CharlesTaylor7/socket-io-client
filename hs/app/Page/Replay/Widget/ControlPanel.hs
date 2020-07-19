@@ -20,40 +20,87 @@ import Js.Types
 import Js.Utils
 import qualified Js.FFI as FFI
 
+import Generals.Map.Types (Grid)
 
-controlPanel :: Widget t m => Dynamic t Turn -> m (Event t ReplayLocation, Dynamic t Turn)
-controlPanel dynMaxTurn = do
-  -- effects
-  cachedReplays :: Event t [ReplayLocation] <-
-    getCachedReplays
+type History = Vector Grid
 
-  keyEvent :: Event t Command <-
-    registerKeyCommands
+data Perspective
+  = Global
+  | Perspective Int
+  deriving Show
 
-  -- dom elements
+
+controlPanel :: forall t m. Widget t m => m (Event t Replay, Event t History, Dynamic t Turn)
+controlPanel =
   elClass "div" "control-panel" $ do
     rec
-      replayLocationEv :: Event t ReplayLocation <-
+      -- dom elements
+      replayLocationEvent :: Event t ReplayLocation <-
         replayDropdown cachedReplays
 
-      replayUrlHref replayLocationEv
+      replayUrlHref replayLocationEvent
 
       jumpToTurnEvent :: Event t Command <-
         jumpToTurnInputEl
-      -- fold commands into dynamic turn
-      let commandEvent = keyEvent <> jumpToTurnEvent
+
+      turnMarker dynTurn
+
+      perspectiveEvents :: Dynamic t (Event t Perspective) <-
+        elClass "span" "perspective-toggle" $ do
+          let
+            toPerspectives :: Replay -> [(Perspective, Text)]
+            toPerspectives replay =
+              (Global, show Global)
+              : replay
+              ^.. replay_usernames
+              . folded
+              . withIndex
+              . alongside (to Perspective) identity
+
+          widgetHold (pure never) $
+            (replayEvent <&> \replay ->
+              replay
+              & toPerspectives
+              & traverse (uncurry perspectiveButton)
+              & fmap leftmost
+            )
+
+      -- effects
+      cachedReplays :: Event t [ReplayLocation] <-
+        getCachedReplays
+
+      keyEvent :: Event t Command <-
+        registerKeyCommands
 
       dynTurn :: Dynamic t Turn <-
         buildDynTurn commandEvent dynMaxTurn
 
-      turnMarker dynTurn
+      dynMaxTurn <-
+        holdDyn 0 $ fmapCheap toMaxTurn historyEvent
 
-    pure (replayLocationEv, dynTurn)
+      replayEvent :: Event t Replay <-
+        bindEvent replayLocationEvent downloadReplay
 
+      perspectiveDynamic :: Dynamic t Perspective <-
+        holdDyn Global $
+        switchDyn perspectiveEvents
+
+      let
+        historyEvent :: Event t History
+        historyEvent =
+          pushAlways toHistory replayEvent
+
+        toMaxTurn :: History -> Turn
+        toMaxTurn = Turn . subtract 1 . length
+
+        commandEvent :: Event t Command
+        commandEvent = keyEvent <> jumpToTurnEvent
+
+    pure (replayEvent, historyEvent, dynTurn)
 
 replayDropdown :: forall t m. Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
 replayDropdown cachedReplays =
-  bindEventToWidget cachedReplays $
+  bindEvent cachedReplays $
   \replays -> do
     let
       optionsVector :: Vector ReplayLocation
@@ -183,7 +230,18 @@ commandReducer minTurn (maxTurn, command) =
     Forwards  -> min maxTurn  . (+ 1)
     JumpTo n  -> const $ max minTurn $ min maxTurn n
 
-theseToDefaults :: (Default a, Default b) => These a b -> (a, b)
-theseToDefaults (This a)    = (a  , def)
-theseToDefaults (That b)    = (def, b  )
-theseToDefaults (These a b) = (a  , b  )
+
+perspectiveButton :: forall t m. Widget t m => Perspective -> Text -> m (Event t Perspective)
+perspectiveButton perspective label = do
+  (buttonElement, _) <-
+    elClass' "button" perspectiveClass $
+      text label
+
+  pure $ domEvent Click buttonElement $> perspective
+  where
+    perspectiveClass =
+      "perspective-toggle" <>
+      case perspective of
+        Global -> "global"
+        Perspective id -> "player-" <> show id
+
