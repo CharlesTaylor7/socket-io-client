@@ -56,7 +56,7 @@ body {
 .grid td.city,.grid td.general,.grid td.mountain,.grid td.obstacle,.grid td.swamp {
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: 80%;
 }
 .grid td.city {
   background-image: url(http://generals.io/city.png);
