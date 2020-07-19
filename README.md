@@ -15,6 +15,10 @@
 Congrats, you should have built all the sources and have a server running at localhost:8000.
 
 ## To do
+### Bugs
+- last row of grid is mis sized
+- army numbers should scale down as you zoom out
+
 ### Features
 - style replay toggle to make it clear which perspective is active
 - handle afks / surrenders
