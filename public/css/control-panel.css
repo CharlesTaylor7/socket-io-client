@@ -12,8 +12,6 @@
     "select-turn   turn-marker"
     "perspectives perspectives"
     ;
-
-
 }
 
 .replay-dropdown {
@@ -37,6 +35,8 @@
 
 .perspective-toggle {
   grid-area: perspectives;
+  display: grid;
+  grid-auto-flow: row;
 }
 
 .player-0 {

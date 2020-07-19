@@ -46,7 +46,7 @@ controlPanel =
       turnMarker dynTurn
 
       perspectiveEvents :: Dynamic t (Event t Perspective) <-
-        perspectiveToggle
+        perspectiveToggle replayEvent
 
       -- effects
       cachedReplays :: Event t [ReplayLocation] <-
@@ -214,8 +214,8 @@ commandReducer minTurn (maxTurn, command) =
     JumpTo n  -> const $ max minTurn $ min maxTurn n
 
 perspectiveToggle :: forall t m. Widget t m => Event t Replay -> m _
-pperspectiveToggle replayEvent =
-  elClass "span" "perspective-toggle" $
+perspectiveToggle replayEvent =
+  elClass "div" "perspective-toggle" $
     widgetHold (pure never) $
       (replayEvent <&> \replay ->
         replay
