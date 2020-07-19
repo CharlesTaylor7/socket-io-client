@@ -34,7 +34,7 @@ replay =
     widgetHold_ blank $
       gameInfoDynEvent <&>
         \gameInfoDyn -> do
-          gameInfo <- sample $ current gameInfoDyn
+          replay <- view gameInfo_replay <$> (sample $ current gameInfoDyn)
 
           let
             gridDyn :: Dynamic t Grid
@@ -42,7 +42,7 @@ replay =
 
             dimensions :: (Int, Int)
             dimensions =
-              (gameInfo ^. gameInfo_gridWidth, gameInfo ^. gameInfo_gridHeight)
+              (replay ^. replay_mapWidth, replay ^. replay_mapHeight)
 
             minTileSize :: Pixels
             minTileSize = 15
@@ -80,7 +80,7 @@ applyPerspective (Perspective playerId) gameInfo =
     visibleFrom :: Int -> [Int]
     visibleFrom i =
       let
-        w = gameInfo ^. gameInfo_gridWidth
+        w = gameInfo ^. gameInfo_replay . replay_mapWidth
         column = [i - w, i, i + w]
         next = column <&> (+ 1)
         prev = column <&> subtract 1

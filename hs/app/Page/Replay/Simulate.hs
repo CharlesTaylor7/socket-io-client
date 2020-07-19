@@ -86,8 +86,7 @@ initialGameInfo replay = GameInfo
   , _gameInfo_activeSwamps = mempty
   , _gameInfo_owned = fromList $ replay ^.. replay_generals . ifolded . withIndex  . alongside identity (to singleton)
   , _gameInfo_numTiles = numTiles
-  , _gameInfo_gridWidth = replay ^. replay_mapWidth
-  , _gameInfo_gridHeight = replay ^. replay_mapHeight
+  , _gameInfo_replay = replay
   }
   where
     singleton :: Int -> IntSet

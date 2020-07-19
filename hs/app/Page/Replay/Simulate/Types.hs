@@ -24,18 +24,15 @@ data GameInfo = GameInfo
   , _gameInfo_owned        :: !(IntMap IntSet)
   -- get only
   , _gameInfo_numTiles     :: !Int
-  , _gameInfo_gridWidth    :: !Int
-  , _gameInfo_gridHeight   :: !Int
+  , _gameInfo_replay       :: !Replay
   }
 
 gameInfo_numTiles :: Getter GameInfo Int
 gameInfo_numTiles = to _gameInfo_numTiles
 
-gameInfo_gridWidth :: Getter GameInfo Int
-gameInfo_gridWidth = to _gameInfo_gridWidth
+gameInfo_replay :: Getter GameInfo Replay
+gameInfo_replay = to _gameInfo_replay
 
-gameInfo_gridHeight :: Getter GameInfo Int
-gameInfo_gridHeight = to _gameInfo_gridHeight
 
 makeLensesFor
   [ ("_gameInfo_grid", "gameInfo_grid")
