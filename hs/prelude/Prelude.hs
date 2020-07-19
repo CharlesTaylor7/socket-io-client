@@ -44,9 +44,11 @@ import Control.Lens.Setter as X
 import Control.Lens.Traversal as X hiding (element, singular, unsafePartsOf)
 import Control.Lens.Tuple as X
 import Control.Lens.Wrapped as X
+import Control.Lens.TH as X (makeLenses, makeLensesFor, makePrisms)
+
 import Data.Text.Lens as X hiding (text)
+import Data.IntSet.Lens as X
 import Numeric.Lens as X
-import Control.Lens.TH as X (makeLenses, makePrisms)
 -- unused
 -- import Control.Lens.Empty as X
 -- import Control.Lens.Equality as X

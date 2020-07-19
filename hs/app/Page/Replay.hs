@@ -17,11 +17,12 @@ import Js.Utils
 import qualified Js.FFI as FFI
 
 import Control.Lens.Unsafe ((^?!))
-import Data.Vector (Vector)
 
-import Generals.Map.Types hiding (Map)
-import qualified Generals.Map.Types as Generals
-import Page.Replay.Simulate.Types (History, GameInfo, gameInfo_grid)
+import Generals.Map.Types
+import Page.Replay.Simulate.Types hiding (Turn, Turns)
+
+import Data.Vector (Vector)
+import qualified Data.IntSet as Set
 
 
 replay :: forall t m. Widget t m => m ()
@@ -50,9 +51,9 @@ replayGrid replay history turnDyn perspectiveDyn = do
           $ "history index: " <> show i
           )
 
-    gridDyn :: Dynamic t GameInfo
+    gridDyn :: Dynamic t Grid
     gridDyn =
-      zipDynWith applyPerspective gridInfoDyn perspectiveDyn
+      zipDynWith applyPerspective perspectiveDyn gameInfoDyn
 
     dimensions :: (Int, Int)
     dimensions =
@@ -62,10 +63,13 @@ replayGrid replay history turnDyn perspectiveDyn = do
     minTileSize = 15
     initialSize = 4 * minTileSize
 
+    initialMapDimensions :: (Pixels, Pixels)
+    initialMapDimensions = dimensions & both %~ (initialSize *) . fromIntegral
+
   elastic
-    (dimensions & both %~ (initialSize *) . fromIntegral)
+    initialMapDimensions
     (0.25, 2)
-    (gridDynStyle dimensions gridWithPerspective)
+    (gridDynStyle dimensions gridDyn)
 
 
 applyPerspective
@@ -78,9 +82,35 @@ applyPerspective Global gameInfo =
 applyPerspective (Perspective playerId) gameInfo =
   let
     -- check tile & each of its 8 neighbors in the player owned cached
-    isfog = undefined
+    allTiles :: IntSet
+    allTiles = fromList [0 .. gameInfo ^. gameInfo_numTiles - 1]
+
+    owned :: IntSet
+    owned = gameInfo ^. gameInfo_owned . ix playerId
+
+    visible :: IntSet
+    visible = owned ^. members . to visibleFrom . to fromList
+
+    visibleFrom :: Int -> [Int]
+    visibleFrom i =
+      [ i - 1 - w, i - w, i + 1 - w
+      , i - 1,     i,     i + 1
+      , i - 1 + w, i + w, i + 1 + w
+      ]
+      where w = gameInfo ^. gameInfo_gridWidth
+
+    fog :: IntSet
+    fog = Set.difference allTiles visible
+
+    markFog :: Tile -> Tile
+    markFog (Clear _)   = Fog_Clear
+    markFog (General _) = Fog_Clear
+    markFog Mountain    = Fog_Obstacle
+    markFog (City _)    = Fog_Obstacle
+    markFog (Swamp _)   = Fog_Obstacle
   in
-    -- enumerate fog tiles & mark them as such
-    undefined
-
-
+    foldrOf
+      members
+      (\tile -> _Grid . ix tile %~ markFog)
+      (gameInfo ^. gameInfo_grid)
+      fog
