@@ -47,50 +47,31 @@ controlPanel =
         perspectiveToggle replayAndGameInfoDynEvent
 
       -- effects
+      -- load replays
       cachedReplays :: Event t [ReplayLocation] <-
         getCachedReplays
 
+      replayEvent :: Event t Replay <-
+        bindEvent replayLocationEvent downloadReplay
+
+
+      -- register key commands
       keyEvent :: Event t Command <-
         registerKeyCommands
 
+      let
+        commandEvent :: Event t Command
+        commandEvent = keyEvent <> jumpToTurnEvent
+
+
+      -- track turn
       turnDyn :: Dynamic t Turn <-
         buildDynTurn commandEvent dynMaxTurn
 
       dynMaxTurn <-
         holdDyn 0 $ fmapCheap toMaxTurn historyEvent
 
-      replayEvent :: Event t Replay <-
-        bindEvent replayLocationEvent downloadReplay
-
-      perspectiveToggleDyn :: Dynamic t Perspective <-
-        holdDyn Global $
-        switchDyn perspectiveEvents
-
-      gameInfoEvent :: Event t GameInfo <-
-          replayAndGameInfoDynEvent
-          & fmapCheap (updated . snd)
-          & switchEvent
-
-      changePerspectiveDueToKillDynamic :: Dynamic t (Maybe Perspective) <-
-        holdMaybe $
-        flip push gameInfoEvent
-          (\gameInfo -> do
-            p :: Perspective <-
-              sample $ current perspectiveToggleDyn
-            pure $ do
-              playerId <- p ^? _Perspective
-              if is _Just $ gameInfo ^? gameInfo_owned . ix playerId
-              then Nothing
-              else do
-                let
-                  filter :: Kill -> Bool
-                  filter = (== playerId) . view kill_target
-
-                  answer =  gameInfo
-                    ^?! (gameInfo_kills . folded . filtered filter . kill_killer . to Perspective)
-                    $ "Expected kill for perspective shift"
-                Just answer
-          )
+      -- track current game snapshot
       let
         replayAndGameInfoDynEvent :: Event t (Replay, Dynamic t GameInfo)
         replayAndGameInfoDynEvent =
@@ -103,32 +84,60 @@ controlPanel =
                     history ^?! ix turn $ "history index: " <> show turn
                 )
 
+      gameInfoEvent :: Event t GameInfo <-
+          replayAndGameInfoDynEvent
+          & fmapCheap (updated . snd)
+          & switchEvent
+          >>= changed (view gameInfo_kills)
+
+      -- track perspective
+      perspectiveToggleDyn :: Dynamic t Perspective <-
+        holdDyn Global $
+        switchDyn perspectiveEvents
+
+      let
+        changePerspectiveDueToKillEvent :: Event t Perspective
+        changePerspectiveDueToKillEvent =
+          flip push gameInfoEvent
+            (\gameInfo -> do
+              perspective <- sample $ current perspectiveToggleDyn
+              pure $ do
+                playerId <- perspective ^? _Perspective
+                if is _Just $ gameInfo ^? gameInfo_owned . ix playerId
+                then Nothing
+                else do
+                  let
+                    filter :: Kill -> Bool
+                    filter = (== playerId) . view kill_target
+
+                    answer = gameInfo
+                      ^?! (gameInfo_kills . folded . filtered filter . kill_killer . to Perspective)
+                      $ "Expected kill for perspective shift"
+                  Just answer
+            )
+
+
+      perspectiveDyn :: Dynamic t Perspective <-
+        holdDyn Global $
+        leftmost [changePerspectiveDueToKillEvent, updated perspectiveToggleDyn]
+
+
+      let
         historyEvent :: Event t History
         historyEvent =
           pushAlways toHistory replayEvent
 
         toMaxTurn :: History -> Turn
         toMaxTurn = Turn . subtract 1 . length
-
-        commandEvent :: Event t Command
-        commandEvent = keyEvent <> jumpToTurnEvent
-
-        perspectiveDyn :: Dynamic t Perspective
-        perspectiveDyn = zipDynWith combine perspectiveToggleDyn changePerspectiveDueToKillDynamic
-          where
-            combine :: Perspective -> Maybe Perspective -> Perspective
-            combine _ (Just p2) = p2
-            combine p1 _        = p1
-
     pure (replayAndGameInfoDynEvent, perspectiveDyn)
 
-changed :: (MonadHold t m, Reflex t, Eq a) => Event t a -> m (Event t a)
-changed event = do
+changed :: (MonadHold t m, Reflex t, Eq b) => (a -> b) -> Event t a -> m (Event t a)
+changed f event = do
   behavior <- hold Nothing $ fmapCheap Just event
   pure $ push
     (\new -> do
       old <- sample behavior
-      if old == Just new
+      if (f <$> old) == Just (f new)
       then pure $ Nothing
       else pure $ Just new
     )

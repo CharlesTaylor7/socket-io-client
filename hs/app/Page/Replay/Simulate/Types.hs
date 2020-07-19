@@ -16,7 +16,7 @@ data Kill = Kill
   { _kill_killer :: Int
   , _kill_target :: Int
   }
-  deriving (Eq)
+  deriving (Show, Eq)
 
 data GameInfo = GameInfo
   { _gameInfo_grid         :: !Grid
