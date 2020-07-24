@@ -1,0 +1,42 @@
+.stats-panel {
+  display: table;
+  position: fixed;
+  right: 0;
+  border: 1px solid black;
+  background: gray;
+  width: 250px;
+  height: 250px;
+}
+
+.player-0 {
+  background-color: red;
+}
+
+.player-1 {
+  background-color: blue;
+}
+
+.player-2 {
+  background-color: green;
+}
+
+.player-3 {
+  background-color: purple;
+}
+
+.player-4 {
+  background-color: teal;
+}
+
+.player-5 {
+  background-color: orange;
+}
+
+.player-6 {
+  background-color: brown;
+}
+
+.player-7 {
+  background-color: yellow;
+}
+

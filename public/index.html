@@ -3,26 +3,27 @@
   <title>Generals Bot</title>
   <head>
     <!-- css -->
-    <link rel="stylesheet" type="text/css" href="css/tablegrid.css">
-    <link rel="stylesheet" type="text/css" href="css/control-panel.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/setup.css">
+    <link rel="stylesheet" type="text/css" href="build/css/clay-gen.css">
+    <link rel="stylesheet" type="text/css" href="static/css/tablegrid.css">
+    <link rel="stylesheet" type="text/css" href="static/css/control-panel.css">
+    <link rel="stylesheet" type="text/css" href="static/css/main.css">
+    <link rel="stylesheet" type="text/css" href="static/css/setup.css">
     <!-- cached runtime -->
-    <script src="js/static/ghcjs/rts.js"></script>
-    <script src="js/static/ghcjs/lib.js"></script>
+    <script src="static/js/ghcjs/rts.js"></script>
+    <script src="static/js/ghcjs/lib.js"></script>
     <!-- build output -->
-    <script src="js/build/node-deps.js"></script>
-    <script src="js/build/ghcjs/out.js"></script>
+    <script src="build/js/node-deps.js"></script>
+    <script src="build/js/ghcjs/out.js"></script>
   </head>
   <body>
   </body>
   <script>
     if('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('./service-worker.js')
+        .register('.static/service-worker.js')
         .then(() =>  console.log("Service Worker Registered"))
     }
   </script>
     <!-- cached runmain -->
-  <script src="js/static/ghcjs/runmain.js" defer></script>
+  <script src="static/js/ghcjs/runmain.js" defer></script>
 </html>

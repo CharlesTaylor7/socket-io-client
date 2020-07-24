@@ -11,6 +11,10 @@
 - open a WSL terminal. Run `./scripts/shell.sh`. Then inside the virtual reflex shell, run `./scripts/watch-hs.sh`
 - open any terminal. Run `yarn watch:server`.
 - open another terminal. Run `yarn watch:js`.
+You only need to run this the first time you install or if you are actively writing new js (without ghcjs).
+- open another terminal. Run `./scripts/watch-clay.sh`.
+You only need to run this the first time you install or if you are actively adding new css via the Clay edsl.
+
 
 Congrats, you should have built all the sources and have a server running at localhost:8000.
 

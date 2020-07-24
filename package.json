@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "watch:js": "npx watchify js/index.js -o public/js/build/node-deps.js",
+    "watch:js": "npx watchify js/index.js -o public/build/js/node-deps.js",
     "watch:server": "node server",
     "start": "echo 'To be implemented'"
   },

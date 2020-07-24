@@ -8,6 +8,7 @@ import Page.Replay.Simulate (toHistory)
 import Page.Replay.Download (downloadReplay)
 import Page.Replay.Types
 import Page.Replay.Widget.ControlPanel
+import Page.Replay.Widget.StatsPanel
 
 import Component.Elastic
 import Component.Grid
@@ -30,6 +31,8 @@ replay =
   elClass "div" "replay" $ do
     (replayAndGameInfoDynEvent, perspectiveDyn) <-
       controlPanel
+
+    statsPanel replayAndGameInfoDynEvent
 
     widgetHold_ blank $
       replayAndGameInfoDynEvent <&>

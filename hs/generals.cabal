@@ -13,7 +13,7 @@ source-repository head
 common common
   default-language: Haskell2010
   ghc-options:
---       -freverse-errors
+      -freverse-errors
       -ferror-spans
       -Werror=missing-home-modules
       -fwarn-incomplete-patterns
@@ -49,7 +49,7 @@ library generals-prelude
   build-depends:
       base >= 4.7 && < 5.0
     , relude
-    , lens >= 4.18 && < 5.0
+    , lens >= 4.19.2 && < 5.0
     , profunctors
     , vector
     , containers
@@ -70,6 +70,8 @@ executable generals-app
     , jsaddle
     , aeson
     , vector
+    , vector-sized
+    , finite-typelits
     , containers
     , mtl
     , groups
@@ -114,6 +116,7 @@ executable generals-app
     , Page.Replay.Types
     , Page.Replay.Utils
     , Page.Replay.Widget.ControlPanel
+    , Page.Replay.Widget.StatsPanel
     , Generals.Map.Types
     , Generals.Map.Types.Definitions
     , Generals.Map.Types.Optics

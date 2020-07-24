@@ -54,7 +54,6 @@ controlPanel =
       replayEvent :: Event t Replay <-
         bindEvent replayLocationEvent downloadReplay
 
-
       -- register key commands
       keyEvent :: Event t Command <-
         registerKeyCommands
@@ -242,6 +241,7 @@ commandReducer minTurn (maxTurn, command) =
     Forwards  -> min maxTurn  . (+ 1)
     JumpTo n  -> const $ max minTurn $ min maxTurn n
 
+
 perspectiveToggle
   :: forall t m. Widget t m
   => Event t (Replay, Dynamic t GameInfo)
@@ -276,7 +276,6 @@ perspectiveToggle event =
       . folded
       . withIndex
       . alongside (to Perspective) identity
-
 
 
 perspectiveButton
