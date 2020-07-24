@@ -3,19 +3,17 @@
 {-# language TypeFamilies #-}
 module Clay.Grid where
 
-import Data.Function ((&))
-
-import Clay hiding ((&))
-import Clay.Stylesheet hiding ((&))
+import Clay
+import Clay.Stylesheet
 
 import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as Text
 
-import Data.Coerce
+import Data.Coerce (coerce)
 import GHC.Exts (IsList(..))
 
--- lib
+
 gridTemplateAreas :: GridTemplateAreas -> Css
 gridTemplateAreas = key "grid-template-areas"
 
@@ -44,11 +42,8 @@ instance IsList GridTemplateAreas where
 
 instance Val GridTemplateAreas where
   value areas =
-    let
-      nested :: [[Text]]
-      nested = coerce areas
-    in
-      nested
-      & Prelude.map (Text.intercalate " ")
-      & Text.intercalate "\n"
-      & value
+    value $
+    Text.intercalate "\n" $
+    fmap (Text.intercalate " ") $
+    (coerce areas :: [[Text]])
+
