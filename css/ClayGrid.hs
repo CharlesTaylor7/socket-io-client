@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
--- | Partial implementation of <https://alligator.io/css/css-grid-layout-grid-areas grid area CSS API>.
+-- | Partial implementation of <https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout>.
 --
 -- For instance, you want to generate the following CSS:
 --
@@ -41,7 +41,18 @@
 --    gridGap $ rem 1
 --    width maxContent
 -- @
-module ClayGrid where
+module ClayGrid
+  ( gap
+  , rowGap
+  , columnGap
+  , gridTemplateRows
+  , gridTemplateColumns
+  , gridTemplateAreas
+  , gridArea
+  , GridArea(..)
+  , GridTemplateAreas(..)
+  )
+  where
 
 import Clay.Property
 import Clay.Size
@@ -59,14 +70,17 @@ import GHC.Exts (IsList(..))
 gap :: Size a -> Css
 gap = key "gap" <> key "grid-gap"
 
--- | Property sets the gap (gutter) between rows.
+-- | Property sets the size of the gap (gutter) between an element's grid rows.
 rowGap :: Size a -> Css
 rowGap = key "row-gap" <> key "grid-row-gap"
 
--- | Property sets the gap (gutter) between columns.
+-- | Property sets the size of the gap (gutter) between an element's grid columns.
 columnGap :: Size a -> Css
 columnGap = key "column-gap" <> key "grid-column-gap"
 
+-- | Property defines the line names and track sizing functions of the grid rows.
+gridTemplateRows :: [Size a] -> Css
+gridTemplateRows = key "grid-template-rows" . noCommas
 
 -- | Property defines the line names and track sizing functions of the grid columns.
 gridTemplateColumns :: [Size a] -> Css
@@ -76,14 +90,14 @@ gridTemplateColumns = key "grid-template-columns" . noCommas
 gridTemplateAreas :: GridTemplateAreas -> Css
 gridTemplateAreas = key "grid-template-areas"
 
-
+-- | Property defines the element location inside grid template
 gridArea :: GridArea -> Css
 gridArea = key "grid-area"
-
 
 newtype GridArea = GridArea Text
   deriving (IsString, Val)
 
+-- have to create a newtype to override the Val instance for lists
 newtype GridTemplateAreas = GridTemplateAreas { unGridTemplateAreas :: [[GridArea]] }
 
 instance IsList GridTemplateAreas where
