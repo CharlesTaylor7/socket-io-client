@@ -1,10 +1,11 @@
 #!/usr/bin/env stack
--- stack --resolver lts-16.6 script --package clay
+-- stack --resolver lts-16.6 script --package clay --package text
 
 import Clay
-import Styles
+
+import qualified ControlPanel
 
 main = putCss $ do
-  sample_style
+  ControlPanel.styles
 
 

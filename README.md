@@ -15,7 +15,6 @@ You only need to run this the first time you install or if you are actively writ
 - open another terminal. Run `./scripts/watch-clay.sh`.
 You only need to run this the first time you install or if you are actively adding new css via the Clay edsl.
 
-
 Congrats, you should have built all the sources and have a server running at localhost:8000.
 
 ## To do
@@ -38,6 +37,8 @@ Congrats, you should have built all the sources and have a server running at loc
 - loading animation while replay loads
 - Port old bot client to Haskell
 - Hot reloading of bot strategies (strategies in haskell)
+### Misc
+- convert css files to clay
 
 ### Debugging
 - debug menu for showing the game info cache

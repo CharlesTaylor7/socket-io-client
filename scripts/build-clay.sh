@@ -9,4 +9,4 @@ touch "$OUTPUT_DIR/clay-gen.css"
 
 "$ROOT/css/Main.hs" > "$OUTPUT_DIR/clay-gen.css"
 
-echo "Done"
+test $? -eq 0 && echo "Done"
