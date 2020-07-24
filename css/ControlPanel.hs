@@ -3,7 +3,7 @@
 module ControlPanel where
 
 import Clay
-import Clay.Grid
+import ClayGrid
 
 
 selectReplayArea = "select-replay"
@@ -22,7 +22,6 @@ styles = do
     width (px 250)
     display grid
     rowGap (px 10)
-    gap (px 10) (px 10)
     padding (px 10) (px 10) (px 10) (px 10)
     justifyContent spaceBetween
     alignContent spaceBetween

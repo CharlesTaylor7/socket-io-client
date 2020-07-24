@@ -1,5 +1,10 @@
 #!/usr/bin/env stack
--- stack --resolver lts-16.6 script --package clay --package text
+{-
+  stack script
+  --resolver lts-16.6
+  --package clay
+  --package text
+-}
 
 import Clay
 
