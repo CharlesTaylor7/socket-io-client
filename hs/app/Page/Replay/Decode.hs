@@ -9,25 +9,26 @@ import Data.Aeson hiding (decode)
 import Data.Aeson.Types
 import qualified Data.Aeson as Json
 
-decode :: Text -> Replay
+decode :: FromJSON a => Text -> a
 decode text =
   case Json.eitherDecode' bs of
     Left e -> error $ e ^. packed
     Right r -> r
   where bs = encodeUtf8 text
 
-instance FromJSON Move where
-  parseJSON = withArray "Move" $
-    \v -> Move
-      <$> v .@ 0
-      <*> v .@ 1
-      <*> v .@ 2
-      <*> (truthy <$> v .@ 3)
-      <*> v .@ 4
-    where
-      truthy :: Int -> Bool
-      truthy = (/= 0)
+instance FromJSON ReplayLocation where
+  parseJSON = withObject "ReplayLocation" $
+    \v -> ReplayLocation
+      <$> v .: "server"
+      <*> v .: "id"
 
+instance FromJSON Server where
+  parseJSON = withText "Server" parseServer
+
+parseServer :: Text -> Parser Server
+parseServer "main" = pure Server_Main
+parseServer "bot" = pure Server_Bot
+parseServer _ = fail "expected one of 'bot' or 'main' for server"
 
 instance FromJSON Replay where
   parseJSON = withArray "Replay" parseReplay
@@ -68,6 +69,18 @@ parseReplay v = Replay
     stars = v .@ 5 :: Parser Array
     unknown1 = v .@ 14 :: Parser Array
     unknown2 = v .@ 15 :: Parser Array
+
+instance FromJSON Move where
+  parseJSON = withArray "Move" $
+    \v -> Move
+      <$> v .@ 0
+      <*> v .@ 1
+      <*> v .@ 2
+      <*> (truthy <$> v .@ 3)
+      <*> v .@ 4
+    where
+      truthy :: Int -> Bool
+      truthy = (/= 0)
 
 -- plumbing
 explicitParseAt :: (Value -> Parser a) -> Array -> Int -> Parser a
