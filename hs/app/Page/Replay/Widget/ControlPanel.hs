@@ -9,7 +9,7 @@ import Data.Dom
 
 import Page.Replay.Simulate
 import Page.Replay.Download (downloadReplay)
-import Page.Replay.Utils (getCachedReplays)
+import Page.Replay.Utils (getSavedReplays)
 import Page.Replay.Types
 
 import Component.Elastic
@@ -34,7 +34,7 @@ controlPanel =
     rec
       -- dom elements
       replayLocationEvent :: Event t ReplayLocation <-
-        replayDropdown cachedReplays
+        replayDropdown replayOptions
 
       replayUrlHref replayLocationEvent
 
@@ -48,8 +48,8 @@ controlPanel =
 
       -- effects
       -- load replays
-      cachedReplays :: Event t [ReplayLocation] <-
-        getCachedReplays
+      replayOptions :: Event t [ReplayLocation] <-
+        getSavedReplays
 
       replayEvent :: Event t Replay <-
         bindEvent replayLocationEvent downloadReplay
@@ -109,8 +109,8 @@ unsafeAlignWith :: Reflex t => (a -> b -> c) -> Event t a -> Event t b -> Event 
 unsafeAlignWith f = alignEventWithMaybe (\(These a b) -> Just (f a b))
 
 replayDropdown :: forall t m. Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
-replayDropdown cachedReplays =
-  bindEvent cachedReplays $
+replayDropdown replayOptions =
+  bindEvent replayOptions $
   \replays -> do
     let
       optionsVector :: Vector ReplayLocation

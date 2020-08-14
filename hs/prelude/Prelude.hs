@@ -18,6 +18,7 @@ import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)
 
 -- containers
 import Data.IntSet as X (IntSet)
+import Data.Containers.ListUtils as X (nubOrd)
 
 -- vector
 import Data.Vector as X (Vector)

@@ -16,6 +16,9 @@ foreign import javascript unsafe
   "document.addEventListener('keydown', $1)"
   registerOnKeydown :: Callback (JSVal -> IO ()) -> IO ()
 
+foreign import javascript unsafe
+  "fetch($1).then(function(response){ return response.text() })"
+  fetchBody :: Text -> IO (Promise Text)
 
 -- external dependencies
 foreign import javascript unsafe

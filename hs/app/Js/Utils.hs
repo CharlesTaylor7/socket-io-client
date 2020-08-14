@@ -34,14 +34,13 @@ promiseToEventVia convert promise = do
   liftIO $ promise `FFI.promise_then` jsCallback
 
   -- get the underlying value of the jsVal via performEvent & FromJSVal typeclass
-  -- FromJSVall requires monadic context, hence why this isn't just fmap
+  -- FromJSVal requires monadic context, hence why this isn't just fmap
   pure $ flip pushAlways event $
     \jsVal -> liftIO $ do
       -- release js callback
       releaseCallback jsCallback
       -- convert js reference to haskell data type
       convert jsVal
-
 
 promiseToEvent
   :: (PromiseToEvent t m, FromJSVal a)

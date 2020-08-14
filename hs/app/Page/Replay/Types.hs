@@ -10,11 +10,13 @@ import Data.Vector
 data Server
   = Server_Main
   | Server_Bot
+  deriving (Eq, Ord)
 
 data ReplayLocation = ReplayLocation
   { _replayLocation_server :: Server
   , _replayLocation_id :: Text
   }
+  deriving (Eq, Ord)
 
 type GridLocations = Vector Int
 

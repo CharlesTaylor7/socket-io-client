@@ -76,6 +76,7 @@ executable generals-app
     , mtl
     , groups
     , primitive
+    , semialign
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   default-extensions:
     -- required to make type aliases for reflex constraints
