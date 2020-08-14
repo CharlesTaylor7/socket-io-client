@@ -32,7 +32,7 @@ replay =
     (replayAndGameInfoDynEvent, perspectiveDyn) <-
       controlPanel
 
-    statsPanel replayAndGameInfoDynEvent
+    -- statsPanel replayAndGameInfoDynEvent
 
     widgetHold_ blank $
       replayAndGameInfoDynEvent <&>
