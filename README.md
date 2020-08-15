@@ -4,15 +4,15 @@
 - clone repo
 - init submodules
 - run `yarn` to install node dependencies
-- run `./scripts/shell.sh` this step will take a while the first time.
+- run `yarn shell` this step will take a while the first time.
 - run `./scripts/build-hs.sh` in the nix-shell. then manually copy static ghcjs dependenices listed in index.html to the right place.
 
 ## Running the dev server
-- open a WSL terminal. Run `./scripts/shell.sh`. Then inside the virtual reflex shell, run `./scripts/watch-hs.sh`
+- open a WSL terminal. Run `yarn shell`. Then inside the virtual reflex shell, run `./scripts/watch-hs.sh`
 - open any terminal. Run `yarn watch:server`.
 - open another terminal. Run `yarn watch:js`.
 You only need to run this the first time you install or if you are actively writing new js (without ghcjs).
-- open another terminal. Run `./scripts/watch-clay.sh`.
+- open another terminal. Run `yarn watch:css`.
 You only need to run this the first time you install or if you are actively adding new css via the Clay edsl.
 
 Congrats, you should have built all the sources and have a server running at localhost:8000.

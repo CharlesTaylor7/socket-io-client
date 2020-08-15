@@ -1,8 +1,10 @@
 {
   "scripts": {
+    "shell": "./scripts/shell.sh",
     "watch:js": "npx watchify js/index.js -o public/build/js/node-deps.js",
-    "watch:server": "node server",
-    "start": "echo 'To be implemented'"
+    "watch:hs": "./scripts/watch-hs.sh",
+    "watch:css": "./scripts/watch-css.sh",
+    "watch:server": "node server"
   },
   "dependencies": {
     "fetch-base64-in-browser": "^1.0.2",
