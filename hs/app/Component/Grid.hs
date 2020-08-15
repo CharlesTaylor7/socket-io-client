@@ -19,7 +19,7 @@ gridDynStyle
   -> Dynamic t Style
   -> m ()
 gridDynStyle (mapWidth, mapHeight) gridDyn gridStyle =
-  elDynStyle "table" (gridStyle <&> style_cssClass .~ Class "grid") $
+  elDynStyle "table" (gridStyle <&> style_class .~ Class "grid") $
     elClass "tbody" "" $
       for_ [1..mapHeight] $ \j ->
       elClass "tr" "" $
@@ -35,7 +35,7 @@ tileElement
   -> Dynamic t Grid
   -> (Int, Int)
   -> m ()
-tileElement (Width mapWidth) gridDyn coords =
+tileElement (Width mapWidth) gridDyn coords@(i, j) =
   let
     gridIx :: (Int, Int) -> Traversal' Grid Tile
     gridIx (i, j) = _Grid . ix index
@@ -48,19 +48,25 @@ tileElement (Width mapWidth) gridDyn coords =
     nonzero :: (Eq a, Num a) => Prism' a a
     nonzero = from (non 0) . _Just
 
-    dynClass :: Dynamic t CSSClass
-    dynClass = gridDyn
+    classDyn :: Dynamic t CSSClass
+    classDyn = gridDyn
       <&> (preview tileTraversal >>> maybe mempty toClass)
 
-    dynArmyText :: Dynamic t Text
-    dynArmyText = gridDyn
+    style :: Style
+    style = def
+      & style_id . _Wrapped ?~ ("cell-" <> show i <> "-" <> show j)
+
+    styleDyn = classDyn <&> \cssClass -> style & style_class .~ cssClass
+
+    armyTextDyn:: Dynamic t Text
+    armyTextDyn = gridDyn
       <&>
         (   preview (tileTraversal . _Army . army_size . nonzero . to show)
         >>> maybe "" identity
         )
   in
-    elDynClass (Dom.Node "td") dynClass $
-        dynText dynArmyText
+    elDynStyle "td" styleDyn $
+        dynText armyTextDyn
 
 
 toClass :: Tile -> CSSClass

@@ -15,5 +15,5 @@ testBlock =
 
 greenBlockStyle :: Style
 greenBlockStyle = def
-  & style_cssClass .~ Class "green-block"
+  & style_class .~ Class "green-block"
   & style_inline . at "background" ?~ "green"

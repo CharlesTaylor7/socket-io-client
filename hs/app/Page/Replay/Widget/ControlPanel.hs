@@ -106,7 +106,7 @@ controlPanel =
     pure (replayAndGameInfoDynEvent, perspectiveDyn)
 
 unsafeAlignWith :: Reflex t => (a -> b -> c) -> Event t a -> Event t b -> Event t c
-unsafeAlignWith f = alignEventWithMaybe (\(These a b) -> Just (f a b))
+unsafeAlignWith f = alignWith (\(These a b) -> f a b)
 
 replayDropdown :: forall t m. Widget t m => Event t [ReplayLocation] -> m (Event t ReplayLocation)
 replayDropdown replayOptions =

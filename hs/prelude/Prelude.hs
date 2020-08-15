@@ -4,7 +4,7 @@ module Prelude (module X) where
 
 -- base
 import "base" Prelude as X (span)
-import Control.Arrow as X ((&&&))
+import Control.Arrow as X ((&&&), (|||))
 import Control.Exception as X (throwIO, try, evaluate)
 import Control.Monad.Fix as X (MonadFix(..))
 import Control.Monad.IO.Class as X (MonadIO)
@@ -12,6 +12,7 @@ import Control.Monad.ST as X (ST, runST)
 
 import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
 import Data.Traversable as X (for)
+import Data.Monoid as X (First(..), Last(..))
 
 -- relude
 import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)
@@ -26,8 +27,14 @@ import Data.Vector as X (Vector)
 -- these
 import Data.These as X
 
+-- semialign
+import Data.Align as X (Semialign, alignWith)
+
 -- data-default
 import Data.Default as X
+
+-- generic-monoid
+import Data.Monoid.Generic as X (GenericSemigroup(..), GenericMonoid(..))
 
 -- lens
 import Control.Lens.At as X

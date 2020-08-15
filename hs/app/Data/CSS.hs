@@ -10,21 +10,6 @@ instance ToText Pixels where
 instance Default Style where
   def = mempty
 
-instance Monoid Style where
-  mempty = Style mempty mempty
-
-instance Semigroup Style where
-  Style a b <> Style c d = Style (a <> c) (b <> d)
-
-
-instance Semigroup CSSClass where
-  Class "" <> a = a
-  a <> Class "" = a
-  Class a <> Class b = Class $ a <> " " <> b
-
-instance Monoid CSSClass where
-  mempty = Class ""
-
 number = Class "number"
 primary = Class "primary"
 secondary = Class "secondary"
@@ -37,9 +22,14 @@ toAttrs style =
       ifoldlOf (style_inline . ifolded) join "" style
     join key acc value =
       key <> ":" <> value <> ";" <> acc
+
     classText =
-      style ^. style_cssClass . _Class
+      style ^. style_class . _Class
+
+    id =
+      style ^. style_id . _Wrapped
   in
     mempty
       & at "class" ?~ classText
+      & at "id" .~ id
       & at "style" ?~ styleText

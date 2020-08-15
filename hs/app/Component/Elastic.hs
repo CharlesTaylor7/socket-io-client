@@ -32,7 +32,7 @@ elastic dims scaleRange child = do
   let
     elasticStyle :: Style
     elasticStyle = def
-      & style_cssClass .~ Class "elastic"
+      & style_class .~ Class "elastic"
       & style_inline .~ (
         def
         & at "width" ?~ "100vw"

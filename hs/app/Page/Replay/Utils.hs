@@ -3,7 +3,6 @@ module Page.Replay.Utils
   ) where
 
 import Reflex
-import Data.Align (Semialign, alignWith)
 
 import Js.Imports
 import Js.Utils (promiseToEvent)
