@@ -43,3 +43,7 @@ Congrats, you should have built all the sources and have a server running at loc
 ### Debugging
 - debug menu for showing the game info cache
 - replace unsafe lens with alternatives that run in MonadError
+
+### Ops / Maintenance
+- dont rely on work-on script; use nix directly
+
