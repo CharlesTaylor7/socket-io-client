@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "init-project": "./scripts/init-project.sh",
     "shell": "./scripts/shell.sh",
     "watch:js": "npx watchify js/index.js -o public/build/js/node-deps.js",
     "watch:hs": "./scripts/watch-hs.sh",
