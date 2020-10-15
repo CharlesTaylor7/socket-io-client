@@ -21,3 +21,6 @@
 
 # stack
 *.stack-work
+
+# cabal
+/dist-newstyle
