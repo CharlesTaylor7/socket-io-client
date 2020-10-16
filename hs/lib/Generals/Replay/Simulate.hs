@@ -1,7 +1,7 @@
-module Page.Replay.Simulate
- ( toHistory
- )
- where
+module Generals.Replay.Simulate
+  ( toHistory
+  )
+  where
 
 import Page.Replay.Simulate.Types
 import Page.Replay.Types hiding (Turn)
@@ -314,3 +314,4 @@ attack attacking defending
 
   | otherwise
   = defending & army_size -~ attacking ^. army_size
+

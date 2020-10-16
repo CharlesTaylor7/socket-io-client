@@ -3,7 +3,7 @@ module Generals.Replay.Decode
   )
   where
 
-import Generals.Replay.Types
+import Types
 
 import Data.Aeson hiding (decode)
 import Data.Aeson.Types

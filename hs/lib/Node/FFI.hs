@@ -2,7 +2,7 @@ module Node.FFI where
 
 import System.Process
 
-import Generals.Replay.Types
+import Types
 import Generals.Replay.Decode
 
 

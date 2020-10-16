@@ -7,8 +7,10 @@ import "base" Prelude as X (span)
 import Control.Arrow as X ((&&&), (|||))
 import Control.Exception as X (throwIO, try, evaluate)
 import Control.Monad.Fix as X (MonadFix(..))
-import Control.Monad.IO.Class as X (MonadIO)
+import Control.Monad.IO.Class as X (MonadIO(..))
 import Control.Monad.ST as X (ST, runST)
+import Control.Monad as X (forever, void)
+import Control.Concurrent as X (threadDelay, forkIO)
 
 import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
 import Data.Traversable as X (for)
@@ -20,6 +22,7 @@ import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)
 -- containers
 import Data.IntSet as X (IntSet)
 import Data.Containers.ListUtils as X (nubOrd)
+import Data.Sequence as X (Seq)
 
 -- vector
 import Data.Vector as X (Vector)
