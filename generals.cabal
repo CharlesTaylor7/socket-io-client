@@ -89,6 +89,8 @@ library generals-lib
   exposed-modules:
       Node.FFI
     , Generals.Replays.Types
+    , Generals.Map.Types
+    , Types
 
 executable generals-brick-ui
   import: common

@@ -1,4 +1,3 @@
-{-# language TemplateHaskell #-}
 module Types where
 
 
@@ -10,8 +9,3 @@ newtype BotName = BotName Text
 
 newtype Id = Id Int
   deriving (Show)
-
-
-makePrisms ''Id
-makePrisms ''BotName
-makePrisms ''GameConfig

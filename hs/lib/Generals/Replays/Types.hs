@@ -16,7 +16,7 @@ data ReplayLocation = ReplayLocation
   { server :: Server
   , id :: Text
   }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Generic)
 
 type GridLocations = Vector Int
 

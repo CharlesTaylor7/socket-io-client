@@ -1,6 +1,4 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i node -p nodejs
-
+#! /usr/bin/env node
 
 const [url] = process.argv.slice(2);
 

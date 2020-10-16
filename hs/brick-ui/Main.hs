@@ -1,5 +1,11 @@
-import Node.FFI (download)
+import Node.FFI
+import Generals.Replays.Types
 
 main :: IO ()
 main = do
-  download
+  download ReplayLocation
+    { server = Server_Main
+    , id = ""
+    }
+
+  pure ()
