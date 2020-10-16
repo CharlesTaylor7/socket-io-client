@@ -3,7 +3,7 @@ module Generals.Replays.Types where
 
 import Data.Aeson (Array(..), FromJSON(..))
 
--- import Generals.Map.Types hiding (Map)
+import Generals.Map.Types
 
 import Data.Vector
 
