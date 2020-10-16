@@ -23,6 +23,12 @@ urlSuffix Server_Bot = "bot" ^. packed
 download :: ReplayLocation -> IO Replay
 download location = do
   let Url url = replayUrl location
-  out <- readProcess "node" ["js/download-replay", url ^. unpacked] ""
-  putStr out
+  putStrLn url
+
+  (exitCode, stdOut, stdErr) <-
+    readProcessWithExitCode "node" ["js/download-replay", url ^. unpacked] ""
+
+  putStr stdOut
+  putStr stdErr
+
   pure undefined
