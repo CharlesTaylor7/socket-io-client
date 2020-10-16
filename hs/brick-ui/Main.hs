@@ -5,7 +5,7 @@ main :: IO ()
 main = do
   download ReplayLocation
     { server = Server_Main
-    , id = ""
+    , id = "rtQyMFIwv"
     }
 
   pure ()
