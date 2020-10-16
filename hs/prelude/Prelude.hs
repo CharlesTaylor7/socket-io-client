@@ -36,6 +36,9 @@ import Data.Default as X
 -- generic-monoid
 import Data.Monoid.Generic as X (GenericSemigroup(..), GenericMonoid(..))
 
+-- generic-lens
+import Data.Generics.Labels ()
+
 -- lens
 import Control.Lens.At as X
 import Control.Lens.Cons as X

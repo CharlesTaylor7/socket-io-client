@@ -1,9 +1,9 @@
 {-# language TemplateHaskell #-}
-module Page.Replay.Types where
+module Generals.Replays.Types where
 
 import Data.Aeson (Array(..), FromJSON(..))
 
-import Generals.Map.Types hiding (Map)
+-- import Generals.Map.Types hiding (Map)
 
 import Data.Vector
 
@@ -13,31 +13,31 @@ data Server
   deriving (Eq, Ord)
 
 data ReplayLocation = ReplayLocation
-  { _replayLocation_server :: Server
-  , _replayLocation_id :: Text
+  { server :: Server
+  , id :: Text
   }
   deriving (Eq, Ord)
 
 type GridLocations = Vector Int
 
 data Replay = Replay
-  { _replay_id :: Text
-  , _replay_mapWidth :: Int
-  , _replay_mapHeight :: Int
-  , _replay_usernames :: Vector Text
+  { id :: Text
+  , mapWidth :: Int
+  , mapHeight :: Int
+  , usernames :: Vector Text
 
-  , _replay_cities :: GridLocations
-  , _replay_cityArmies :: GridLocations
-  , _replay_generals :: GridLocations
-  , _replay_mountains :: GridLocations
-  , _replay_moves :: [Move]
+  , cities :: GridLocations
+  , cityArmies :: GridLocations
+  , generals :: GridLocations
+  , mountains :: GridLocations
+  , moves :: [Move]
 
-  , _replay_afks :: Array
-  , _replay_teams :: Maybe Array
-  , _replay_mapTitle :: Maybe Text
-  , _replay_swamps :: GridLocations
-  -- , _replay_unknown1 :: Array
-  -- , _replay_unknown2 :: Array
+  , afks :: Array
+  , teams :: Maybe Array
+  , mapTitle :: Maybe Text
+  , swamps :: GridLocations
+  -- , unknown1 :: Array
+  -- , unknown2 :: Array
   }
   deriving (Show)
 

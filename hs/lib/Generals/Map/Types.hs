@@ -1,11 +1,6 @@
-{-# language TemplateHaskell #-}
-module Generals.Map.Types.Definitions where
-
-import Prelude hiding (Map)
-import qualified Prelude as Containers
+module Generals.Map.Types where
 
 import Data.Aeson (FromJSON(..))
-import Reflex
 
 import Types
 
@@ -38,15 +33,15 @@ instance Default Owner where
   def = Neutral
 
 data Army = Army
-  { _army_owner :: Owner
-  , _army_size :: Int
+  { owner :: Owner
+  , size :: Int
   }
   deriving (Show, Eq)
 
 instance Default Army where
   def = Army
-    { _army_owner = def
-    , _army_size = coerce (def :: Sum Int)
+    { owner = def
+    , size = coerce (def :: Sum Int)
     }
 
 newtype GridIndex = GridIndex Int
@@ -54,12 +49,3 @@ newtype GridIndex = GridIndex Int
   deriving stock (Show)
 
 newtype Grid = Grid (IntMap Tile)
-
-
-makePrisms ''Owner
-makePrisms ''Tile
-makePrisms ''ArmyTileType
-makePrisms ''GridIndex
-makePrisms ''Grid
-
-makeLenses ''Army
