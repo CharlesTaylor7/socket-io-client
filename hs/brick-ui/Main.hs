@@ -1,11 +1,12 @@
 import Node.FFI
-import Generals.Replays.Types
+import Generals.Replay.Types
 
 main :: IO ()
 main = do
-  download ReplayLocation
+  replay <- download ReplayLocation
     { server = Server_Main
     , id = "rtQyMFIwv"
     }
 
+  print $ replay
   pure ()

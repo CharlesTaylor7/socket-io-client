@@ -1,8 +1,10 @@
 module Node.FFI where
 
 import System.Process
-import Data.Aeson (Array, FromJSON)
-import Generals.Replays.Types
+
+import Generals.Replay.Types
+import Generals.Replay.Decode
+
 
 newtype Url = Url Text
 
@@ -28,7 +30,6 @@ download location = do
   (exitCode, stdOut, stdErr) <-
     readProcessWithExitCode "node" ["js/download-replay", url ^. unpacked] ""
 
-  putStr stdOut
-  putStr stdErr
+  putStrLn stdErr
 
-  pure undefined
+  pure $ decode $ stdOut ^. packed

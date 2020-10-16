@@ -1,5 +1,4 @@
-{-# language TemplateHaskell #-}
-module Generals.Replays.Types where
+module Generals.Replay.Types where
 
 import Data.Aeson (Array(..), FromJSON(..))
 
@@ -39,7 +38,7 @@ data Replay = Replay
   -- , unknown1 :: Array
   -- , unknown2 :: Array
   }
-  deriving (Show)
+  deriving (Show, Generic)
 
 data Move = Move
   { _move_playerIndex :: Int
@@ -82,14 +81,3 @@ data Perspective
   | Perspective Int
   deriving (Show, Eq)
 
-
-makePrisms ''Server
-makePrisms ''Command
-makePrisms ''Perspective
-
--- iso
-makePrisms ''Turn
-
-makeLenses ''ReplayLocation
-makeLenses ''Replay
-makeLenses ''Move

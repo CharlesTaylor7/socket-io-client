@@ -1,9 +1,9 @@
-module Page.Replay.Decode
+module Generals.Replay.Decode
   ( decode
   )
   where
 
-import Page.Replay.Types
+import Generals.Replay.Types
 
 import Data.Aeson hiding (decode)
 import Data.Aeson.Types
