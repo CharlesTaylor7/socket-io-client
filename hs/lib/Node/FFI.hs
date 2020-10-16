@@ -19,16 +19,15 @@ replayUrl replay
 
 
 urlSuffix :: Server -> Text
-urlSuffix Server_Main = "na" ^. packed
-urlSuffix Server_Bot = "bot" ^. packed
+urlSuffix Server_Main = "na"
+urlSuffix Server_Bot = "bot"
 
 download :: ReplayLocation -> IO Replay
 download location = do
   let Url url = replayUrl location
-  print url
 
   (exitCode, stdOut, stdErr) <-
-    readProcessWithExitCode "node" ["js/download-replay", url ^. unpacked] ""
+    readProcessWithExitCode "node" ["js/download-replay.js", url ^. unpacked] ""
 
   putStrLn stdErr
 

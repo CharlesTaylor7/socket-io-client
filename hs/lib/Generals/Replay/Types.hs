@@ -41,11 +41,11 @@ data Replay = Replay
   deriving (Show, Generic)
 
 data Move = Move
-  { _move_playerIndex :: Int
-  , _move_startTile :: GridIndex
-  , _move_endTile :: GridIndex
-  , _move_onlyHalf :: Bool
-  , _move_turn :: Int
+  { playerIndex :: Int
+  , startTile :: GridIndex
+  , endTile :: GridIndex
+  , onlyHalf :: Bool
+  , turn :: Int
   }
   deriving (Eq, Show, Generic)
 
