@@ -2,41 +2,13 @@ module UI where
 
 import Prelude hiding (Empty, on)
 import Types
+import Control.Lens.Unsafe
 
 import Brick
-  ( App(..)
-  , AttrMap
-  , BrickEvent(..)
-  , EventM
-  , Next
-  , Widget
-  , customMain
-  , neverShowCursor
-  , continue
-  , halt
-  , hLimit
-  , vLimit
-  , vBox
-  , hBox
-  , padRight
-  , padLeft
-  , padTop
-  , padAll
-  , Padding(..)
-  , withBorderStyle
-  , str
-  , attrMap
-  , withAttr
-  , emptyWidget
-  , AttrName
-  , on
-  , fg
-  , (<+>)
-  )
 import Brick.BChan (newBChan, writeBChan)
-import qualified Brick.Widgets.Border as B
-import qualified Brick.Widgets.Border.Style as BorderStyle
-import qualified Brick.Widgets.Center as C
+import Brick.Widgets.Border
+import Brick.Widgets.Border.Style
+import Brick.Widgets.Center
 
 import qualified Graphics.Vty as V
 
@@ -58,10 +30,9 @@ data Cell
   | Empty
   deriving (Eq, Show)
 
-type AppState = Replay
+type AppState = (History, TurnIndex)
 
 -- App definition
-
 app :: App AppState Tick Name
 app = App
   { appDraw = drawUI
@@ -71,58 +42,55 @@ app = App
   , appAttrMap = const theMap
   }
 
-
 handleEvent :: BrickEvent Name Tick -> AppState -> EventM Name (Next AppState)
 handleEvent (AppEvent Tick) = continue
 handleEvent _ = continue
 
-
-drawUI :: Replay -> [Widget Name]
-drawUI game =
-  [ C.center $ padRight (Pad 2) (drawStats game) <+> drawGrid game
+drawUI :: AppState -> [Widget Name]
+drawUI (history, TurnIndex turn) =
+  [ center $ drawGrid game
   ]
-
-drawStats game = hLimit 11 $ vBox
-  [ game ^. #score . to drawScore
-  , padTop (Pad 2) $ game ^. #dead . to drawGameOver
-  ]
-
-
-drawScore score =
-  show score
-  & str
-  & padAll 1
-  & C.hCenter
-  & B.borderWithLabel (str "Score")
-  & withBorderStyle BorderStyle.unicodeBold
-
-drawGameOver True = withAttr "gameOver" $ C.hCenter $ str "GAME OVER"
-drawGameOver False = emptyWidget
-
-
-drawGrid game =
-  vBox rows
-  & B.borderWithLabel (str "Snake")
-  & withBorderStyle BorderStyle.unicodeBold
   where
+    game = history ^?! ix turn $ "history index"
+
+drawGrid :: GameInfo -> Widget Name
+drawGrid gameInfo = vBox rows
+  & borderWithLabel (str "Replay")
+  & withBorderStyle unicodeBold
+  where
+    height = gameInfo ^. #replay . #mapHeight
+    width = gameInfo ^. #replay . #mapWidth
     rows =
-      [ hBox $ cellsInRow y
-      | y <- [height-1, height-2..0]
+      [ hBox $ drawRow y
+      | y <- [1..height]
       ]
-    cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
-    drawCoord = drawCell . cellAt
-    cellAt c
-      | c `elem` game ^. #snake = Snake
-      | c == game ^. #food      = Food
-      | otherwise               = Empty
+    drawRow y =
+      [ drawTile tile
+      | x <- [1..width]
+      , let
+          i = GridIndex $ (y - 1) * width + (x - 1)
+          tile = gameInfo ^. #grid . ixGrid i
+      ]
 
-drawCell Snake = withAttr "snakeAttr" $ str "  "
-drawCell Food = withAttr "foodAttr" $ str "  "
-drawCell Empty = withAttr "emptyAttr" $ str "  "
+    drawTile :: Tile -> Widget Name
+    drawTile tile = withAttr "emptyTile" $ str " "
 
-theMap :: AttrMap
+
 theMap = attrMap V.defAttr
-  [ ("snakeAttr", V.blue `on` V.blue)
-  , ("foodAttr", V.red `on` V.red)
-  , ("gameOverAttr", fg V.red `V.withStyle` V.bold)
+  [
+  -- ("emptyTile", V.blue `on` V.blue)
   ]
+
+
+brickMain :: History -> IO ()
+brickMain history = do
+  chan <- newBChan 10
+  forkIO $ forever $ do
+    writeBChan chan Tick
+    threadDelay 100_000
+
+  let buildVty = V.mkVty V.defaultConfig
+  initialVty <- buildVty
+  _ <- customMain initialVty buildVty (Just chan) app (history, TurnIndex 0)
+
+  pure ()

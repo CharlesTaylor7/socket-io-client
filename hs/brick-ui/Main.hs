@@ -1,7 +1,9 @@
 import Node.FFI
-import Generals.Replay.Types
+import Types
 import UI
+import Generals.Replay.Simulate
 
+import qualified Graphics.Vty as V
 
 main :: IO ()
 main = do
@@ -10,22 +12,5 @@ main = do
     , id = "rtQyMFIwv"
     }
 
-  print $ replay
-  pure ()
-
-
-brickMain :: IO ()
-brickMain = do
-  chan <- newBChan 10
-  forkIO $ forever $ do
-    writeBChan chan Tick
-    threadDelay 100_000
-
-  game <- initGame
-  let buildVty = V.mkVty V.defaultConfig
-  initialVty <- buildVty
-  _ <- customMain initialVty buildVty (Just chan) app game
-
-  pure ()
-
-
+  history <- toHistory replay
+  brickMain history

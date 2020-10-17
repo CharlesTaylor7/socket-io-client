@@ -61,6 +61,7 @@ import Control.Lens.Tuple as X
 import Control.Lens.Wrapped as X
 import Control.Lens.TH as X (makeLenses, makeLensesFor, makePrisms)
 
+import Control.Lens.Zoom as X
 import Data.Text.Lens as X hiding (text)
 import Data.IntSet.Lens as X
 import Numeric.Lens as X
@@ -70,7 +71,6 @@ import Numeric.Lens as X
 -- import Control.Lens.Plated as X
 -- import Control.Lens.Reified as X
 -- import Control.Lens.Type as X
--- import Control.Lens.Zoom as X
 
 -- custom
 import Control.Lens.Safe as X

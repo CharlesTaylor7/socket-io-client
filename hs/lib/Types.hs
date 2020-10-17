@@ -105,7 +105,7 @@ newtype Grid = Grid (IntMap Tile)
 
 instance Wrapped Grid
 
-_Grid :: Iso' GridIndex Int
+_Grid :: Iso' Grid (IntMap Tile)
 _Grid = _Wrapped'
 
 type Turn = (Int, [Move])
