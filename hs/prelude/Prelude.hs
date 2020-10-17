@@ -15,6 +15,7 @@ import Control.Concurrent as X (threadDelay, forkIO)
 import Data.List.NonEmpty as X (NonEmpty(..), groupWith)
 import Data.Traversable as X (for)
 import Data.Monoid as X (First(..), Last(..))
+import Text.Printf as X
 
 -- relude
 import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)

@@ -7,8 +7,8 @@ import qualified Graphics.Vty as V
 
 main :: IO ()
 main = do
-  replay <- download ReplayLocation
-    { server = Server_Main
+  replay <- loadReplay ReplayLocation
+    { server = Server_Local
     , id = "rtQyMFIwv"
     }
 

@@ -1,4 +1,4 @@
-module Node.FFI where
+module Node.FFI (loadReplay) where
 
 import System.Process
 
@@ -8,22 +8,29 @@ import Generals.Replay.Decode
 
 newtype Url = Url Text
 
-replayUrl :: ReplayLocation -> Url
-replayUrl replay
-  = Url
-  $ "https://generalsio-replays-"
-  <> replay ^. #server . to urlSuffix
+
+replayDir :: Server -> Text
+replayDir Server_Local = "./replays/"
+replayDir server =
+  "https://generalsio-replays-"
+  <>  ( case server of
+          Server_Main -> "na"
+          Server_Bot -> "bot"
+      )
   <> ".s3.amazonaws.com/"
-  <> replay ^. #id
-  <> ".gior"
 
 
-urlSuffix :: Server -> Text
-urlSuffix Server_Main = "na"
-urlSuffix Server_Bot = "bot"
+replayFile :: Text -> Text
+replayFile id = id <> ".gior"
 
-download :: ReplayLocation -> IO Replay
-download location = do
+replayUrl :: ReplayLocation -> Url
+replayUrl replay = Url
+  $  replay ^. #server . to replayDir
+  <> replay ^. #id . to replayFile
+
+
+loadReplay :: ReplayLocation -> IO Replay
+loadReplay location = do
   let Url url = replayUrl location
 
   (exitCode, stdOut, stdErr) <-

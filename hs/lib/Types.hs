@@ -136,13 +136,15 @@ data GameInfo = GameInfo
 data Server
   = Server_Main
   | Server_Bot
+  | Server_Local
   deriving (Eq, Ord, Generic)
 
 data ReplayLocation = ReplayLocation
-  { server :: Server
-  , id :: Text
+  { server :: !Server
+  , id :: !Text
   }
   deriving (Eq, Ord, Generic)
+
 
 type GridLocations = Vector Int
 
