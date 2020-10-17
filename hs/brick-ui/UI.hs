@@ -39,7 +39,7 @@ app = App
   , appChooseCursor = neverShowCursor
   , appHandleEvent = flip handleEvent
   , appStartEvent = pure
-  , appAttrMap = const theMap
+  , appAttrMap = const gridAttrMap
   }
 
 handleEvent :: BrickEvent Name Tick -> AppState -> EventM Name (Next AppState)
@@ -73,7 +73,6 @@ drawGrid gameInfo = title <=> grid
   where
     title = hCenter $ str $ "Replay " <> dimensions
     dimensions = show width <> "x" <> show height
-    -- TODO: use the full grid & introduce a scrolling viewport
     width = gameInfo ^. #replay . #mapWidth
     height = gameInfo ^. #replay . #mapHeight
 
@@ -88,19 +87,25 @@ drawGrid gameInfo = title <=> grid
 
     drawRow :: Int -> Widget Name
     drawRow y = vLimit 1 $ insertVBorders $
-      [ cell --drawTile tile
+      [ drawTile tile
       | x <- [1..width]
       , let
           i = GridIndex $ (y - 1) * width + (x - 1)
           tile = gameInfo ^. #grid . ixGrid i
-
-          number :: Int
-          number = (((x) * (y)))
-          cell = str $ showArmyCount number
       ]
 
     drawTile :: Tile -> Widget Name
-    drawTile tile = str "  "
+    drawTile tile = str (tile ^. contents) & withAttr (tile ^. attr)
+      where
+        attr =
+          (_Owner . #_Player . to show . to ("player" <>) . to attrName)
+          `failing`
+          like "neutral"
+        contents =
+          (_Army . #size . from (non 0) . _Just . to showArmyCount)
+          `failing`
+          like (replicate cellWidth ' ')
+
 
     cellWidth :: Int
     cellWidth = 4
@@ -159,10 +164,23 @@ showArmyCount n
 
 surround c list = c : (list <> [c])
 
-theMap = attrMap V.defAttr
-  [
-  -- ("emptyTile", V.blue `on` V.blue)
+
+gridAttrMap = attrMap V.defAttr
+  [ ("obstacle", fg grey)
+  , ("player1", fg V.brightBlue)
+  , ("player2", fg V.red)
+  , ("player3", fg V.green)
+  , ("player4", fg purple)
+  , ("player5", fg teal)
+  , ("player6", fg V.yellow)
+  , ("player7", fg V.cyan)
+  , ("player8", fg V.magenta)
   ]
+  where
+    teal = V.rgbColor 0 0x80 0x80
+    purple = V.rgbColor 0x80 0 0x80
+    grey = V.rgbColor 0x71 0x6f 0x6f
+
 
 
 brickMain :: History -> IO ()
