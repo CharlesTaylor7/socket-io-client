@@ -55,14 +55,6 @@ drawUI (history, TurnIndex turn) =
     game = history ^?! ix turn $ "history index"
 
 
-insertVBorders :: [Widget Name] -> Widget Name
-insertVBorders = foldr (<+>) emptyWidget . intersperse vBorder
-
-
-insertHBorders :: [Widget Name] -> Widget Name
-insertHBorders = foldr (<=>) emptyWidget . intersperse hBorder
-
-
 drawGrid :: GameInfo -> Widget Name
 drawGrid gameInfo = grid
   & borderWithLabel (str "Replay")
@@ -88,8 +80,23 @@ drawGrid gameInfo = grid
       ]
 
     drawTile :: Tile -> Widget Name
-    drawTile tile = hLimit 1 $
-      withAttr "emptyTile" $ str " "
+    drawTile tile = str "  "
+      -- & hLimit 1
+      & withAttr "emptyTile"
+
+
+    insertVBorders :: [Widget Name] -> Widget Name
+    insertVBorders = foldr (<+>) emptyWidget . intersperse vBorder
+
+
+    insertHBorders :: [Widget Name] -> Widget Name
+    insertHBorders = foldr (<=>) emptyWidget . intersperse hBorder
+      where
+        hBorder = "━━╋"
+          & replicate width
+          & concat
+          & str
+          & hBorderWithLabel
 
 
 theMap = attrMap V.defAttr
