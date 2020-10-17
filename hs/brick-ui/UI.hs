@@ -44,6 +44,7 @@ app = App
 
 handleEvent :: BrickEvent Name Tick -> AppState -> EventM Name (Next AppState)
 handleEvent (AppEvent Tick) = continue
+handleEvent (VtyEvent (V.EvKey V.KEsc [])) = halt
 handleEvent _ = continue
 
 drawUI :: AppState -> [Widget Name]
@@ -53,18 +54,32 @@ drawUI (history, TurnIndex turn) =
   where
     game = history ^?! ix turn $ "history index"
 
+
+insertVBorders :: [Widget Name] -> Widget Name
+insertVBorders = foldr (<+>) emptyWidget . intersperse vBorder
+
+
+insertHBorders :: [Widget Name] -> Widget Name
+insertHBorders = foldr (<=>) emptyWidget . intersperse hBorder
+
+
 drawGrid :: GameInfo -> Widget Name
-drawGrid gameInfo = vBox rows
+drawGrid gameInfo = grid
   & borderWithLabel (str "Replay")
+  & hLimit (2 * width + 1)
   & withBorderStyle unicodeBold
   where
     height = gameInfo ^. #replay . #mapHeight
     width = gameInfo ^. #replay . #mapWidth
-    rows =
-      [ hBox $ drawRow y
+
+    grid :: Widget Name
+    grid = insertHBorders $
+      [ drawRow y
       | y <- [1..height]
       ]
-    drawRow y =
+
+    drawRow :: Int -> Widget Name
+    drawRow y = hCenter $ vLimit 1 $ insertVBorders $
       [ drawTile tile
       | x <- [1..width]
       , let
@@ -73,7 +88,8 @@ drawGrid gameInfo = vBox rows
       ]
 
     drawTile :: Tile -> Widget Name
-    drawTile tile = withAttr "emptyTile" $ str " "
+    drawTile tile = hLimit 1 $
+      withAttr "emptyTile" $ str " "
 
 
 theMap = attrMap V.defAttr
