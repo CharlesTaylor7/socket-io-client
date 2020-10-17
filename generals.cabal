@@ -33,6 +33,7 @@ common common
     , DeriveFunctor
     , DeriveTraversable
     , EmptyDataDeriving
+    , DeriveAnyClass
     -- required to effectively document code
     , ScopedTypeVariables
     -- awesome debugging by having the compiler tell you the type of something
@@ -48,6 +49,7 @@ common common
     , TupleSections
     , BlockArguments
     , NumericUnderscores
+    , NamedFieldPuns
     -- generic lens
     , DuplicateRecordFields
     , OverloadedLabels
@@ -93,7 +95,6 @@ library generals-lib
     , Generals.Replay.Decode
     , Generals.Replay.Simulate
     , Types
-
 
 executable generals-brick-ui
   import: common

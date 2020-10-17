@@ -3,9 +3,7 @@ module Generals.Replay.Simulate
   )
   where
 
-import Page.Replay.Simulate.Types
-import Page.Replay.Types hiding (Turn)
-import Generals.Map.Types hiding (Map)
+import Types
 
 import Control.Lens.Unsafe (singular)
 
@@ -45,7 +43,7 @@ toHistory replay =
         [] ->
           pure Nothing
     )
-    (seed, replay ^. replay_moves . to turns)
+    (seed, replay ^. #moves . to turns)
     & Stream.cons seed
     & unstream
     & liftIO
@@ -76,18 +74,18 @@ turns moves = unfoldr f (1, moves)
       if null moves
       then Nothing
       else Just $
-        let (group, rest) = moves & span ((i ==) . view move_turn)
+        let (group, rest) = moves & span ((i ==) . view #turn)
         in ((i, group), (i + 1, rest))
 
 initialGameInfo :: Replay -> GameInfo
 initialGameInfo replay = GameInfo
-  { _gameInfo_grid = map
-  , _gameInfo_activeCities = fromList $ replay ^.. replay_generals . folded
-  , _gameInfo_activeSwamps = mempty
-  , _gameInfo_owned = fromList $ replay ^.. replay_generals . ifolded . withIndex  . alongside identity (to singleton)
-  , _gameInfo_kills = []
-  , _gameInfo_numTiles = numTiles
-  , _gameInfo_replay = replay
+  { grid = map
+  , activeCities = fromList $ replay ^.. #generals . folded
+  , activeSwamps = mempty
+  , owned = fromList $ replay ^.. #generals . ifolded . withIndex  . alongside identity (to singleton)
+  , kills = []
+  , numTiles
+  , replay
   }
   where
     singleton :: Int -> IntSet
@@ -103,29 +101,29 @@ initialGameInfo replay = GameInfo
       ]
     mountainsMap = fromList $
       [ (index, Mountain)
-      | index <- replay ^.. replay_mountains . folded
+      | index <- replay ^.. #mountains . folded
       ]
 
     citiesMap = fromList $
       [ (index, City (Neutral `Army` fromIntegral size))
-      | (index, size) <- zip (replay ^.. replay_cities . folded) (replay ^.. replay_cityArmies . folded)
+      | (index, size) <- zip (replay ^.. #cities . folded) (replay ^.. #cityArmies . folded)
       ]
 
     generalsMap = fromList $
       [ (boardIndex, General $ Player playerId `Army` 1)
-      | (playerId, boardIndex) <- replay ^.. replay_generals . folded . withIndex
+      | (playerId, boardIndex) <- replay ^.. #generals . folded . withIndex
       ]
 
     swampsMap = fromList $
       [ (boardIndex, Swamp def)
-      | boardIndex <- replay ^.. replay_swamps . folded
+      | boardIndex <- replay ^.. #swamps . folded
       ]
 
     clearMap = fromList $
       [ (i, def)
       | i <- [0..numTiles - 1]
       ]
-    numTiles = replay^.replay_mapWidth * replay^.replay_mapHeight
+    numTiles = replay ^. #mapWidth * replay ^. #mapHeight
 
 
 advanceTurn :: SimulateMonadConstraints m => Turn -> m ()
@@ -138,16 +136,16 @@ advanceTurn (turnIndex, moves) = do
 increment :: Int -> Grid -> Grid
 increment i = singular
   ("incrementing army at index: " <> show i)
-  (_Grid . ix i . _Army . army_size)
+  (#_Grid . ix i . _Army . #size)
   +~ 1
 
 
 cityGrowth :: SimulateMonadConstraints m => Int -> m ()
 cityGrowth turnIndex =
   when (turnIndex `mod` 2 == 1) $ do
-    grid <- use gameInfo_grid
-    activeCities <- use gameInfo_activeCities
-    gameInfo_grid .=
+    grid <- use #grid
+    activeCities <- use #activeCities
+    #grid .=
       Set.foldl'
         (flip increment)
         grid
@@ -156,9 +154,9 @@ cityGrowth turnIndex =
 tileGrowth :: SimulateMonadConstraints m => Int -> m ()
 tileGrowth turnIndex =
   when (turnIndex `mod` 50 == 49) $ do
-    grid <- use gameInfo_grid
-    owned <- use $ gameInfo_owned . folded
-    gameInfo_grid .=
+    grid <- use #grid
+    owned <- use $ #owned . folded
+    #grid .=
       Set.foldl'
         (flip increment)
         grid
@@ -167,19 +165,19 @@ tileGrowth turnIndex =
 swampLoss :: MonadState GameInfo m => Int -> m ()
 swampLoss turnIndex =
   when (turnIndex `mod` 2 == 1) $ do
-    replay_swamps <- use $ gameInfo_activeSwamps . to Set.toList
-    for_ replay_swamps $ \i -> do
+    swamps <- use $ #activeSwamps . to Set.toList
+    for_ swamps $ \i -> do
       let
         setter = singular
           ("swamp decrementing army at index: " <> show i)
-          (gameInfo_grid . _Grid . ix i . _Army)
+          (#grid . #_Grid . ix i . _Army)
       updatedArmy <- setter <%=
         \army ->
-          if army^.army_size > 1
-          then army & army_size -~ 1
+          if army ^. #size > 1
+          then army & #size -~ 1
           else Neutral `Army` 0
-      when (is _Neutral $ updatedArmy ^. army_owner) $
-        gameInfo_activeSwamps . contains i .= False
+      when (is #_Neutral $ updatedArmy ^. #owner) $
+        #activeSwamps . contains i .= False
 
 applyMoves :: SimulateMonadConstraints m => [Move] -> m ()
 applyMoves moves =
@@ -190,7 +188,7 @@ applyMoves moves =
 applyKill :: SimulateMonadConstraints m => Kill -> m ()
 applyKill kill@(Kill killer target) = do
   -- remove all territory belonging to target
-  maybe_territory <- gameInfo_owned . at target <<.= Nothing
+  maybe_territory <- #owned . at target <<.= Nothing
 
   territory <-  maybe_territory ^?? _Just $
     "player " <> show target <> " cannot be killed twice"
@@ -198,18 +196,18 @@ applyKill kill@(Kill killer target) = do
   -- give it to killer
   singular
     "give territory to killer"
-    (gameInfo_owned . ix killer)
+    (#owned . ix killer)
     <>= territory
 
   -- halve the armies & transfer ownership
   for_ (Set.toList territory) $ \i ->
-    gameInfo_grid . _Grid . ix i . _Army %=
-      ( over army_size halfRoundUp
-      . set (army_owner . _Player) killer
+    #grid . #_Grid . ix i . _Army %=
+      ( over #size halfRoundUp
+      . set (#owner . #_Player) killer
       )
 
   -- prepend kill to game log
-  gameInfo_kills %= (kill :)
+  #kills %= (kill :)
 
 moveReducer
   :: (SimulateMonadConstraints m, MonadWriter [Kill] m)
@@ -217,67 +215,64 @@ moveReducer
   -> m ()
 moveReducer move = do
   let
-    attackingTile move = ixGrid (move ^. move_startTile)
-    defendingTile move = ixGrid (move ^. move_endTile)
+    attackingTile move = ixGrid (move ^. #startTile)
+    defendingTile move = ixGrid (move ^. #endTile)
 
   -- subtract army from attacking tile
   tileArmy <-
     singular
       ("attacking tile army")
-      (gameInfo_grid . attackingTile move . _Army)
-    <<%= over army_size (leaveArmySize $ move ^. move_onlyHalf)
+      (#grid . attackingTile move . _Army)
+    <<%= over #size (leaveArmySize $ move ^. #onlyHalf)
 
   -- build attacking army
   let
-    attackingPlayer = tileArmy ^. army_owner
-    attackingArmySize = moveArmySize (move ^. move_onlyHalf) (tileArmy ^. army_size)
+    attackingPlayer = tileArmy ^. #owner
+    attackingArmySize = moveArmySize (move ^. #onlyHalf) (tileArmy ^. #size)
     attackingArmy = attackingPlayer `Army` attackingArmySize
 
   -- determine defending player
   defendingPlayer <- use $
     singular
       "defending tile army"
-      (gameInfo_grid . defendingTile move . _Owner)
+      (#grid . defendingTile move . _Owner)
 
   -- army leftover after attack
   newArmy <-
     singular
       "army leftover after attack"
-      (gameInfo_grid . defendingTile move . _Army)
+      (#grid . defendingTile move . _Army)
     <%= attack attackingArmy
 
-  let newOwner = newArmy ^. army_owner
-  defendingTileWasGeneral <- use (gameInfo_grid . ixGrid (move ^. move_endTile) . to (is _General))
+  let newOwner = newArmy ^. #owner
+  defendingTileWasGeneral <- use (#grid . ixGrid (move ^. #endTile) . to (is #_General))
 
   -- update cache
   when (newOwner /= defendingPlayer) $ do
-    newPlayerId <- newOwner ^?? _Player $
-      show (move ^. move_endTile, newArmy)
+    newPlayerId <- newOwner ^?? #_Player $
+      show (move ^. #endTile, newArmy)
 
-    gameInfo_owned . ix newPlayerId . contains (move ^. move_endTile . _GridIndex) .= True
-    case defendingPlayer ^? _Player of
+    #owned . ix newPlayerId . contains (move ^. #endTile . _GridIndex) .= True
+    case defendingPlayer ^? #_Player of
       Just id ->
-        gameInfo_owned . ix id . contains (move ^. move_endTile . _GridIndex) .= False
+        #owned . ix id . contains (move ^. #endTile . _GridIndex) .= False
       _ -> do
-        defenseTileType <- use (gameInfo_grid . ixGrid (move ^. move_endTile) . armyTileType)
+        defenseTileType <- use (#grid . ixGrid (move ^. #endTile) . armyTileType)
         when (defenseTileType == Swamp_Tile) $
-          gameInfo_activeSwamps . contains (move ^. move_endTile . _GridIndex) .= True
+          #activeSwamps . contains (move ^. #endTile . _GridIndex) .= True
         when (defenseTileType == City_Tile) $
-          gameInfo_activeCities . contains (move ^. move_endTile . _GridIndex) .= True
+          #activeCities . contains (move ^. #endTile . _GridIndex) .= True
 
   -- emit kill & convert conquered tile to being a city
   when (newOwner /= defendingPlayer && defendingTileWasGeneral) $ do
     -- read player ids
-    killer <- newOwner ^?? _Player $ "Kill: killer"
-    mark <- defendingPlayer ^?? _Player $ "Kill: mark"
+    killer <- newOwner ^?? #_Player $ "Kill: killer"
+    mark <- defendingPlayer ^?? #_Player $ "Kill: mark"
 
     -- emit kill
-    tell $ singleton $ Kill
-      { _kill_killer = killer
-      , _kill_target = mark
-      }
+    tell $ singleton $ Kill { killer, mark }
     -- convert conquered general to a city
-    gameInfo_grid . ixGrid (move ^. move_endTile) . armyTileType .= City_Tile
+    #grid . ixGrid (move ^. #endTile) . armyTileType .= City_Tile
 
   pure ()
 
@@ -292,26 +287,26 @@ halfRoundDown :: Integral n => n -> n
 halfRoundDown = (`div` 2)
 
 leaveArmySize :: Integral n => Bool -> n -> n
-leaveArmySize move_onlyHalf =
-  if move_onlyHalf
+leaveArmySize onlyHalf =
+  if onlyHalf
   then halfRoundDown
   else const 1
 
 moveArmySize :: Integral n => Bool -> n -> n
-moveArmySize move_onlyHalf =
-  if move_onlyHalf
+moveArmySize onlyHalf =
+  if onlyHalf
   then halfRoundUp
   else subtract 1
 
 
 attack :: Army -> Army -> Army
 attack attacking defending
-  | attacking ^. army_owner == defending ^. army_owner
-  = defending & army_size +~ attacking ^. army_size
+  | attacking ^. #owner == defending ^. #owner
+  = defending & #size +~ attacking ^. #size
 
-  | attacking ^. army_size > defending ^. army_size
-  = attacking & army_size -~ defending ^. army_size
+  | attacking ^. #size > defending ^. #size
+  = attacking & #size -~ defending ^. #size
 
   | otherwise
-  = defending & army_size -~ attacking ^. army_size
+  = defending & #size -~ attacking ^. #size
 
