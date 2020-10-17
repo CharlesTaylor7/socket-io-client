@@ -4,7 +4,10 @@ import Prelude hiding (Empty, on)
 import Types
 import Control.Lens.Unsafe
 
-import Brick
+import Brick hiding (Widget, Horizontal, Vertical, Both)
+import qualified Brick as Scroll (ViewportType(..))
+import qualified Brick as Brick
+
 import Brick.BChan (newBChan, writeBChan)
 import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
@@ -23,6 +26,8 @@ data Tick = Tick
 -- | Named resources
 data Name = GridView
   deriving (Eq, Ord, Show)
+
+type Widget = Brick.Widget Name
 
 data Cell
   = Snake
@@ -60,15 +65,21 @@ handleEvent _ = continue
 
 scrollAmount = 5
 
-drawUI :: AppState -> [Widget Name]
+drawUI :: AppState -> [Widget]
 drawUI (history, TurnIndex turn) =
-  [ center $ drawGrid game
+  [ center $ runReader (drawGrid game) unicodeRounded
   ]
   where
     game = history ^?! ix turn $ "history index"
 
+data GridStyle = GridStyle
+  { borderStyle :: BorderStyle
+  , cellWidth :: Int
+  }
+  deriving (Generic)
 
-drawGrid :: GameInfo -> Widget Name
+
+drawGrid :: MonadReader GridStyle m => GameInfo -> m Widget
 drawGrid gameInfo = title <=> grid
   where
     title = hCenter $ str $ "Replay " <> dimensions
@@ -76,7 +87,7 @@ drawGrid gameInfo = title <=> grid
     width = gameInfo ^. #replay . #mapWidth
     height = gameInfo ^. #replay . #mapHeight
 
-    grid :: Widget Name
+    grid :: Widget
     grid =
       viewport GridView Vertical $
       hCenter $
@@ -85,7 +96,7 @@ drawGrid gameInfo = title <=> grid
       | y <- [1..height]
       ]
 
-    drawRow :: Int -> Widget Name
+    drawRow :: Int -> Widget
     drawRow y = vLimit 1 $ insertVBorders $
       [ drawTile tile
       | x <- [1..width]
@@ -94,7 +105,7 @@ drawGrid gameInfo = title <=> grid
           tile = gameInfo ^. #grid . ixGrid i
       ]
 
-    drawTile :: Tile -> Widget Name
+    drawTile :: Tile -> Widget
     drawTile tile = str (tile ^. contents) & withAttr (tile ^. attr)
       where
         attr =
@@ -113,19 +124,18 @@ drawGrid gameInfo = title <=> grid
     cellHeight :: Int
     cellHeight = 4
 
-
-    vBorder = str "┃"
-
-    insertVBorders :: [Widget Name] -> Widget Name
+    insertVBorders :: [Widget] -> Widget
     insertVBorders = hBox . surround vBorder . intersperse vBorder
 
-    insertHBorders :: [Widget Name] -> Widget Name
+    surround c list = c : (list <> [c])
+
+    insertHBorders :: [Widget] -> Widget
     insertHBorders = vBox . (hBorder Top :) . (<> [hBorder Bottom]) . intersperse (hBorder Middle)
 
     topBorder = hBorder Top
     bottomBorder = hBorder Bottom
 
-    hBorder :: VLocation -> Widget Name
+    hBorder :: VLocation -> Widget
     hBorder v = replicate cellWidth '━'
           & replicate width
           & intercalate [(borderChar v Center)]
@@ -134,20 +144,26 @@ drawGrid gameInfo = title <=> grid
 
 data VLocation = Bottom | Middle | Top
 data HLocation = Start | Center | End
+data Pipe = Horizontal | Vertical
+
+borderStyleL :: VLocation -> HLocation -> Lens' BorderStyle Char
+borderStyleL Bottom Start  = #bsCornerBL
+borderStyleL Bottom Center = #bsIntersectB
+borderStyleL Bottom End    = #bsCornerBR
+borderStyleL Middle Start  = #bsIntersectL
+borderStyleL Middle Center = #bsIntersectFull
+borderStyleL Middle End    = #bsIntersectR
+borderStyleL Top Start     = #bsCornerTL
+borderStyleL Top Center    = #bsIntersectT
+borderStyleL Top End       = #bsCornerTR
+
+pipeL :: Pipe -> Lens' BorderStyle Char
+pipeL Horizontal = #bsHorizontal
+pipeL Vertical   = #bsVertical
 
 corners :: VLocation -> String -> String
 corners v text = [borderChar v Start] <> text <> [borderChar v End]
 
-borderChar :: VLocation -> HLocation -> Char
-borderChar Bottom Start = '┗'
-borderChar Bottom Center = '┻'
-borderChar Bottom End = '┛'
-borderChar Middle Start = '┣'
-borderChar Middle Center = '╋'
-borderChar Middle End = '┫'
-borderChar Top Start = '┏'
-borderChar Top Center = '┳'
-borderChar Top End = '┓'
 
 -- | show army count in 4 characters
 -- if the army is over 4 digits, use k prefix
@@ -160,9 +176,7 @@ showArmyCount n
   | n < 10_000 = show n
   | n < 100_000 = " " <> show (n `div` 1_000) <> "k"
   | n < 1_000_000 = show (n `div` 1_000) <> "k"
-  | otherwise = "larj"
-
-surround c list = c : (list <> [c])
+  | otherwise = "lorj"
 
 
 gridAttrMap = attrMap V.defAttr
@@ -180,7 +194,6 @@ gridAttrMap = attrMap V.defAttr
     teal = V.rgbColor 0 0x80 0x80
     purple = V.rgbColor 0x80 0 0x80
     grey = V.rgbColor 0x71 0x6f 0x6f
-
 
 
 brickMain :: History -> IO ()
