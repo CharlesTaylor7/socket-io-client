@@ -21,8 +21,8 @@ import qualified Graphics.Vty as V
 data Tick = Tick
 
 -- | Named resources
-data Name
-  deriving (Eq, Ord)
+data Name = GridView
+  deriving (Eq, Ord, Show)
 
 data Cell
   = Snake
@@ -44,8 +44,21 @@ app = App
 
 handleEvent :: BrickEvent Name Tick -> AppState -> EventM Name (Next AppState)
 handleEvent (AppEvent Tick) = continue
-handleEvent (VtyEvent (V.EvKey V.KEsc [])) = halt
+handleEvent (VtyEvent (V.EvKey key [])) =
+  case key of
+    V.KEsc -> halt
+    V.KChar 'j' -> \s -> do
+      vScrollBy (viewportScroll GridView) (scrollAmount)
+      continue s
+
+    V.KChar 'k' -> \s -> do
+      vScrollBy (viewportScroll GridView) (-scrollAmount)
+      continue s
+
+    _ -> continue
 handleEvent _ = continue
+
+scrollAmount = 5
 
 drawUI :: AppState -> [Widget Name]
 drawUI (history, TurnIndex turn) =
@@ -60,14 +73,15 @@ drawGrid gameInfo = title <=> grid
   where
     title = hCenter $ str $ "Replay " <> dimensions
     dimensions = show width <> "x" <> show height
-    width = 10
-    height = 10
     -- TODO: use the full grid & introduce a scrolling viewport
-    -- width = gameInfo ^. #replay . #mapWidth
-    -- height = gameInfo ^. #replay . #mapHeight
+    width = gameInfo ^. #replay . #mapWidth
+    height = gameInfo ^. #replay . #mapHeight
 
     grid :: Widget Name
-    grid = hCenter $ insertHBorders $
+    grid =
+      viewport GridView Vertical $
+      hCenter $
+      insertHBorders $
       [ drawRow y
       | y <- [1..height]
       ]
