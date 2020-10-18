@@ -29,22 +29,34 @@ showArmyCount n
   | otherwise = "lorj"
 
 
-gridAttrMap = attrMap V.defAttr
-  [ ("obstacle", fg grey)
-  , ("player1", fg V.brightBlue)
-  , ("player2", fg V.red)
-  , ("player3", fg V.green)
-  , ("player4", fg purple)
-  , ("player5", fg teal)
-  , ("player6", fg V.yellow)
-  , ("player7", fg V.cyan)
-  , ("player8", fg V.magenta)
+gridAttrMap = attrMap V.defAttr $
+  players <>
+    [ ("obstacle", fg grey)
+    , ("general", V.currentAttr `V.withStyle` V.standout)
+    , ("city", V.currentAttr `V.withStyle` V.underline)
+    ]
+  where
+    grey = V.rgbColor 0x71 0x6f 0x6f
+    players =
+      zipWith
+        (\attr i -> (attrName $ "player" <> show i, attr))
+        playerAttributes
+        [1..]
+
+playerAttributes =
+  [ fg V.brightBlue
+  , fg V.red
+  , fg V.green
+  , fg purple
+  , fg teal
+  , fg V.magenta
+  , fg V.cyan
+  , fg orange
   ]
   where
     teal = V.rgbColor 0 0x80 0x80
     purple = V.rgbColor 0x80 0 0x80
-    grey = V.rgbColor 0x71 0x6f 0x6f
-
+    orange = V.rgbColor 0xea 0x45 0x11
 
 brickMain :: History -> IO ()
 brickMain history = do
@@ -166,16 +178,29 @@ drawGrid gameInfo = do
 drawTile :: MonadReader GridStyle m => Tile -> m Widget
 drawTile tile = do
   cellWidth <- view #cellSize
-  pure $ str (tile ^. contents cellWidth) & withAttr (tile ^. attr)
+  pure
+    $ str (tile ^. contents cellWidth)
+    & withAttr (tile ^. ownerAttr <> tile ^. to terrainAttr)
   where
-    attr =
-      (_Owner . #_Player . to show . to ("player" <>) . to attrName)
+    ownerAttr :: Fold Tile AttrName
+    ownerAttr =
+      (_Owner . #_Player . to (+1) . to show . to ("player" <>) . to attrName)
       `failing`
       like "neutral"
+
     contents w =
       (_Army . #size . from (non 0) . _Just . to showArmyCount)
       `failing`
       like (replicate w ' ')
+
+terrainAttr :: Tile -> AttrName
+terrainAttr (Clear _) = "clear"
+terrainAttr (City _) = "city"
+terrainAttr (General _) = "general"
+terrainAttr (Swamp _) = "swamp"
+terrainAttr Mountain  = "mountain"
+terrainAttr Fog_Clear  = "fog"
+terrainAttr Fog_Obstacle  = "fog"
 
 insertVBorders :: MonadReader GridStyle m => [Widget] -> m Widget
 insertVBorders cells = do
