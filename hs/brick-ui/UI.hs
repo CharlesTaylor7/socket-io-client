@@ -170,7 +170,11 @@ drawGrid gameInfo = do
 
   let
     grid :: Widget
-    grid = viewport GridView Scroll.Vertical $ hCenter $ gridContent
+    grid =
+      viewport GridView Scroll.Vertical $
+      hCenter $
+      cached GridView $
+        gridContent
 
   pure $ drawTitle gameInfo <=> grid
 
