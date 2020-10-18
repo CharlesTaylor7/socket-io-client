@@ -9,7 +9,7 @@ import qualified Brick as Scroll (ViewportType(..))
 import qualified Brick as Brick
 
 import Brick.BChan (newBChan, writeBChan)
-import Brick.Widgets.Border
+-- import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
 import Brick.Widgets.Center
 
@@ -67,80 +67,103 @@ scrollAmount = 5
 
 drawUI :: AppState -> [Widget]
 drawUI (history, TurnIndex turn) =
-  [ center $ runReader (drawGrid game) unicodeRounded
+  [ center $ flip runReader gridStyle $ drawGrid game
   ]
   where
     game = history ^?! ix turn $ "history index"
+    gridStyle = GridStyle
+      { borderStyle = unicodeRounded
+      , cellSize = 4
+      , gridWidth = game ^. #replay . #mapWidth
+      , gridHeight = game ^. #replay . #mapHeight
+      }
 
 data GridStyle = GridStyle
   { borderStyle :: BorderStyle
-  , cellWidth :: Int
+  , cellSize :: Int
+  , gridWidth :: Int
+  , gridHeight :: Int
   }
   deriving (Generic)
 
 
-drawGrid :: MonadReader GridStyle m => GameInfo -> m Widget
-drawGrid gameInfo = title <=> grid
-  where
-    title = hCenter $ str $ "Replay " <> dimensions
+drawTitle :: GameInfo -> Widget
+drawTitle gameInfo = do
+  let
     dimensions = show width <> "x" <> show height
     width = gameInfo ^. #replay . #mapWidth
     height = gameInfo ^. #replay . #mapHeight
 
-    grid :: Widget
-    grid =
-      viewport GridView Vertical $
-      hCenter $
-      insertHBorders $
-      [ drawRow y
-      | y <- [1..height]
-      ]
+  hCenter $ str $ "Replay " <> dimensions
 
-    drawRow :: Int -> Widget
-    drawRow y = vLimit 1 $ insertVBorders $
-      [ drawTile tile
-      | x <- [1..width]
-      , let
-          i = GridIndex $ (y - 1) * width + (x - 1)
+
+drawGrid :: MonadReader GridStyle m => GameInfo -> m Widget
+drawGrid gameInfo = do
+  let
+    width = gameInfo ^. #replay . #mapWidth
+    height = gameInfo ^. #replay . #mapHeight
+
+  rows <-
+    for [1..height] $ \y -> do
+      row <- for [1..width] $ \x -> do
+        let
           tile = gameInfo ^. #grid . ixGrid i
-      ]
+          i = GridIndex $ (y - 1) * width + (x - 1)
+        drawTile tile
+      insertVBorders row
 
-    drawTile :: Tile -> Widget
-    drawTile tile = str (tile ^. contents) & withAttr (tile ^. attr)
-      where
-        attr =
-          (_Owner . #_Player . to show . to ("player" <>) . to attrName)
-          `failing`
-          like "neutral"
-        contents =
-          (_Army . #size . from (non 0) . _Just . to showArmyCount)
-          `failing`
-          like (replicate cellWidth ' ')
+  gridContent <- insertHBorders rows
+
+  let
+    grid :: Widget
+    grid = viewport GridView Scroll.Vertical $ hCenter $ gridContent
+
+  pure $ drawTitle gameInfo <=> grid
+
+-- | Draw tile
+drawTile :: MonadReader GridStyle m => Tile -> m Widget
+drawTile tile = do
+  cellWidth <- view #cellSize
+  pure $ str (tile ^. contents cellWidth) & withAttr (tile ^. attr)
+  where
+    attr =
+      (_Owner . #_Player . to show . to ("player" <>) . to attrName)
+      `failing`
+      like "neutral"
+    contents w =
+      (_Army . #size . from (non 0) . _Just . to showArmyCount)
+      `failing`
+      like (replicate w ' ')
+
+insertVBorders :: MonadReader GridStyle m => [Widget] -> m Widget
+insertVBorders cells = do
+  v <- view $ #borderStyle . #bsVertical . to (str . pure)
+  pure . hBox . (v:) . (<> [v]) . intersperse v $ cells
 
 
-    cellWidth :: Int
-    cellWidth = 4
+insertHBorders :: MonadReader GridStyle m => [Widget] -> m Widget
+insertHBorders cells = do
+  h1 <- hBorder Top
+  h2 <- hBorder Bottom
+  h3 <- hBorder Middle
+  pure . vBox . (h1 :) . (<> [h2]) . intersperse h3 $ cells
 
-    cellHeight :: Int
-    cellHeight = 4
 
-    insertVBorders :: [Widget] -> Widget
-    insertVBorders = hBox . surround vBorder . intersperse vBorder
 
-    surround c list = c : (list <> [c])
-
-    insertHBorders :: [Widget] -> Widget
-    insertHBorders = vBox . (hBorder Top :) . (<> [hBorder Bottom]) . intersperse (hBorder Middle)
-
-    topBorder = hBorder Top
-    bottomBorder = hBorder Bottom
-
-    hBorder :: VLocation -> Widget
-    hBorder v = replicate cellWidth '━'
-          & replicate width
-          & intercalate [(borderChar v Center)]
-          & corners v
-          & str
+hBorder :: MonadReader GridStyle m => VLocation -> m Widget
+hBorder v = do
+  cellWidth <- view #cellSize
+  mapWidth <- view #gridWidth
+  innerBorder <- view $ #borderStyle . borderStyleL v Center
+  startCorner <- view $ #borderStyle . borderStyleL v Start
+  endCorner <- view $ #borderStyle . borderStyleL v End
+  pipe <- view $ #borderStyle . #bsHorizontal
+  replicate cellWidth pipe
+      & replicate mapWidth
+      & intercalate [innerBorder]
+      & \row -> [startCorner] <> row <> [endCorner]
+      & str
+      & pure
 
 data VLocation = Bottom | Middle | Top
 data HLocation = Start | Center | End
@@ -159,11 +182,6 @@ borderStyleL Top End       = #bsCornerTR
 
 pipeL :: Pipe -> Lens' BorderStyle Char
 pipeL Horizontal = #bsHorizontal
-pipeL Vertical   = #bsVertical
-
-corners :: VLocation -> String -> String
-corners v text = [borderChar v Start] <> text <> [borderChar v End]
-
 
 -- | show army count in 4 characters
 -- if the army is over 4 digits, use k prefix
