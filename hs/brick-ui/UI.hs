@@ -15,6 +15,49 @@ import Brick.Widgets.Center
 
 import qualified Graphics.Vty as V
 
+-- | show army count in 4 characters
+-- if the army is over 4 digits, use k prefix
+-- if the army is under 4 digits pad with space characters
+showArmyCount :: Int -> String
+showArmyCount n
+  | n < 10 = "  " <> show n <> " "
+  | n < 100 = " " <> show n <> " "
+  | n < 1_000 = show n <> " "
+  | n < 10_000 = show n
+  | n < 100_000 = " " <> show (n `div` 1_000) <> "k"
+  | n < 1_000_000 = show (n `div` 1_000) <> "k"
+  | otherwise = "lorj"
+
+
+gridAttrMap = attrMap V.defAttr
+  [ ("obstacle", fg grey)
+  , ("player1", fg V.brightBlue)
+  , ("player2", fg V.red)
+  , ("player3", fg V.green)
+  , ("player4", fg purple)
+  , ("player5", fg teal)
+  , ("player6", fg V.yellow)
+  , ("player7", fg V.cyan)
+  , ("player8", fg V.magenta)
+  ]
+  where
+    teal = V.rgbColor 0 0x80 0x80
+    purple = V.rgbColor 0x80 0 0x80
+    grey = V.rgbColor 0x71 0x6f 0x6f
+
+
+brickMain :: History -> IO ()
+brickMain history = do
+  chan <- newBChan 10
+  forkIO $ forever $ do
+    writeBChan chan Tick
+    threadDelay 100_000
+
+  let buildVty = V.mkVty V.defaultConfig
+  initialVty <- buildVty
+  _ <- customMain initialVty buildVty (Just chan) app (history, TurnIndex 0)
+
+  pure ()
 
 -- Types
 
@@ -72,12 +115,11 @@ drawUI (history, TurnIndex turn) =
   where
     game = history ^?! ix turn $ "history index"
     gridStyle = GridStyle
-      { borderStyle = unicodeRounded
+      { borderStyle = unicode
       , cellSize = 4
       , gridWidth = game ^. #replay . #mapWidth
       , gridHeight = game ^. #replay . #mapHeight
       }
-
 data GridStyle = GridStyle
   { borderStyle :: BorderStyle
   , cellSize :: Int
@@ -140,14 +182,12 @@ insertVBorders cells = do
   v <- view $ #borderStyle . #bsVertical . to (str . pure)
   pure . hBox . (v:) . (<> [v]) . intersperse v $ cells
 
-
 insertHBorders :: MonadReader GridStyle m => [Widget] -> m Widget
 insertHBorders cells = do
   h1 <- hBorder Top
   h2 <- hBorder Bottom
   h3 <- hBorder Middle
   pure . vBox . (h1 :) . (<> [h2]) . intersperse h3 $ cells
-
 
 
 hBorder :: MonadReader GridStyle m => VLocation -> m Widget
@@ -179,50 +219,3 @@ borderStyleL Middle End    = #bsIntersectR
 borderStyleL Top Start     = #bsCornerTL
 borderStyleL Top Center    = #bsIntersectT
 borderStyleL Top End       = #bsCornerTR
-
-pipeL :: Pipe -> Lens' BorderStyle Char
-pipeL Horizontal = #bsHorizontal
-
--- | show army count in 4 characters
--- if the army is over 4 digits, use k prefix
--- if the army is under 4 digits pad with space characters
-showArmyCount :: Int -> String
-showArmyCount n
-  | n < 10 = "  " <> show n <> " "
-  | n < 100 = " " <> show n <> " "
-  | n < 1_000 = show n <> " "
-  | n < 10_000 = show n
-  | n < 100_000 = " " <> show (n `div` 1_000) <> "k"
-  | n < 1_000_000 = show (n `div` 1_000) <> "k"
-  | otherwise = "lorj"
-
-
-gridAttrMap = attrMap V.defAttr
-  [ ("obstacle", fg grey)
-  , ("player1", fg V.brightBlue)
-  , ("player2", fg V.red)
-  , ("player3", fg V.green)
-  , ("player4", fg purple)
-  , ("player5", fg teal)
-  , ("player6", fg V.yellow)
-  , ("player7", fg V.cyan)
-  , ("player8", fg V.magenta)
-  ]
-  where
-    teal = V.rgbColor 0 0x80 0x80
-    purple = V.rgbColor 0x80 0 0x80
-    grey = V.rgbColor 0x71 0x6f 0x6f
-
-
-brickMain :: History -> IO ()
-brickMain history = do
-  chan <- newBChan 10
-  forkIO $ forever $ do
-    writeBChan chan Tick
-    threadDelay 100_000
-
-  let buildVty = V.mkVty V.defaultConfig
-  initialVty <- buildVty
-  _ <- customMain initialVty buildVty (Just chan) app (history, TurnIndex 0)
-
-  pure ()
