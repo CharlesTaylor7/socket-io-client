@@ -6,6 +6,7 @@
 - cabal run
 
 ## To do
+- Remove Node dependencies
 
 ### Features
 - style replay toggle to make it clear which perspective is active
