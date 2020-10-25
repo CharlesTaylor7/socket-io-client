@@ -3,8 +3,7 @@ module Node.FFI (loadReplay) where
 import Types
 import Generals.Replay.Decode
 
-import System.IO
-import qualified Data.Bytestring as BS
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as Base64
 import qualified LZString as LZ
 
@@ -13,22 +12,14 @@ newtype Url = Url Text
 loadReplay :: ReplayLocation -> IO Replay
 loadReplay location = do
   let Url url = replayUrl location
-  case location of
+  case location ^. #server of
     Server_Local -> do
-      handle <- openFile url ReadMode
-      contents <- Base64 <$> BS.hGetContents handle
+      handle <- openFile (url ^. unpacked) ReadMode
+      contents <- Base64.encode <$> BS.hGetContents handle
+
       pure $ LZ.decompressBase64 contents
 
     _ -> undefined
-
-  (exitCode, stdOut, stdErr) <-
-    readProcessWithExitCode "node" ["js/download-replay.js", url ^. unpacked] ""
-
-  putStrLn stdErr
-
-  pure $ decode $ stdOut ^. packed
-
-
 
 
 replayDir :: Server -> Text

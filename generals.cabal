@@ -83,6 +83,8 @@ library generals-lib
   build-depends:
       generals-prelude
     , lz-string
+    , base64-bytestring
+    , bytestring
     , process
     , text
     , aeson
