@@ -76,20 +76,6 @@ brickMain history = do
 
   pure ()
 
--- Types
-
--- | Ticks mark passing of time
---
--- the app's custom event type
-data Tick = Tick
-
--- | Named resources
-data Name = GridView
-  deriving (Eq, Ord, Show)
-
-type Widget = Brick.Widget Name
-type AppState = (History, TurnIndex)
-
 -- App definition
 app :: App AppState Tick Name
 app = App
@@ -99,34 +85,6 @@ app = App
   , appStartEvent = pure
   , appAttrMap = const gridAttrMap
   }
-
-handleEvent :: BrickEvent Name Tick -> AppState -> EventM Name (Next AppState)
-handleEvent (AppEvent Tick) = continue
-handleEvent (VtyEvent (V.EvKey key [])) =
-  case key of
-    V.KEsc -> halt
-
-    V.KChar 'h' -> \s -> do
-      hScrollBy (viewportScroll GridView) (-scrollAmount)
-      continue s
-
-    V.KChar 'l' -> \s -> do
-      hScrollBy (viewportScroll GridView) (scrollAmount)
-      continue s
-
-    V.KChar 'j' -> \s -> do
-      vScrollBy (viewportScroll GridView) (scrollAmount)
-      continue s
-
-    V.KChar 'k' -> \s -> do
-      vScrollBy (viewportScroll GridView) (-scrollAmount)
-      continue s
-
-    _ -> continue
-handleEvent _ = continue
-
-scrollAmount = 5
-
 drawUI :: AppState -> [Widget]
 drawUI (history, TurnIndex turn) =
   [ center $ flip runReader gridStyle $ drawGrid game
