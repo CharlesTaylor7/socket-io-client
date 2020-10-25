@@ -6,18 +6,18 @@ import Control.Lens.Unsafe
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)
 import qualified Brick as Scroll (ViewportType(..))
-import qualified Brick as Brick
 
-import Brick.BChan (newBChan, writeBChan)
 import Brick.Widgets.Border.Style
 import Brick.Widgets.Center
 
 import Brick.Grid (GridStyle(..))
 import qualified Brick.Grid as Grid
 
-import qualified Graphics.Vty as V
-
 import qualified Data.Text as T
+
+import UI.Types
+import UI.Attrs
+import UI.Events
 
 
 -- | show army count in 4 characters
@@ -32,49 +32,6 @@ showArmyCount n
   | n < 100_000 = " " <> show (n `div` 1_000) <> "k"
   | n < 1_000_000 = show (n `div` 1_000) <> "k"
   | otherwise = "lorj"
-
-
-gridAttrMap = attrMap V.defAttr $
-  players <>
-    [ ("obstacle", fg grey)
-    , ("general", V.currentAttr `V.withStyle` V.standout)
-    , ("city", V.currentAttr `V.withStyle` V.underline)
-    ]
-  where
-    grey = V.rgbColor 0x71 0x6f 0x6f
-    players =
-      zipWith
-        (\attr i -> (attrName $ "player" <> show i, attr))
-        playerAttributes
-        [1..]
-
-playerAttributes =
-  [ fg V.brightBlue
-  , fg V.red
-  , fg V.green
-  , fg purple
-  , fg teal
-  , fg V.magenta
-  , fg V.cyan
-  , fg orange
-  ]
-  where
-    teal = V.rgbColor 0 0x80 0x80
-    purple = V.rgbColor 0x80 0 0x80
-    orange = V.rgbColor 0xea 0x45 0x11
-
-brickMain :: History -> IO ()
-brickMain history = do
-  chan <- newBChan 10
-  forkIO $ forever $ do
-    writeBChan chan Tick
-    threadDelay 100_000
-
-  let buildVty = V.mkVty V.defaultConfig
-  initialVty <- buildVty
-  _ <- customMain initialVty buildVty (Just chan) app (history, TurnIndex 0)
-
-  pure ()
 
 -- App definition
 app :: App AppState Tick Name
@@ -146,12 +103,3 @@ drawGrid gameInfo = do
         gridContent
 
   pure $ drawTitle gameInfo <=> grid
-
-terrainAttr :: Tile -> AttrName
-terrainAttr (Clear _) = "clear"
-terrainAttr (City _) = "city"
-terrainAttr (General _) = "general"
-terrainAttr (Swamp _) = "swamp"
-terrainAttr Mountain  = "mountain"
-terrainAttr Fog_Clear  = "fog"
-terrainAttr Fog_Obstacle  = "fog"

@@ -5,6 +5,13 @@ module UI.Events
 
 import UI.Types
 
+import Brick hiding (Widget, Horizontal, Vertical, Both)
+
+import qualified Graphics.Vty as V
+
+
+scrollAmount :: Int
+scrollAmount = 3
 
 handleEvent :: BrickEvent Name Tick -> AppState -> EventM Name (Next AppState)
 handleEvent (AppEvent Tick) = continue
@@ -31,4 +38,3 @@ handleEvent (VtyEvent (V.EvKey key [])) =
     _ -> continue
 handleEvent _ = continue
 
-scrollAmount = 5

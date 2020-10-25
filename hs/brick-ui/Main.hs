@@ -3,7 +3,8 @@ import Types
 import UI
 import Generals.Replay.Simulate
 
-import qualified Graphics.Vty as V
+import Brick.Main (defaultMain)
+
 
 main :: IO ()
 main = do
@@ -13,4 +14,5 @@ main = do
     }
 
   history <- toHistory replay
-  brickMain history
+  _ <- defaultMain app (history, TurnIndex 0)
+  pure ()

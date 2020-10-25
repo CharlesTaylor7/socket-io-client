@@ -1,5 +1,6 @@
 module UI.Types where
 
+import Types
 import qualified Brick as Brick
 -- Types
 

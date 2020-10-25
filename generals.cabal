@@ -110,9 +110,12 @@ executable generals-brick-ui
     , brick-grid
     , vty
     , text
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:
+    -threaded -rtsopts -with-rtsopts=-N
+    -Wall
   other-modules:
       UI
     , UI.Types
+    , UI.Attrs
     , UI.Events
 
