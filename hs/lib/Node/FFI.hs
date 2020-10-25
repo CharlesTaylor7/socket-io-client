@@ -7,6 +7,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as Base64
 import qualified LZString as LZ
 
+
 newtype Url = Url Text
 
 loadReplay :: ReplayLocation -> IO Replay

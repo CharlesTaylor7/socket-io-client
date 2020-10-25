@@ -1,6 +1,7 @@
 import Node.FFI
 import Types
 import UI
+import UI.Types
 import Generals.Replay.Simulate
 
 import Brick.Main (defaultMain)
@@ -14,5 +15,5 @@ main = do
     }
 
   history <- toHistory replay
-  _ <- defaultMain app (history, TurnIndex 0)
+  _ <- defaultMain app $ AppState history (TurnIndex 0) replay
   pure ()

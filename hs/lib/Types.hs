@@ -129,6 +129,7 @@ data GameInfo = GameInfo
   -- get only
   , numTiles     :: !Int
   , replay       :: !Replay
+  , turnIndex    :: !TurnIndex
   }
   deriving (Generic)
 -- replays
@@ -200,10 +201,14 @@ instance Default Command where
   def = DoNothing
 
 newtype TurnIndex = TurnIndex Int
-  deriving stock (Show)
+  deriving stock (Show, Generic)
   deriving newtype (Ord, Eq, Num)
   deriving (Default, Semigroup, Monoid) via Sum Int
 
+instance Wrapped TurnIndex
+
+_TurnIndex :: Iso' TurnIndex Int
+_TurnIndex = _Wrapped'
 
 data Perspective
   = Global

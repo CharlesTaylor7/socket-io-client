@@ -19,20 +19,6 @@ import UI.Types
 import UI.Attrs
 import UI.Events
 
-
--- | show army count in 4 characters
--- if the army is over 4 digits, use k prefix
--- if the army is under 4 digits pad with space characters
-showArmyCount :: Int -> Text
-showArmyCount n
-  | n < 10 = "  " <> show n <> " "
-  | n < 100 = " " <> show n <> " "
-  | n < 1_000 = show n <> " "
-  | n < 10_000 = show n
-  | n < 100_000 = " " <> show (n `div` 1_000) <> "k"
-  | n < 1_000_000 = show (n `div` 1_000) <> "k"
-  | otherwise = "lorj"
-
 -- App definition
 app :: App AppState Tick Name
 app = App
@@ -43,10 +29,13 @@ app = App
   , appAttrMap = const gridAttrMap
   }
 drawUI :: AppState -> [Widget]
-drawUI (history, TurnIndex turn) =
+drawUI appState =
   [ center $ flip runReader gridStyle $ drawGrid game
   ]
   where
+    history = appState ^. #history
+    turn = appState ^. #turnIndex . _TurnIndex
+
     game :: GameInfo
     game = history ^?! ix turn $ "history index"
 
@@ -82,11 +71,26 @@ drawTile tile = do
       `failing`
       like (T.replicate w " ")
 
+-- | show army count in 4 characters
+-- if the army is over 4 digits, use k prefix
+-- if the army is under 4 digits pad with space characters
+showArmyCount :: Int -> Text
+showArmyCount n
+  | n < 10 = "  " <> show n <> " "
+  | n < 100 = " " <> show n <> " "
+  | n < 1_000 = show n <> " "
+  | n < 10_000 = show n
+  | n < 100_000 = " " <> show (n `div` 1_000) <> "k"
+  | n < 1_000_000 = show (n `div` 1_000) <> "k"
+  | otherwise = "lorj"
+
+
 
 drawTitle :: GameInfo -> Widget
 drawTitle gameInfo = do
   let
-    dimensions = show width <> "x" <> show height
+    dimensions = show width <> "x" <> show height <> " Turn " <> show turn
+    turn = gameInfo ^. #turnIndex . _TurnIndex
     width = gameInfo ^. #replay . #mapWidth
     height = gameInfo ^. #replay . #mapHeight
 

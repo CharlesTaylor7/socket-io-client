@@ -14,4 +14,11 @@ data Name = GridView
   deriving (Eq, Ord, Show)
 
 type Widget = Brick.Widget Name
-type AppState = (History, TurnIndex)
+
+
+data AppState = AppState
+  { history :: History
+  , turnIndex :: TurnIndex
+  , replay :: Replay
+  }
+  deriving stock (Generic)

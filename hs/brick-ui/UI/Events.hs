@@ -19,6 +19,7 @@ handleEvent (VtyEvent (V.EvKey key [])) =
   case key of
     V.KEsc -> halt
 
+    -- scroll keys
     V.KChar 'h' -> \s -> do
       hScrollBy (viewportScroll GridView) (-scrollAmount)
       continue s
@@ -35,6 +36,17 @@ handleEvent (VtyEvent (V.EvKey key [])) =
       vScrollBy (viewportScroll GridView) (-scrollAmount)
       continue s
 
+    -- advance replay
+    V.KRight -> \s -> do
+      invalidateCacheEntry GridView
+      continue $
+        s & #turnIndex . #_TurnIndex +~ 1
+
+    -- rewind replay
+    V.KLeft -> \s -> do
+      invalidateCacheEntry GridView
+      continue $
+        s & #turnIndex . #_TurnIndex -~ 1
     _ -> continue
 handleEvent _ = continue
 
