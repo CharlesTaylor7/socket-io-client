@@ -82,6 +82,7 @@ library generals-lib
     hs/lib
   build-depends:
       generals-prelude
+    , lz-string
     , process
     , text
     , aeson
