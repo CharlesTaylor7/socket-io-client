@@ -107,6 +107,15 @@ handleEvent (AppEvent Tick) = continue
 handleEvent (VtyEvent (V.EvKey key [])) =
   case key of
     V.KEsc -> halt
+
+    V.KChar 'h' -> \s -> do
+      hScrollBy (viewportScroll GridView) (-scrollAmount)
+      continue s
+
+    V.KChar 'l' -> \s -> do
+      hScrollBy (viewportScroll GridView) (scrollAmount)
+      continue s
+
     V.KChar 'j' -> \s -> do
       vScrollBy (viewportScroll GridView) (scrollAmount)
       continue s
@@ -171,8 +180,7 @@ drawGrid gameInfo = do
   let
     grid :: Widget
     grid =
-      viewport GridView Scroll.Vertical $
-      hCenter $
+      viewport GridView Scroll.Both $
       cached GridView $
         gridContent
 
