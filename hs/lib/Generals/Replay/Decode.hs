@@ -8,13 +8,14 @@ import Types
 import Data.Aeson hiding (decode)
 import Data.Aeson.Types
 import qualified Data.Aeson as Json
+import qualified Data.ByteString.Lazy as L
 
-decode :: FromJSON a => Text -> a
-decode text =
+
+decode :: FromJSON a => L.ByteString -> a
+decode bs =
   case Json.eitherDecode' bs of
     Left e -> error $ e ^. packed
     Right r -> r
-  where bs = encodeUtf8 text
 
 instance FromJSON ReplayLocation where
   parseJSON = withObject "ReplayLocation" $

@@ -17,7 +17,7 @@ loadReplay location = do
       handle <- openFile (url ^. unpacked) ReadMode
       contents <- Base64.encode <$> BS.hGetContents handle
 
-      pure $ LZ.decompressBase64 contents
+      pure $ decode $ LZ.decompressBase64 contents
 
     _ -> undefined
 
