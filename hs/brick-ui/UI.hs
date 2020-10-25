@@ -17,11 +17,13 @@ import qualified Brick.Grid as Grid
 
 import qualified Graphics.Vty as V
 
+import qualified Data.Text as T
+
 
 -- | show army count in 4 characters
 -- if the army is over 4 digits, use k prefix
 -- if the army is under 4 digits pad with space characters
-showArmyCount :: Int -> String
+showArmyCount :: Int -> Text
 showArmyCount n
   | n < 10 = "  " <> show n <> " "
   | n < 100 = " " <> show n <> " "
@@ -134,7 +136,7 @@ drawUI (history, TurnIndex turn) =
     game = history ^?! ix turn $ "history index"
 
     toTile :: (Int, Int) -> Tile
-    toTile (i, j) = game ^?! #grid . ixGrid (j * width + i) $ "grid index"
+    toTile (i, j) = game ^?! #grid . #_Grid . ix (j * width + i) $ "grid index"
 
     width = game ^. #replay . #mapWidth
     height = game ^. #replay . #mapHeight
@@ -144,16 +146,15 @@ drawUI (history, TurnIndex turn) =
       , cellWidth = 4
       , gridWidth = width
       , gridHeight = height
-      , drawTileWith = flip runReader gridStyle . drawTile . toTile
+      , toTile = flip runReader gridStyle . drawTile . toTile
       }
 
 -- | Draw tile
-drawTile :: MonadReader GridStyle m => Tile -> m Widget
+drawTile :: MonadReader GridStyle m => Tile -> m (Text, AttrName)
 drawTile tile = do
   cellWidth <- view #cellWidth
   pure
-    $ str (tile ^. contents cellWidth)
-    & withAttr (tile ^. ownerAttr <> tile ^. to terrainAttr)
+    $ (tile ^. contents cellWidth, tile ^. ownerAttr <> tile ^. to terrainAttr)
   where
     ownerAttr :: Fold Tile AttrName
     ownerAttr =
@@ -164,7 +165,7 @@ drawTile tile = do
     contents w =
       (_Army . #size . from (non 0) . _Just . to showArmyCount)
       `failing`
-      like (replicate w ' ')
+      like (T.replicate w " ")
 
 
 drawTitle :: GameInfo -> Widget
