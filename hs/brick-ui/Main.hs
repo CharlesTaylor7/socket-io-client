@@ -15,5 +15,12 @@ main = do
     }
 
   history <- toHistory replay
-  _ <- defaultMain app $ AppState history (TurnIndex 0) replay
+
+  let turnIndex = TurnIndex 0
+  _ <- defaultMain app $ AppState
+    { history
+    , replay
+    , turnIndex
+    , jumpToTurn = jumpToTurnForm turnIndex
+    }
   pure ()

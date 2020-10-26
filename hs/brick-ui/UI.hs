@@ -9,6 +9,7 @@ import qualified Brick as Scroll (ViewportType(..))
 
 import Brick.Widgets.Border.Style
 import Brick.Widgets.Center
+import Brick.Forms
 
 import Brick.Grid (GridStyle(..))
 import qualified Brick.Grid as Grid
@@ -20,7 +21,7 @@ import UI.Attrs
 import UI.Events
 
 -- App definition
-app :: App AppState Tick Name
+app :: App AppState CustomEvent Name
 app = App
   { appDraw = drawUI
   , appChooseCursor = neverShowCursor
@@ -30,11 +31,14 @@ app = App
   }
 drawUI :: AppState -> [Widget]
 drawUI appState =
-  [ center $ flip runReader gridStyle $ drawGrid game
+  [ center $ form <=> grid
   ]
   where
+    form = appState ^. #jumpToTurn . to renderForm
     history = appState ^. #history
     turn = appState ^. #turnIndex . _TurnIndex
+
+    grid = flip runReader gridStyle $ drawGrid game
 
     game :: GameInfo
     game = history ^?! ix turn $ "history index"
@@ -84,26 +88,32 @@ showArmyCount n
   | n < 1_000_000 = show (n `div` 1_000) <> "k"
   | otherwise = "lorj"
 
-
-
-drawTitle :: GameInfo -> Widget
-drawTitle gameInfo = do
+drawHeader :: GameInfo -> Widget
+drawHeader gameInfo = do
   let
-    dimensions = show width <> "x" <> show height <> " Turn " <> show turn
+    dimensions = show width <> "x" <> show height
     turn = gameInfo ^. #turnIndex . _TurnIndex
     width = gameInfo ^. #replay . #mapWidth
     height = gameInfo ^. #replay . #mapHeight
 
-  hCenter $ str $ "Replay " <> dimensions
+    titleWidget = txt $ "Replay " <> dimensions
+    turnInputWidget = renderForm $ jumpToTurnForm (TurnIndex turn)
+  hCenter $ titleWidget
 
 
 drawGrid :: MonadReader GridStyle m => GameInfo -> m Widget
 drawGrid gameInfo = do
   gridContent <- reader Grid.drawGrid
-  let
-    grid =
-      viewport GridView Scroll.Both $
-      cached GridView $
-        gridContent
 
-  pure $ drawTitle gameInfo <=> grid
+  pure $
+    viewport GridView Scroll.Vertical $
+    hCenter $
+    cached GridView $
+      gridContent
+
+jumpToTurnForm :: TurnIndex -> Form TurnIndex e Name
+jumpToTurnForm =
+  setFormFocus JumpToTurn .
+  newForm
+    [ editShowableField _TurnIndex JumpToTurn
+    ]

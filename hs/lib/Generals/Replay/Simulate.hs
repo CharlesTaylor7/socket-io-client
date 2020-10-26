@@ -129,14 +129,12 @@ initialGameInfo replay = GameInfo
 
 advanceTurn :: SimulateMonadConstraints m => Turn -> m ()
 advanceTurn (turnIndex, moves) = do
-  incrementTurn
+  #turnIndex . _TurnIndex .= turnIndex
   applyMoves moves
   cityGrowth turnIndex
   tileGrowth turnIndex
   swampLoss turnIndex
 
-incrementTurn :: SimulateMonadConstraints m => m ()
-incrementTurn =  #turnIndex . _TurnIndex += 1
 
 increment :: Int -> Grid -> Grid
 increment i = singular

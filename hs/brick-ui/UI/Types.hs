@@ -2,15 +2,13 @@ module UI.Types where
 
 import Types
 import qualified Brick as Brick
--- Types
+import Brick.Forms
 
--- | Ticks mark passing of time
---
--- the app's custom event type
-data Tick = Tick
+
+type CustomEvent = ()
 
 -- | Named resources
-data Name = GridView
+data Name = GridView | JumpToTurn
   deriving (Eq, Ord, Show)
 
 type Widget = Brick.Widget Name
@@ -20,5 +18,6 @@ data AppState = AppState
   { history :: History
   , turnIndex :: TurnIndex
   , replay :: Replay
+  , jumpToTurn :: Form TurnIndex CustomEvent Name
   }
   deriving stock (Generic)
