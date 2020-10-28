@@ -2,6 +2,7 @@ import Node.FFI
 import Types
 import UI
 import UI.Types
+import UI.Forms
 import Generals.Replay.Simulate
 
 import Brick.Main (defaultMain)
@@ -17,10 +18,11 @@ main = do
   history <- toHistory replay
 
   let turnIndex = TurnIndex 0
+  let jumpToTurnForm = newJumpToTurnForm turnIndex
   _ <- defaultMain app $ AppState
     { history
-    , replay
     , turnIndex
-    , jumpToTurn = jumpToTurnForm turnIndex
+    , replay
+    , jumpToTurnForm
     }
   pure ()

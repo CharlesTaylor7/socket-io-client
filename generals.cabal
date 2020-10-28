@@ -120,4 +120,5 @@ executable generals-brick-ui
     , UI.Types
     , UI.Attrs
     , UI.Events
-
+    , UI.Views
+    , UI.Forms
