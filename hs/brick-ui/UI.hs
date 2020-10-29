@@ -1,7 +1,6 @@
 module UI where
 
 import Prelude hiding (Empty, on)
-import Types
 import Control.Lens.Unsafe
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)

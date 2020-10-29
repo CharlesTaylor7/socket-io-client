@@ -15,6 +15,9 @@
 #### UI
 - colors don't pop out enough
   make army counts bolder
+- choose more distinct colors
+- mark generals with standout or underline
+- add player roster to the left hand side
 
 #### Replays
 - replay management

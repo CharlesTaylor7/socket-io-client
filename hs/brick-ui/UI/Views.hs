@@ -20,15 +20,16 @@ import qualified Brick.Grid as Grid
 import qualified Data.Text as T
 
 import UI.Types
-import UI.Attrs (terrainAttr)
+import UI.Attrs (ownerAttr, terrainAttr)
 
 
 drawUI :: AppState -> [Widget]
 drawUI appState =
-  [ center $ header <=> grid
+  [ hCenter $ header <=> grid
   ]
   where
     header = drawHeader appState
+    playerStats = drawPlayerStats appState
     history = appState ^. #history
     turn = appState ^. #turnIndex . _TurnIndex
 
@@ -56,14 +57,8 @@ drawTile :: MonadReader GridStyle m => Tile -> m (Text, AttrName)
 drawTile tile = do
   cellWidth <- view #cellWidth
   pure
-    $ (tile ^. contents cellWidth, tile ^. ownerAttr <> tile ^. to terrainAttr)
+    $ (tile ^. contents cellWidth, (ownerAttr <> terrainAttr) tile)
   where
-    ownerAttr :: Fold Tile AttrName
-    ownerAttr =
-      (_Owner . #_Player . to (+1) . to show . to ("player" <>) . to attrName)
-      `failing`
-      like "neutral"
-
     contents w =
       (_Army . #size . from (non 0) . _Just . to showArmyCount)
       `failing`
@@ -111,3 +106,6 @@ drawGrid  = do
     hCenter $
     cached GridView $
       gridContent
+
+drawPlayerStats :: AppState -> Widget
+drawPlayerStats appState = txt "hello, world!"
