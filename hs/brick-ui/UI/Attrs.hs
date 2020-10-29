@@ -6,6 +6,8 @@ import Types
 import Brick
 import qualified Graphics.Vty as V
 
+
+
 rgbColor :: Word8 -> Word8 -> Word8 -> V.Color
 rgbColor = V.rgbColor @Word8
 
@@ -25,17 +27,18 @@ gridAttrMap = attrMap V.defAttr $
         ([1..] :: [Int])
 
 playerAttributes :: [V.Attr]
-playerAttributes =
-  [ fg V.brightBlue
-  , fg V.red
-  , fg V.green
-  , fg purple
-  , fg teal
-  , fg V.magenta
-  , fg V.cyan
-  , fg orange
-  ]
+playerAttributes = map (V.withStyle V.bold) colors
   where
+    colors =
+      [ fg V.brightBlue
+      , fg V.red
+      , fg V.green
+      , fg purple
+      , fg teal
+      , fg V.magenta
+      , fg V.cyan
+      , fg orange
+      ]
     teal = rgbColor 0 0x80 0x80
     purple = rgbColor 0x80 0 0x80
     orange = rgbColor 0xea 0x45 0x11

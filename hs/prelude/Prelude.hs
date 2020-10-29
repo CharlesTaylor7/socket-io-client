@@ -17,6 +17,7 @@ import Data.Traversable as X (for)
 import Data.Monoid as X (First(..), Last(..))
 import Text.Printf as X
 import System.IO as X (openFile)
+import Data.Bits as X ((.|.))
 
 -- relude
 import Relude as X hiding (Alt, (??), uncons, mapMaybe, id, toList)
