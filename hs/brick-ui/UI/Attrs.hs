@@ -27,7 +27,7 @@ gridAttrMap = attrMap V.defAttr $
         ([1..] :: [Int])
 
 playerAttributes :: [V.Attr]
-playerAttributes = map (V.withStyle V.bold) colors
+playerAttributes = map (`V.withStyle` V.bold) colors
   where
     colors =
       [ fg V.brightBlue
