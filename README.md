@@ -12,6 +12,10 @@
 - style replay toggle to make it clear which perspective is active
 - handle afks / surrenders
 
+#### UI
+- colors don't pop out enough
+  make army counts bolder
+
 #### Replays
 - replay management
   - delete a replay

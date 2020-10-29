@@ -15,6 +15,7 @@ common common
   ghc-options:
       -freverse-errors
       -ferror-spans
+      -fno-warn-name-shadowing
       -Werror=missing-home-modules
       -fwarn-incomplete-patterns
       -O0 -j2 +RTS -A128m -n2m -qg -RTS

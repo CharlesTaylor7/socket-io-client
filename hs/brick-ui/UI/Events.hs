@@ -40,14 +40,33 @@ handleEvent e@(VtyEvent (V.EvKey key [])) =
     -- advance replay
     V.KRight -> \s -> do
       invalidateCacheEntry GridView
-      continue $
-        s & #turnIndex . #_TurnIndex +~ 1
+      s <- flip execStateT s $ do
+        -- upper bound
+        (_, upper) <- gets turnBounds
+
+        -- bump turn
+        turn <- #turnIndex <%= (min upper) . (+ 1)
+
+        -- override form state
+        #jumpToTurnForm %= Brick.updateFormState turn
+
+      continue $ s
 
     -- rewind replay
     V.KLeft -> \s -> do
       invalidateCacheEntry GridView
-      continue $
-        s & #turnIndex . #_TurnIndex -~ 1
+      s <- flip execStateT s $ do
+        -- lower bound
+        (lower, _) <- gets turnBounds
+
+        -- bump turn
+        turn <- #turnIndex <%= (max lower) . (subtract 1)
+
+        -- override form state
+        #jumpToTurnForm %= Brick.updateFormState turn
+
+      continue $ s
+
     _ -> handleFormEvents e
 handleEvent e = handleFormEvents e
 
@@ -61,17 +80,18 @@ propagate form appState = do
   pure $ appState & #turnIndex .~ turn
 
 
+turnBounds :: AppState -> (TurnIndex, TurnIndex)
+turnBounds appState = do
+  let upper = appState ^. #history . to length . to (subtract 1)
+  (TurnIndex 0, TurnIndex upper)
+
+
 validateJumpToTurn :: AppState -> Brick.Form TurnIndex event name -> Brick.Form TurnIndex event name
 validateJumpToTurn appState form = do
-  let
-    lower = 0
-    upper = appState ^. #history . to length . to (subtract 1)
-    turn = Brick.formState form
-
-  case turn of
-    TurnIndex n
-      | n < lower -> Brick.updateFormState (TurnIndex lower) form
-      | n > upper -> Brick.updateFormState (TurnIndex upper) form
+  let (lower, upper) = turnBounds appState
+  case Brick.formState form of
+    n | n < lower -> Brick.updateFormState lower form
+      | n > upper -> Brick.updateFormState upper form
       | otherwise -> form
 
 
