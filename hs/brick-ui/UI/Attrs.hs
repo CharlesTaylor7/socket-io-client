@@ -12,15 +12,24 @@ rgbColor :: Word8 -> Word8 -> Word8 -> V.Color
 rgbColor = V.rgbColor @Word8
 
 gridAttrMap :: AttrMap
-gridAttrMap = attrMap V.defAttr $
-  playerAttributes <> tileAttributes <> playerAttributes
+gridAttrMap = attrMap V.defAttr
+  $  combinations playerAttributes ownedTerrainAttributes
+  <> combinations playerAttributes playerStatusAttributes
+  <> playerAttributes
   where
     grey = rgbColor 0x71 0x6f 0x6f
-    tileAttributes = do
-      (player, attr1) <- playerAttributes
-      (terrain, attr2) <- ownedTerrainAttributes
-      pure $ (player <> terrain, attr1 <> attr2)
 
+combinations :: Semigroup a => [a] -> [a] -> [a]
+combinations outer inner = do
+  outerItem <- outer
+  innerItem <- inner
+  pure $ outerItem <> innerItem
+
+playerStatusAttributes :: [(AttrName, V.Attr)]
+playerStatusAttributes =
+  [ ("alive", mempty)
+  , ("dead", mempty `V.withStyle` V.strikethrough)
+  ]
 
 playerAttributes :: [(AttrName, V.Attr)]
 playerAttributes =

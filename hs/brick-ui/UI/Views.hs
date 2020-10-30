@@ -116,10 +116,13 @@ drawPlayerStats = do
   owned <- view $ to currentGame . #owned
   let
     getPlayerNames i =
-      (usernames ^?! ix i $ "player index", attrName $ "player" <> show (i + 1))
+      ( usernames ^?! ix i $ "player index"
+      , (attrName $ "player" <> show (i + 1))
+        <> if (is _Nothing $ owned ^? at i) then "dead" else "alive"
+      )
 
     getTileCount i =
-      (owned ^?! (ix i . to Set.size . to show) $ "player index", "")
+      (owned ^?! (at i . non mempty . to Set.size . to show) $ "player index", "")
 
     -- getArmyCount i =
      -- (owned ^?! (ix i . to size) $ "player index", "")
@@ -128,7 +131,7 @@ drawPlayerStats = do
     gridStyle = GridStyle
       { borderStyle = unicodeRounded
       , cellWidth = 15
-      , gridWidth = 2
+      , gridWidth = 1
       , gridHeight = length usernames
       , toTile = \(i, j) ->
           case i of
