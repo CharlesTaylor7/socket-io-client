@@ -17,8 +17,6 @@
   - live or dead
   - number of tiles
   - number of armies
-- mark mountains
-- mark fog
 
 #### Replays
 - replay management

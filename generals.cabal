@@ -20,7 +20,8 @@ common common
     -ferror-spans
     -fno-warn-name-shadowing
     -Werror=missing-home-modules
-    -fwarn-incomplete-patterns
+    -Werror=incomplete-patterns
+    -Werror=missing-fields
     -O0 -j2 +RTS -A128m -n2m -qg -RTS
 
   default-extensions:

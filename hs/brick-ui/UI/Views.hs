@@ -14,7 +14,7 @@ import Brick.Widgets.Border.Style
 import Brick.Widgets.Center
 import Brick.Forms
 
-import Brick.Grid (GridStyle(..))
+import Brick.Grid (GridStyle(..), Padding(..))
 import qualified Brick.Grid as Grid
 
 import qualified Data.Text as T
@@ -33,34 +33,13 @@ drawUI appState =
   where
     header = drawHeader appState
     playerStats = drawPlayerStats appState
-    history = appState ^. #history
-    turn = appState ^. #turnIndex . _TurnIndex
-
-    grid = flip runReader gridStyle $ drawGrid
-
-    game :: GameInfo
-    game = history ^?! ix turn $ "history index"
-
-    toTile :: (Int, Int) -> Tile
-    toTile (i, j) = game ^?! #grid . #_Grid . ix (j * width + i) $ "grid index"
-
-    width = game ^. #replay . #mapWidth
-    height = game ^. #replay . #mapHeight
-
-    gridStyle = GridStyle
-      { borderStyle = unicode
-      , cellWidth = 4
-      , gridWidth = width
-      , gridHeight = height
-      , toTile = flip runReader gridStyle . drawTile . toTile
-      }
+    grid = drawGrid appState
 
 -- | Draw tile
-drawTile :: MonadReader GridStyle m => Tile -> m (Text, AttrName)
+drawTile :: Tile -> (Text, AttrName)
 drawTile tile = do
-  cellWidth <- view #cellWidth
-  pure
-    $ (tile ^. contents cellWidth, (ownerAttr <> terrainAttr) tile)
+  let cellWidth = 4
+  (tile ^. contents cellWidth, (ownerAttr <> terrainAttr) tile)
   where
     contents w =
       (_Army . #size . from (non 0) . _Just . to showArmyCount)
@@ -109,14 +88,31 @@ drawHeader = do
       titleWidget <+> paddingWidget <+> turnInputWidget
 
 
-drawGrid :: MonadReader GridStyle m => m Widget
-drawGrid  = do
-  gridContent <- reader Grid.drawGrid
+drawGrid :: AppState -> Widget
+drawGrid = do
+  game <- asks currentGame
+  let
+    width = game ^. #replay . #mapWidth
+    height = game ^. #replay . #mapHeight
+
+    toTile :: (Int, Int) -> Tile
+    toTile (i, j) = game ^?! #grid . #_Grid . ix (j * width + i) $ "grid index"
+
+    gridStyle = GridStyle
+      { borderStyle = unicode
+      , gridWidth = width
+      , gridHeight = height
+      , padding = PadLeft
+      }
+
+    gridContent = Grid.drawGrid (drawTile . toTile) gridStyle
+
   pure $
     viewport GridView Scroll.Vertical $
     hCenter $
     cached GridView $
       gridContent
+
 
 drawPlayerStats :: AppState -> Widget
 drawPlayerStats = do
@@ -134,18 +130,16 @@ drawPlayerStats = do
 
     -- getArmyCount i =
      -- (owned ^?! (ix i . to size) $ "player index", "")
-
-  let
-    gridStyle = GridStyle
-      { borderStyle = unicodeRounded
-      , cellWidth = 15
-      , gridWidth = 1
-      , gridHeight = length usernames
-      , toTile = \(i, j) ->
+    toTile = \(i, j) ->
           case i of
             0 -> getPlayerNames j
-      --      2 -> getArmyCount j
+     --      2 -> getArmyCount j
+    gridStyle = GridStyle
+      { borderStyle = unicodeRounded
+      , gridWidth = 1
+      , gridHeight = length usernames
+      , padding = PadRight
       }
 
   pure $
-    Grid.drawGrid gridStyle
+    Grid.drawGrid toTile gridStyle
