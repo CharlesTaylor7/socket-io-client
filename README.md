@@ -15,8 +15,9 @@
 #### UI
 - add player roster to the left hand side
   - live or dead
-  - number of tiles
-  - number of armies
+  - label columns
+  - justify numbers to the right
+  - justify names to the left
 
 #### Replays
 - replay management
