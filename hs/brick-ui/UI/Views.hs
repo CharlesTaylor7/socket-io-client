@@ -117,8 +117,11 @@ drawGrid = do
 drawPlayerStats :: AppState -> Widget
 drawPlayerStats = do
   usernames <- view $ #replay . #usernames
-  owned <- view $ to currentGame . #owned
+  game <- asks currentGame
   let
+    owned = game ^. #owned
+    grid  = game ^. #grid
+
     getPlayerNames i =
       ( usernames ^?! ix i $ "player index"
       , (attrName $ "player" <> show (i + 1))
@@ -126,17 +129,32 @@ drawPlayerStats = do
       )
 
     getTileCount i =
-      (owned ^?! (at i . non mempty . to Set.size . to show) $ "player index", "")
+      (owned ^?! (at i . non mempty . to Set.size . to show) $ "player index", mempty)
 
-    -- getArmyCount i =
-     -- (owned ^?! (ix i . to size) $ "player index", "")
+    getArmyCount i =
+      (show $ totalArmies i, mempty)
+
+    totalArmies playerId =
+      owned
+        & sumOf
+          ( ix playerId
+          . folding Set.toList
+          . to (\i -> grid ^? #_Grid . ix i)
+          . _Just
+          . _Army
+          . #size
+          )
+
     toTile = \(i, j) ->
-          case i of
-            0 -> getPlayerNames j
-     --      2 -> getArmyCount j
+      case i of
+        0 -> getPlayerNames j
+        1 -> getTileCount j
+        2 -> getArmyCount j
+        otherwise -> error ""
+
     gridStyle = GridStyle
       { borderStyle = unicodeRounded
-      , gridWidth = 1
+      , gridWidth = 3
       , gridHeight = length usernames
       , padding = PadRight
       }
