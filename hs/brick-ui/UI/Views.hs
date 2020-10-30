@@ -27,8 +27,7 @@ import qualified Data.IntSet as Set
 
 drawUI :: AppState -> [Widget]
 drawUI appState =
-  [ playerStats
-  , hCenter $ header <=> grid
+  [ playerStats <+> ( hCenter $ header <=> grid)
   ]
   where
     header = drawHeader appState
