@@ -65,6 +65,14 @@ drawTile tile = do
     contents w =
       (_Army . #size . from (non 0) . _Just . to showArmyCount)
       `failing`
+      (#_Mountain . like " ^^ ")
+      `failing`
+      (#_Swamp . like " vv ")
+      `failing`
+      (#_Fog_Clear . like " ~~ ")
+      `failing`
+      (#_Fog_Obstacle . like "~^^~")
+      `failing`
       like (T.replicate w " ")
 
 -- | show army count in 4 characters

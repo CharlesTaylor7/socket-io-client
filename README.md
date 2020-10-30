@@ -13,14 +13,12 @@
 - handle afks / surrenders
 
 #### UI
-- colors don't pop out enough
-  make army counts bolder
-- choose more distinct colors
-- mark generals with standout or underline
 - add player roster to the left hand side
   - live or dead
   - number of tiles
   - number of armies
+- mark mountains
+- mark fog
 
 #### Replays
 - replay management

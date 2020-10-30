@@ -28,7 +28,7 @@ combinations outer inner = do
 playerStatusAttributes :: [(AttrName, V.Attr)]
 playerStatusAttributes =
   [ ("alive", mempty)
-  , ("dead", mempty `V.withStyle` V.strikethrough)
+  , ("dead", bg V.black)
   ]
 
 playerAttributes :: [(AttrName, V.Attr)]
@@ -37,6 +37,7 @@ playerAttributes =
     (\color i -> (attrName $ "player" <> show i, fg color `V.withStyle` V.bold))
     colors
     ([1..] :: [Int])
+  & (("neutral", fg V.black `V.withStyle` V.bold) :)
   where
     colors =
       [ red
@@ -48,14 +49,14 @@ playerAttributes =
       , orange -- needs to be darker
       , teal   -- needs to be replaced
       ]
-    blue    = V.brightBlue
-    red     = V.red
-    cyan    = V.cyan
-    magenta = V.magenta
-    green   = rgbColor 0x2f 0xd2 0x49
-    purple  = rgbColor 0x80 0    0x80
-    teal    = rgbColor 0    0x80 0x80
-    orange  = rgbColor 0xff 0x6c 0x02
+blue    = V.brightBlue
+red     = V.red
+cyan    = V.cyan
+magenta = V.magenta
+green   = rgbColor 0x2f 0xd2 0x49
+purple  = rgbColor 0x80 0    0x80
+teal    = rgbColor 0    0x80 0x80
+orange  = rgbColor 0xff 0x6c 0x02
 
 ownedTerrainAttributes :: [(AttrName, V.Attr)]
 ownedTerrainAttributes =
