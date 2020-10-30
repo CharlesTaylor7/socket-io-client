@@ -121,7 +121,19 @@ drawPlayerStats = do
     owned = game ^. #owned
     grid  = game ^. #grid
 
-    getPlayerNames i =
+    statsGrid :: Map (Int, Int) (Text, AttrName)
+    statsGrid = flip execState mempty $ do
+      ifor headers $ \i h ->
+        at (i, 0) ?= (h, mempty)
+
+      for [1 .. length usernames] $ \j -> do
+        at (0, j) ?= getPlayerName j
+        at (1, j) ?= getTileCount j
+        at (2, j) ?= getArmyCount j
+
+    headers = ["username", "tiles", "armies"]
+
+    getPlayerName i =
       ( usernames ^?! ix i $ "player index"
       , (attrName $ "player" <> show (i + 1))
         <> if (is _Nothing $ owned ^? at i) then "dead" else "alive"
@@ -144,12 +156,7 @@ drawPlayerStats = do
           . #size
           )
 
-    toTile = \(i, j) ->
-      case i of
-        0 -> getPlayerNames j
-        1 -> getTileCount j
-        2 -> getArmyCount j
-        otherwise -> error ""
+    toTile = \c -> statsGrid ^?! ix c $ "index"
 
     gridStyle = GridStyle
       { borderStyle = unicodeRounded
