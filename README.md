@@ -18,6 +18,10 @@
 - choose more distinct colors
 - mark generals with standout or underline
 - add player roster to the left hand side
+  - player name & color
+  - live or dead
+  - number of tiles
+  - number of armies
 
 #### Replays
 - replay management

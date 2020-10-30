@@ -22,10 +22,13 @@ import qualified Data.Text as T
 import UI.Types
 import UI.Attrs (ownerAttr, terrainAttr)
 
+import qualified Data.IntSet as Set
+
 
 drawUI :: AppState -> [Widget]
 drawUI appState =
-  [ hCenter $ header <=> grid
+  [ playerStats
+  , hCenter $ header <=> grid
   ]
   where
     header = drawHeader appState
@@ -108,4 +111,30 @@ drawGrid  = do
       gridContent
 
 drawPlayerStats :: AppState -> Widget
-drawPlayerStats appState = txt "hello, world!"
+drawPlayerStats = do
+  usernames <- view $ #replay . #usernames
+  owned <- view $ to currentGame . #owned
+  let
+    getPlayerNames i =
+      (usernames ^?! ix i $ "player index", attrName $ "player" <> show (i + 1))
+
+    getTileCount i =
+      (owned ^?! (ix i . to Set.size . to show) $ "player index", "")
+
+    -- getArmyCount i =
+     -- (owned ^?! (ix i . to size) $ "player index", "")
+
+  let
+    gridStyle = GridStyle
+      { borderStyle = unicodeRounded
+      , cellWidth = 15
+      , gridWidth = 2
+      , gridHeight = length usernames
+      , toTile = \(i, j) ->
+          case i of
+            0 -> getPlayerNames j
+      --      2 -> getArmyCount j
+      }
+
+  pure $
+    Grid.drawGrid gridStyle

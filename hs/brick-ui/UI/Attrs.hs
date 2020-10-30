@@ -12,7 +12,8 @@ rgbColor :: Word8 -> Word8 -> Word8 -> V.Color
 rgbColor = V.rgbColor @Word8
 
 gridAttrMap :: AttrMap
-gridAttrMap = attrMap V.defAttr $ tileAttributes
+gridAttrMap = attrMap V.defAttr $
+  playerAttributes <> tileAttributes <> playerAttributes
   where
     grey = rgbColor 0x71 0x6f 0x6f
     tileAttributes = do
