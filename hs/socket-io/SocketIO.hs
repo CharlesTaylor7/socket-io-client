@@ -1,40 +1,32 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
 module SocketIO
-  ( GameServer(..)
-  , Bot(..)
-  , InputH
-  , OutputH
-  , newGame
+  ( SocketSend
+  , SocketReceive
   , connect
+  , send
+  , receive
   )
   where
 
 import Data.UUID (UUID)
 import Data.UUID.V4 (nextRandom)
+import Data.Text (Text)
+import System.IO
+import qualified Data.Aeson.Types as Json
 
 
-data GameServer = GameServer
-  { uuid :: UUID
-  }
+newtype SocketSend = SocketSend Handle
+newtype SocketReceive = SocketReceive Handle
 
-data Bot = Bot {}
-type InputH = ()
-type OutputH = ()
+newtype Url = Url Text
 
-newGame :: IO GameServer
-newGame = do
-  uuid <- nextRandom
-  pure GameServer { uuid }
+connect :: Url -> IO (SocketSend, SocketReceive)
+connect (Url server) = do
+  undefined
 
-connect :: Bot -> GameServer -> IO (InputH, OutputH)
-connect = undefined
+send :: SocketSend -> Json.Array -> IO ()
+send = undefined
 
-
-{--
- const [gameId, botIndex] = process.argv.slice(2)
- const { bots } = require('../bots.json')
- const bot = bots[botIndex]
-   socket.emit('set_username', bot.id, bot.name);
-   socket.emit('join_private', gameId, bot.id);
-  --}
-
+receive :: SocketReceive -> IO Json.Value
+receive = undefined
