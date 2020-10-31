@@ -98,6 +98,8 @@ library socket-io
       base >= 4.13 && < 5.0
     , process
     , text
+    , aeson
+    , uuid
   exposed-modules:
     SocketIO
 

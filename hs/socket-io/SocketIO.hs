@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module SocketIO
   ( GameServer(..)
   , Bot(..)
@@ -8,14 +9,22 @@ module SocketIO
   )
   where
 
+import Data.UUID (UUID)
+import Data.UUID.V4 (nextRandom)
 
-data GameServer = GameServer {}
+
+data GameServer = GameServer
+  { uuid :: UUID
+  }
+
 data Bot = Bot {}
 type InputH = ()
 type OutputH = ()
 
 newGame :: IO GameServer
-newGame = undefined
+newGame = do
+  uuid <- nextRandom
+  pure GameServer { uuid }
 
 connect :: Bot -> GameServer -> IO (InputH, OutputH)
 connect = undefined
