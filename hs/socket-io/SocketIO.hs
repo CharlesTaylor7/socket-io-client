@@ -28,3 +28,13 @@ newGame = do
 
 connect :: Bot -> GameServer -> IO (InputH, OutputH)
 connect = undefined
+
+
+{--
+ const [gameId, botIndex] = process.argv.slice(2)
+ const { bots } = require('../bots.json')
+ const bot = bots[botIndex]
+   socket.emit('set_username', bot.id, bot.name);
+   socket.emit('join_private', gameId, bot.id);
+  --}
+

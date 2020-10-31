@@ -1,23 +1,20 @@
 const Socket = require('socket.io-client');
 const socket = Socket('http://botws.generals.io');
 
-const onEvent = socket.onevent;
-socket.onevent = function (packet) {
-  const { data } = packet;
-  const eventName = data[0];
-  // Log packets that don't have event handlers
-  if (!socket._callbacks.hasOwnProperty(`$${eventName}`)) {
-    console.log("data", JSON.stringify(data))
-    console.log("packet", JSON.stringify(packet))
-  }
-  onEvent.call(this, packet);
-}
+socket.on('connect', function() {
+  process.stdout.write('connect')
+});
 
 socket.on('disconnect', function() {
-  notifyQuit('Disconnected from server.');
+  process.stdout.write('disconnect')
+  process.exit(1)
 });
 
-socket.on('connect', function() {
-  console.log('Connected to server.');
-});
+socket.onevent = function (packet) {
+  const { data } = packet;
+  process.stdout.write(JSON.stringify(data))
+}
 
+process.stdin.on('data', function(data) {
+  socket.emit(...JSON.parse(data.toString()))
+});
