@@ -1,6 +1,6 @@
 module Node.FFI (loadReplay) where
 
-import Types
+import Generals.Types
 import Generals.Replay.Decode
 
 import qualified Data.ByteString as BS

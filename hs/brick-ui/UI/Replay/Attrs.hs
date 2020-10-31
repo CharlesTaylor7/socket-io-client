@@ -1,11 +1,10 @@
 module UI.Replay.Attrs where
 
 import Prelude hiding (Empty, on)
-import Types
+import Generals.Types
 
 import Brick
 import qualified Graphics.Vty as V
-
 
 
 rgbColor :: Word8 -> Word8 -> Word8 -> V.Color

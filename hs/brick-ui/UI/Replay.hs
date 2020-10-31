@@ -2,7 +2,7 @@ module UI.Replay (runUI) where
 
 import Prelude hiding (Empty, on)
 import Control.Lens.Unsafe
-import Types
+import Generals.Types
 import Generals.Replay.Simulate (toHistory)
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)

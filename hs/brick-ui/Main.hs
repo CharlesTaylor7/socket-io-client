@@ -1,11 +1,12 @@
 import Node.FFI (loadReplay)
-import Types
+import Generals.Types
 import qualified UI.Replay as Replay
 
 
 
 main :: IO ()
 main = do
+  replayMain
   pure ()
 
 replayMain :: IO ()

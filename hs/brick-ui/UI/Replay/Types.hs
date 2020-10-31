@@ -1,6 +1,6 @@
 module UI.Replay.Types where
 
-import Types
+import Generals.Types
 import qualified Brick as Brick
 import Brick.Forms
 import Control.Lens.Unsafe ((^?!))

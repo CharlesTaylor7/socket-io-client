@@ -3,7 +3,7 @@ module UI.Replay.Events
   )
   where
 
-import Types
+import Generals.Types
 import UI.Replay.Types
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)

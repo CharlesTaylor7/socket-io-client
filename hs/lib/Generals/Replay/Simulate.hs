@@ -3,7 +3,7 @@ module Generals.Replay.Simulate
   )
   where
 
-import Types
+import Generals.Types
 
 import Control.Lens.Unsafe (singular)
 

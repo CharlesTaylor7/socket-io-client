@@ -1,4 +1,4 @@
-module Types where
+module Generals.Types where
 
 import Control.Lens.Unsafe (singular, (^?!))
 

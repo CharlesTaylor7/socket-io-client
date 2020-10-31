@@ -131,7 +131,7 @@ library generals-lib
       Node.FFI
     , Generals.Replay.Decode
     , Generals.Replay.Simulate
-    , Types
+    , Generals.Types
 
 executable brick-ui
   import: common
@@ -146,6 +146,8 @@ executable brick-ui
     , brick-grid
     , vty
     , text
+    -- local libraries
+    , socket-io
   ghc-options:
     -threaded -rtsopts -with-rtsopts=-N
     -Wall

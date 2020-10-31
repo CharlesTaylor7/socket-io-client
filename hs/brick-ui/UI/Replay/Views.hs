@@ -4,7 +4,7 @@ module UI.Replay.Views
   where
 
 import Prelude hiding (Empty, on)
-import Types
+import Generals.Types
 import Control.Lens.Unsafe
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)

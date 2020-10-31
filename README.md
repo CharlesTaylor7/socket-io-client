@@ -22,7 +22,8 @@
 #### Replays
 - replay management
   - delete a replay
-  - import a replay
+  - download a replay
+  - choose persistence layer?
 - autoplay
 
 #### Bots
