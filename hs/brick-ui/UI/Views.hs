@@ -123,10 +123,10 @@ drawPlayerStats = do
 
     statsGrid :: Map (Int, Int) (Text, AttrName)
     statsGrid = flip execState mempty $ do
-      ifor headers $ \i h ->
+      ifor_ headers $ \i h ->
         at (i, 0) ?= (h, mempty)
 
-      for [1 .. length usernames] $ \j -> do
+      for_ [1 .. length usernames] $ \j -> do
         at (0, j) ?= getPlayerName j
         at (1, j) ?= getTileCount j
         at (2, j) ?= getArmyCount j
@@ -171,7 +171,7 @@ drawPlayerStats = do
     gridStyle = GridStyle
       { borderStyle = unicodeRounded
       , gridWidth = 4
-      , gridHeight = 1 + length usernames
+      , gridHeight = 1 + (length usernames)
       , padding = PadRight
       }
 

@@ -27,16 +27,12 @@ type PreviewContext = Text
   & maybe (error message) identity
   where
     message =
-      "unsafePreview: expected atleast one target in context: "
+      "unsafePreview: expected at least one target in context: "
       <> context
 
 {-# INLINE (^?!)  #-}
 {-# WARNING (^?!) "Partial function; may throw impure exception" #-}
 
-
--- unsafePreview optic = (Unsafe.^?! optic)
--- {-# INLINE unsafePreview  #-}
--- {-# WARNING unsafePreview "Partial function; may throw impure exception" #-}
 
 type SingularContext = Text
 
@@ -72,10 +68,9 @@ unsafeOuts (BazaarT f) =
 
 unsafeUncons :: [a] -> (a, [a])
 unsafeUncons (x:xs) = (x, xs)
+unsafeUncons _ = error ""
 {-# INLINE unsafeUncons #-}
 
 wares :: BazaarT (->) g a b t -> [a]
 wares = toListOf $ getting bazaar
 {-# INLINE wares #-}
-
-
