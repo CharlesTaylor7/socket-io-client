@@ -92,14 +92,14 @@ library socket-io
     -Werror=incomplete-patterns
     -Werror=missing-fields
     -O0 -j2 +RTS -A128m -n2m -qg -RTS
-  hs-source-dir:
+  hs-source-dirs:
     hs/socket-io
   build-depends:
       base >= 4.13 && < 5.0
     , process
     , text
   exposed-modules:
-    SocketIO.hs
+    SocketIO
 
 
 library generals-lib
