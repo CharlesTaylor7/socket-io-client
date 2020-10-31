@@ -1,5 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE DeriveGeneric #-}
 module SocketIO
   ( SocketIO
@@ -11,19 +12,26 @@ module SocketIO
 
 import GHC.Generics (Generic)
 
+import Lens.Micro
+import Data.Generics.Labels
 import Data.UUID (UUID)
 import Data.UUID.V4 (nextRandom)
+
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Aeson.Types as Json
 
+import qualified Data.Aeson as Json
+import qualified Data.ByteString.Lazy as BS
 
+import Control.Concurrent.MVar
 import System.IO
 import System.Process
+
 
 data SocketIO = SocketIO
   { sendHandle    :: Handle
   , receiveHandle :: Handle
+  , writeLock     :: MVar ()
   }
   deriving (Generic)
 
@@ -38,11 +46,14 @@ connect (Url server) = do
       , std_out = CreatePipe
       , std_err = CreatePipe
       }
-
-  pure $ SocketIO stdin stdout
+  writeLock <- newEmptyMVar
+  pure $ SocketIO stdin stdout writeLock
 
 send :: SocketIO -> Json.Array -> IO ()
-send = undefined
+send socket payload = do
+  let handle = socket ^. #sendHandle
+  let bs = Json.encode payload <> "\n"
+  BS.hPut handle bs
 
 receive :: SocketIO -> IO Json.Value
 receive = undefined

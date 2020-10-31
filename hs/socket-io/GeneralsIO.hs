@@ -10,7 +10,7 @@ module GeneralsIO
   where
 
 import SocketIO
-import Data.Microlens
+import Lens.Micro
 import Data.Generics.Labels
 import GHC.Generics (Generic)
 
