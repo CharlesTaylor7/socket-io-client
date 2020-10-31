@@ -130,8 +130,9 @@ drawPlayerStats = do
         at (0, j) ?= getPlayerName j
         at (1, j) ?= getTileCount j
         at (2, j) ?= getArmyCount j
+        at (3, j) ?= getKilledBy j
 
-    headers = ["username", "tiles", "armies"]
+    headers = ["username", "tiles", "armies", "killed by"]
 
     getPlayerName i =
       ( usernames ^?! ix i $ "player index"
@@ -156,12 +157,21 @@ drawPlayerStats = do
           . #size
           )
 
+    getKilledBy i = do
+      let kill = game ^? #kills . folded . filtered ((== i) . (view #mark))
+      case kill of
+        Just k ->
+          ( k ^. #turn . to show
+          , attrName ("player" <> k ^. #killer . to (+1) . to show) <> "general"
+          )
+        Nothing -> mempty
+
     toTile = \c -> statsGrid ^?! ix c $ "index"
 
     gridStyle = GridStyle
       { borderStyle = unicodeRounded
-      , gridWidth = 3
-      , gridHeight = length usernames
+      , gridWidth = 4
+      , gridHeight = 1 + length usernames
       , padding = PadRight
       }
 

@@ -189,7 +189,10 @@ applyMoves moves =
   >>= traverse_ applyKill . view _2
 
 applyKill :: SimulateMonadConstraints m => Kill -> m ()
-applyKill kill@(Kill killer target) = do
+applyKill kill = do
+  let killer = kill ^. #killer
+  let target = kill ^. #mark
+
   -- remove all territory belonging to target
   maybe_territory <- #owned . at target <<.= Nothing
 
@@ -271,9 +274,8 @@ moveReducer move = do
     -- read player ids
     killer <- newOwner ^?? #_Player $ "Kill: killer"
     mark <- defendingPlayer ^?? #_Player $ "Kill: mark"
-
     -- emit kill
-    tell $ singleton $ Kill { killer, mark }
+    tell $ singleton $ Kill { killer, mark, turn = move ^. #turn }
     -- convert conquered general to a city
     #grid . ixGrid (move ^. #endTile) . armyTileType .= City_Tile
 

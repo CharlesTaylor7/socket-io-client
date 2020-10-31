@@ -30,6 +30,7 @@ replayDir server =
   <>  ( case server of
           Server_Main -> "na"
           Server_Bot -> "bot"
+          _ -> error "impossible"
       )
   <> ".s3.amazonaws.com/"
 

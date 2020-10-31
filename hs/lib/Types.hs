@@ -82,6 +82,7 @@ armyTileType = lens getter setter
       City _ -> City_Tile
       General _ -> General_Tile
       Swamp _ -> Swamp_Tile
+      _ -> error "armyTileType get"
     setter s b = s ^?! _Army . to construct $ "armyTileType lens"
       where
         construct =
@@ -90,6 +91,7 @@ armyTileType = lens getter setter
             City_Tile -> City
             General_Tile -> General
             Swamp_Tile -> Swamp
+            _ -> error "armyTileType set"
 
 newtype GridIndex = GridIndex Int
   deriving newtype (Eq, Ord, FromJSON)
@@ -114,7 +116,8 @@ type Turns = [Turn]
 type History = Vector GameInfo
 
 data Kill = Kill
-  { killer :: Int
+  { turn   :: Int
+  , killer :: Int
   , mark   :: Int
   }
   deriving (Show, Eq, Generic)
