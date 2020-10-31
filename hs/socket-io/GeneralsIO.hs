@@ -7,10 +7,14 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DeriveAnyClass #-}
 module GeneralsIO
-  ( GameServer(..)
+  ( module SocketIO
+  , GameServer(..)
   , Bot(..)
+  , Client
   , newGame
-  , module SocketIO
+  , connect
+  , register
+  , join
   )
   where
 
@@ -30,8 +34,6 @@ import qualified SocketIO as Socket
 -- domain models
 type NumPlayers = Int
 
-type EventStream = [Json.Value]
-
 data GameServer = GameServer
   { uuid       :: UUID
   , numPlayers :: Int
@@ -47,14 +49,15 @@ data Bot = Bot
   deriving anyclass (Json.FromJSON)
 
 
-connect :: IO SocketIO
+connect :: IO (Client, EventStream)
 connect = Socket.connect generalsBotServer
   where
     generalsBotServer :: Url
     generalsBotServer = "http://botws.generals.io"
 
-register :: SocketIO -> Bot -> IO ()
-register socket bot = do
+
+register :: Bot -> Client -> IO ()
+register bot socket = do
   send socket $
       [ Json.String "set_username"
       , Json.String (bot ^. #id)
@@ -67,5 +70,6 @@ newGame numPlayers = do
   uuid <- nextRandom
   pure GameServer { uuid, numPlayers }
 
-join :: SocketIO -> GameServer -> Bot -> IO ()
+
+join :: GameServer -> Bot -> Client -> IO ()
 join = undefined

@@ -3,11 +3,11 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE DeriveGeneric #-}
 module SocketIO
-  ( SocketIO
-  , Url(..)
+  ( Client
+  , Url
+  , EventStream
   , connect
   , send
-  , receive
   )
   where
 
@@ -25,40 +25,49 @@ import qualified Data.ByteString.Lazy as BS
 import Control.Concurrent.MVar
 import System.IO
 import System.Process
+import Control.Exception (Exception, throwIO)
 
 
-data SocketIO = SocketIO
-  { sendHandle    :: Handle
-  , receiveHandle :: Handle
-  , writeLock     :: MVar ()
+data Client = Client
+  { handle :: Handle
+  , lock   :: MVar ()
   }
   deriving (Generic)
 
 
 type Url = String
 
-connect :: Url -> IO SocketIO
+-- lazy stream of socket events
+-- attempting to read the whole list will block the current thread
+-- so make sure to process events in a background thread
+type EventStream = [Json.Value]
+
+
+connect :: Url -> IO (Client, EventStream)
 connect server = do
   -- start the node process running the socket.io client
-  (Just stdin, Just stdout, Just stderr, _) <-
+  (Just stdin, Just stdout, _, _) <-
     createProcess (proc "node" ["js/new-socket-io", server])
       { std_in = CreatePipe
       , std_out = CreatePipe
       , std_err = CreatePipe
       }
-  -- set our handles to binary mode
+
+  events <- toEventStream stdout
+
+  -- set our input handle to binary mode
   hSetBinaryMode stdin True
-  hSetBinaryMode stdout True
-  hSetBinaryMode stderr True
 
-  -- initialize writelock
-  writeLock <- newMVar ()
-  pure $ SocketIO stdin stdout writeLock
+  -- initialize lock
+  lock <- newMVar ()
 
-send :: SocketIO -> Json.Array -> IO ()
+  pure $ (Client { handle = stdin, lock }, events)
+
+
+send :: Client -> Json.Array -> IO ()
 send socket payload = do
-  let handle = socket ^. #sendHandle
-  let lock = socket ^. #writeLock
+  let handle = socket ^. #handle
+  let lock = socket ^. #lock
   let bs = Json.encode payload
 
   -- Lazy bytestring put is not threadsafe, so we wrap it in an mvar write lock
@@ -68,11 +77,19 @@ send socket payload = do
   putMVar lock ()
 
 
-receive :: SocketIO -> IO [Either String Json.Value]
-receive socket = do
-  let handle = socket ^. #receiveHandle
+toEventStream :: Handle -> IO EventStream
+toEventStream handle = do
+  hSetBinaryMode handle True
   bs <- BS.hGetContents handle
-  pure $
-    bs
-      & BS.split (fromIntegral $ fromEnum $ '\n')
-      & map Json.eitherDecode'
+  bs
+    & BS.split (fromIntegral $ fromEnum $ '\n')
+    & traverse (throwLeft . Json.eitherDecode')
+
+data ParseError = ParseError String
+  deriving (Show)
+
+instance Exception ParseError
+
+throwLeft :: Either String a -> IO a
+throwLeft (Right a) = pure a
+throwLeft (Left str) = throwIO $ ParseError str

@@ -6,7 +6,7 @@ import Brick.Main
 import Brick.BChan
 import qualified Graphics.Vty as V
 
-import GeneralsIO
+import qualified GeneralsIO as G
 import Generals.Types
 
 import UI.Bot.Types
@@ -15,18 +15,25 @@ import UI.Bot.Events (handleEvent)
 import UI.Bot.Views (drawUI)
 
 
-runUI :: Bot -> IO AppState
-runUI bot = do
-  let initialState = AppState
-        { events    = []
-        , bot       = bot
-        , turnIndex = 0
-        }
+runUI :: G.Bot -> G.GameServer -> IO AppState
+runUI bot gameServer = do
+  -- connect to the generals server
+  (client, eventStream) <- G.connect
+
+  -- send the server events through the brick side channel
   customEventChannel <- newBChan 20
   forkIO $ do
-    pure ()
+    for_ eventStream $ \event ->
+      writeBChan customEventChannel event
 
-    -- writeBChan customEventChannel Tick
+  -- setup initial app state
+  let initialState = AppState
+        { events    = []
+        , turnIndex = 0
+        , bot
+        , gameServer
+        }
+
   let buildVty = V.mkVty V.defaultConfig
   initialVty <- buildVty
   customMain initialVty buildVty (Just customEventChannel) app initialState

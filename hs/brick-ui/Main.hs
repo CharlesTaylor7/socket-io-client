@@ -1,4 +1,4 @@
-import GeneralsIO (Bot)
+import qualified GeneralsIO as G
 import Generals.Types
 import Node.FFI (loadReplay)
 import Control.Lens.Unsafe
@@ -11,7 +11,7 @@ import qualified Data.ByteString.Lazy as BS
 
 
 data BotsEnv = BotsEnv
-  { bots :: [Bot]
+  { bots :: [G.Bot]
   }
   deriving stock (Generic)
   deriving anyclass (Json.FromJSON)
@@ -19,9 +19,13 @@ data BotsEnv = BotsEnv
 
 main :: IO ()
 main = do
+  gameServer <- G.newGame 2
+
   Right (bots :: BotsEnv) <- Json.eitherDecode' <$> BS.readFile "./bots.json"
 
-  Bot.runUI $ (bots ^?! #bots . ix 0 $ "bot index")
+  let bot = bots ^?! #bots . ix 0 $ "bot index"
+
+  Bot.runUI bot gameServer
   pure ()
 
 replayMain :: IO ()
