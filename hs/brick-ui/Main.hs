@@ -23,7 +23,7 @@ main = do
 
   Right (bots :: BotsEnv) <- Json.eitherDecode' <$> BS.readFile "./bots.json"
 
-  let bot = bots ^?! #bots . ix 0 $ "bot index"
+  let bot = bots ^?! #bots . ix 1 $ "bot index"
 
   Bot.runUI bot gameServer
   pure ()
