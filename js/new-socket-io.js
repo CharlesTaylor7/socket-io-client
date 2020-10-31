@@ -1,5 +1,6 @@
 const Socket = require('socket.io-client');
-const socket = Socket('http://botws.generals.io');
+const url = process.argv[2]
+const socket = Socket(url);
 
 socket.on('connect', function() {
   process.stdout.write('connect')

@@ -97,9 +97,11 @@ library socket-io
   build-depends:
       base >= 4.13 && < 5.0
     , process
+    , uuid
     , text
     , aeson
-    , uuid
+    , generic-lens
+    , microlens
   exposed-modules:
     SocketIO
 

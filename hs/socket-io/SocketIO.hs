@@ -1,8 +1,8 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 module SocketIO
-  ( SocketSend
-  , SocketReceive
+  ( SocketIO
   , connect
   , send
   , receive
@@ -15,18 +15,25 @@ import Data.Text (Text)
 import System.IO
 import qualified Data.Aeson.Types as Json
 
+import GHC.Generics (Generic)
 
-newtype SocketSend = SocketSend Handle
-newtype SocketReceive = SocketReceive Handle
+data SocketIO = SocketIO
+  { sendHandle    :: Handle
+  , receiveHandle :: Handle
+  }
+  deriving (Generic)
+
 
 newtype Url = Url Text
 
-connect :: Url -> IO (SocketSend, SocketReceive)
+connect :: Url -> IO SocketIO
 connect (Url server) = do
   undefined
 
-send :: SocketSend -> Json.Array -> IO ()
+send :: SocketIO -> Json.Array -> IO ()
 send = undefined
 
-receive :: SocketReceive -> IO Json.Value
+receive :: SocketIO -> IO Json.Value
 receive = undefined
+
+
