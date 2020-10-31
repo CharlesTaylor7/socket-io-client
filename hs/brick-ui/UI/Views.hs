@@ -127,10 +127,10 @@ drawPlayerStats = do
         at (i, 0) ?= (h, mempty)
 
       for_ [1 .. length usernames] $ \j -> do
-        at (0, j) ?= getPlayerName j
-        at (1, j) ?= getTileCount j
-        at (2, j) ?= getArmyCount j
-        at (3, j) ?= getKilledBy j
+        at (0, j) ?= getPlayerName (j - 1)
+        at (1, j) ?= getTileCount (j - 1)
+        at (2, j) ?= getArmyCount (j - 1)
+        at (3, j) ?= getKilledBy (j - 1)
 
     headers = ["username", "tiles", "armies", "killed by"]
 
@@ -141,7 +141,7 @@ drawPlayerStats = do
       )
 
     getTileCount i =
-      (owned ^?! (at i . non mempty . to Set.size . to show) $ "player index", mempty)
+      (owned ^. at i . non mempty . to Set.size . to show , mempty)
 
     getArmyCount i =
       (show $ totalArmies i, mempty)
@@ -161,7 +161,7 @@ drawPlayerStats = do
       let kill = game ^? #kills . folded . filtered ((== i) . (view #mark))
       case kill of
         Just k ->
-          ( k ^. #turn . to show
+          ( k ^. #turn . to (\t -> "turn " <> show t)
           , attrName ("player" <> k ^. #killer . to (+1) . to show) <> "general"
           )
         Nothing -> mempty
