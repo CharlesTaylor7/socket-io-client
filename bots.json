@@ -2,11 +2,13 @@
   "bots": [
     {
       "id": "223921",
-      "name": "[Bot] Batman"
+      "name": "[Bot] Batman",
+      "registered": false
     },
     {
       "id": "782321",
-      "name": "[Bot] Bane"
+      "name": "[Bot] Bane",
+      "registered": false
     }
   ]
 }

@@ -53,7 +53,7 @@ connect = Socket.connect generalsBotServer
     generalsBotServer :: Url
     generalsBotServer = "http://botws.generals.io"
 
-register :: SocketIO -> UnregisteredBot -> IO ()
+register :: SocketIO -> Bot -> IO ()
 register socket bot = do
   send socket $
       [ Json.String "set_username"
