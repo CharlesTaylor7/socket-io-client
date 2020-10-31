@@ -1,18 +1,29 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns #-}
 module GeneralsIO
+{--
   ( GameServer(..)
   , Bot(..)
   , newGame
   )
+--}
   where
 
-import SocketIO
+import GHC.Generics (Generic)
+
 import Lens.Micro
 import Data.Generics.Labels
-import GHC.Generics (Generic)
+import Data.UUID (UUID)
+import Data.UUID.V4 (nextRandom)
+import Data.Text (Text)
+import qualified Data.Aeson as Json
+
+import SocketIO
+
 
 -- domain model
 type NumPlayers = Int
@@ -41,15 +52,16 @@ data RegistrationError
   | BotNameIsTaken
   | BotNameMustStartWithBot
 
+
 register :: SocketIO -> UnregisteredBot -> IO (Either RegistrationError Bot)
 register socket bot = do
   send socket $
-    Json.Array
-      [ String "set_username"
-      , String (bot ^. #id)
-      , String (bot ^. #name)
+      [ Json.String "set_username"
+      , Json.String (bot ^. #id)
+      , Json.String (bot ^. #name)
       ]
 
+  pure $ undefined
  -- receive socket
 
 newGame :: NumPlayers -> IO GameServer
@@ -62,5 +74,5 @@ join = undefined
 
 -- implementation
 
-generalsBotServer :: Text
+generalsBotServer :: Url
 generalsBotServer = "http://botws.generals.io"

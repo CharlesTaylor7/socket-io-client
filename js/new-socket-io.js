@@ -18,6 +18,6 @@ socket.onevent = function (packet) {
 }
 
 process.stdin.on('data', function(data) {
-  json = JSON.parse(data.toString())
-  socket.emit(...JSON.parse(data.toString()))
+  args = JSON.parse(data.toString())
+  socket.emit(...args)
 });

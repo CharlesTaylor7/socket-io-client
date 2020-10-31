@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module SocketIO
   ( SocketIO
+  , Url(..)
   , connect
   , send
   , receive
@@ -14,8 +15,6 @@ import GHC.Generics (Generic)
 
 import Lens.Micro
 import Data.Generics.Labels
-import Data.UUID (UUID)
-import Data.UUID.V4 (nextRandom)
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -36,18 +35,18 @@ data SocketIO = SocketIO
   deriving (Generic)
 
 
-newtype Url = Url Text
+type Url = String
 
 connect :: Url -> IO SocketIO
-connect (Url server) = do
+connect server = do
   -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, _) <-
-    createProcess (proc "node" ["js/new-socket-io", T.unpack server])
+    createProcess (proc "node" ["js/new-socket-io", server])
       { std_in = CreatePipe
       , std_out = CreatePipe
       , std_err = CreatePipe
       }
-  -- set ours handles to binary mode
+  -- set our handles to binary mode
   hSetBinaryMode stdin True
   hSetBinaryMode stdout True
   hSetBinaryMode stderr True
@@ -70,6 +69,8 @@ send socket payload = do
 
 
 receive :: SocketIO -> IO Json.Value
-receive = do
-  hGet
-  undefined
+receive socket = do
+  let handle = socket ^. #receiveHandle
+  bs <- BS.hGetContents handle
+  let Right v = Json.eitherDecode' bs
+  pure v

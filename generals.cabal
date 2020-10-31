@@ -104,7 +104,10 @@ library socket-io
     , microlens
     , bytestring
   exposed-modules:
-    SocketIO
+      SocketIO
+    , GeneralsIO
+  other-modules:
+      Main
 
 
 library generals-lib
