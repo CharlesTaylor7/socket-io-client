@@ -23,9 +23,7 @@
 - replay management
   - delete a replay
   - import a replay
-- loading animation while replay loads
-- advance replay back & forward
-- controls menu
+- autoplay
 
 #### Bots
 - Port old bot client to Haskell

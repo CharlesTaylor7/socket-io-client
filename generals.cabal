@@ -73,13 +73,33 @@ library generals-prelude
     , containers
     , mtl
     , data-default
-    , these
-    , semialign
     , generic-monoid
   exposed-modules:
       Prelude
     , Control.Lens.Unsafe
     , Control.Lens.Safe
+
+library socket-io
+  default-language: Haskell2010
+  -- Faster linking https://stackoverflow.com/questions/43243322/how-to-link-with-the-gnu-gold-linker-instead-of-ld-in-haskell?answertab=oldest#tab-top
+  ld-options:  -fuse-ld=gold
+  ghc-options:
+    -optl-fuse-ld=gold
+    -freverse-errors
+    -ferror-spans
+    -fno-warn-name-shadowing
+    -Werror=missing-home-modules
+    -Werror=incomplete-patterns
+    -Werror=missing-fields
+    -O0 -j2 +RTS -A128m -n2m -qg -RTS
+  hs-source-dir:
+    hs/socket-io
+  build-depends:
+      base >= 4.13 && < 5.0
+    , process
+  exposed-modules:
+    SocketIO.hs
+
 
 library generals-lib
   import: common
