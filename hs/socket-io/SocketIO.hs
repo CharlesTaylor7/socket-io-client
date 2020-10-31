@@ -12,7 +12,7 @@ module SocketIO
   where
 
 import GHC.Generics (Generic)
-
+import Data.Word (Word8)
 import Lens.Micro
 import Data.Generics.Labels
 
@@ -68,9 +68,11 @@ send socket payload = do
   putMVar lock ()
 
 
-receive :: SocketIO -> IO Json.Value
+receive :: SocketIO -> IO [Either String Json.Value]
 receive socket = do
   let handle = socket ^. #receiveHandle
   bs <- BS.hGetContents handle
-  let Right v = Json.eitherDecode' bs
-  pure v
+  pure $
+    bs
+      & BS.split (fromIntegral $ fromEnum $ '\n')
+      & map Json.eitherDecode'

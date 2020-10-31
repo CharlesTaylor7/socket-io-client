@@ -7,10 +7,14 @@ import SocketIO
 import GeneralsIO
 
 import qualified Data.Aeson as Json
+import Data.Foldable
+import Data.Traversable
 
 
 main :: IO ()
 main = do
   socket <- connect generalsBotServer
   send socket [Json.String "hey", Json.Number 3]
-  receive socket
+  vals <- receive socket
+
+  for_ vals $ print
