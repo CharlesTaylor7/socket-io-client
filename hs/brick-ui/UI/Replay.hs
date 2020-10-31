@@ -1,4 +1,4 @@
-module UI where
+module UI.Replay where
 
 import Prelude hiding (Empty, on)
 import Control.Lens.Unsafe
@@ -15,10 +15,10 @@ import qualified Brick.Grid as Grid
 
 import qualified Data.Text as T
 
-import UI.Types
-import UI.Attrs (gridAttrMap)
-import UI.Events (handleEvent)
-import UI.Views (drawUI)
+import UI.Replay.Types
+import UI.Replay.Attrs (gridAttrMap)
+import UI.Replay.Events (handleEvent)
+import UI.Replay.Views (drawUI)
 
 -- App definition
 app :: App AppState CustomEvent Name

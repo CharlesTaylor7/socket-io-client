@@ -150,9 +150,9 @@ executable generals-brick-ui
     -threaded -rtsopts -with-rtsopts=-N
     -Wall
   other-modules:
-      UI
-    , UI.Types
-    , UI.Attrs
-    , UI.Events
-    , UI.Views
-    , UI.Forms
+    , UI.Replay
+    , UI.Replay.Types
+    , UI.Replay.Attrs
+    , UI.Replay.Events
+    , UI.Replay.Views
+    , UI.Replay.Forms
