@@ -153,9 +153,15 @@ executable brick-ui
     -Wall
   other-modules:
       UI.Bot
+    , UI.Bot.Types
+    , UI.Bot.Attrs
+    , UI.Bot.Events
+    , UI.Bot.Views
+    , UI.Bot.Forms
     , UI.Replay
     , UI.Replay.Types
     , UI.Replay.Attrs
     , UI.Replay.Events
     , UI.Replay.Views
     , UI.Replay.Forms
+    , UI.Core.Attrs
