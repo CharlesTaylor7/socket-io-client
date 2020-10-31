@@ -40,12 +40,19 @@ newtype Url = Url Text
 
 connect :: Url -> IO SocketIO
 connect (Url server) = do
+  -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, _) <-
     createProcess (proc "node" ["js/new-socket-io", T.unpack server])
       { std_in = CreatePipe
       , std_out = CreatePipe
       , std_err = CreatePipe
       }
+  -- set ours handles to binary mode
+  hSetBinaryMode stdin True
+  hSetBinaryMode stdout True
+  hSetBinaryMode stderr True
+
+  -- initialize writelock
   writeLock <- newMVar ()
   pure $ SocketIO stdin stdout writeLock
 
@@ -63,4 +70,6 @@ send socket payload = do
 
 
 receive :: SocketIO -> IO Json.Value
-receive = undefined
+receive = do
+  hGet
+  undefined

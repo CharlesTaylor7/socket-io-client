@@ -14,8 +14,10 @@ socket.on('disconnect', function() {
 socket.onevent = function (packet) {
   const { data } = packet;
   process.stdout.write(JSON.stringify(data))
+  process.stdout.write("\n")
 }
 
 process.stdin.on('data', function(data) {
+  json = JSON.parse(data.toString())
   socket.emit(...JSON.parse(data.toString()))
 });
