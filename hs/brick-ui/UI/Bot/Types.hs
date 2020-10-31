@@ -1,11 +1,12 @@
 module UI.Bot.Types where
 
-import Generals.Types
 import qualified Brick as Brick
-import Brick.Forms
-import Control.Lens.Unsafe ((^?!))
 
-type CustomEvent = ()
+import GeneralsIO (Bot)
+import Generals.Types
+import Control.Lens.Unsafe ((^?!))
+import qualified Data.Aeson as Json
+
 
 -- | Named resources
 data Name
@@ -15,21 +16,15 @@ data Name
   | JumpToTurnInput
   deriving (Eq, Ord, Show)
 
+type SocketEvent = Json.Value
 
 type Widget = Brick.Widget Name
 
 
 data AppState = AppState
-  { history :: History
-  , turnIndex :: TurnIndex
-  , replay :: Bot
-  , jumpToTurnForm :: Form TurnIndex CustomEvent Name
+  { events    :: !(Seq SocketEvent)
+  , turnIndex :: !TurnIndex
+  , bot       :: !Bot
+  -- grid :: Grid
   }
   deriving stock (Generic)
-
-currentGame :: AppState -> GameInfo
-currentGame = do
-  history <- view #history
-  turn <- view $ #turnIndex . _TurnIndex
-  pure $
-    history ^?! ix turn $ "History turn index"

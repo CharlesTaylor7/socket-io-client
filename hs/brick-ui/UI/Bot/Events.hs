@@ -15,7 +15,7 @@ import qualified Graphics.Vty as V
 scrollAmount :: Int
 scrollAmount = 3
 
-handleEvent :: BrickEvent Name CustomEvent -> AppState -> EventM Name (Next AppState)
+handleEvent :: BrickEvent Name SocketEvent -> AppState -> EventM Name (Next AppState)
 handleEvent e@(VtyEvent (V.EvKey key [])) =
   case key of
     V.KEsc -> halt

@@ -4,13 +4,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module GeneralsIO
-{--
   ( GameServer(..)
   , Bot(..)
   , newGame
+  , module SocketIO
   )
---}
   where
 
 import GHC.Generics (Generic)
@@ -22,7 +23,8 @@ import Data.UUID.V4 (nextRandom)
 import Data.Text (Text)
 import qualified Data.Aeson as Json
 
-import SocketIO
+import SocketIO hiding (connect)
+import qualified SocketIO as Socket
 
 
 -- domain models
@@ -36,26 +38,22 @@ data GameServer = GameServer
   }
   deriving (Generic)
 
-data UnregisteredBot = UnregisteredBot
-  { id         :: Text
-  , name       :: Text
-  }
-  deriving (Generic)
-
 data Bot = Bot
   { id         :: Text
   , name       :: Text
   , registered :: Bool
   }
   deriving (Generic)
-
-data RegistrationError
-  = BotIsAlreadyRegistered
-  | BotNameIsTaken
-  | BotNameMustStartWithBot
+  deriving anyclass (Json.FromJSON)
 
 
-register :: SocketIO -> UnregisteredBot -> IO (Either RegistrationError Bot)
+connect :: IO SocketIO
+connect = Socket.connect generalsBotServer
+  where
+    generalsBotServer :: Url
+    generalsBotServer = "http://botws.generals.io"
+
+register :: SocketIO -> UnregisteredBot -> IO ()
 register socket bot = do
   send socket $
       [ Json.String "set_username"
@@ -63,8 +61,6 @@ register socket bot = do
       , Json.String (bot ^. #name)
       ]
 
-  pure $ undefined
- -- receive socket
 
 newGame :: NumPlayers -> IO GameServer
 newGame numPlayers = do
@@ -73,8 +69,3 @@ newGame numPlayers = do
 
 join :: SocketIO -> GameServer -> Bot -> IO ()
 join = undefined
-
--- implementation
-
-generalsBotServer :: Url
-generalsBotServer = "http://botws.generals.io"

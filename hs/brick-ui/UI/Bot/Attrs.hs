@@ -3,8 +3,6 @@ module UI.Bot.Attrs
   , gridAttrMap
   )
   where
-  )
-  where
 
 import Prelude hiding (Empty, on)
 import Generals.Types
@@ -20,5 +18,3 @@ gridAttrMap = attrMap V.defAttr
   $  combinations playerAttributes ownedTerrainAttributes
   <> combinations playerAttributes playerStatusAttributes
   <> playerAttributes
-  where
-    grey = rgbColor 0x71 0x6f 0x6f

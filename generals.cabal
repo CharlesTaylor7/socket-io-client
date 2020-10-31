@@ -106,8 +106,6 @@ library socket-io
   exposed-modules:
       SocketIO
     , GeneralsIO
-  other-modules:
-      Main
 
 
 library generals-lib
@@ -146,6 +144,9 @@ executable brick-ui
     , brick-grid
     , vty
     , text
+    , aeson
+    , bytestring
+    , lens-aeson
     -- local libraries
     , socket-io
   ghc-options:
