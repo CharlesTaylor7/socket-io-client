@@ -25,8 +25,10 @@ import qualified Data.Aeson as Json
 import SocketIO
 
 
--- domain model
+-- domain models
 type NumPlayers = Int
+
+type EventStream = [Json.Value]
 
 data GameServer = GameServer
   { uuid       :: UUID

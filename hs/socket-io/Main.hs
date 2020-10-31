@@ -17,4 +17,7 @@ main = do
   send socket [Json.String "hey", Json.Number 3]
   vals <- receive socket
 
+  putStrLn "begin blocking"
   for_ vals $ print
+
+  putStrLn "end blocking"
