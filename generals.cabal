@@ -97,6 +97,7 @@ library socket-io
   build-depends:
       base >= 4.13 && < 5.0
     , process
+    , text
   exposed-modules:
     SocketIO.hs
 
