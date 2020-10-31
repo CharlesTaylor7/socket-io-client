@@ -16,6 +16,11 @@ scrollAmount :: Int
 scrollAmount = 3
 
 handleEvent :: BrickEvent Name SocketEvent -> AppState -> EventM Name (Next AppState)
+handleEvent (AppEvent js) = \s -> do
+  s
+  & events %~ (`snoc` js)
+  & continue
+
 handleEvent e@(VtyEvent (V.EvKey key [])) =
   case key of
     V.KEsc -> halt
