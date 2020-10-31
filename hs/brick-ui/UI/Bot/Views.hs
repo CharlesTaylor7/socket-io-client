@@ -27,5 +27,9 @@ import qualified Data.IntSet as Set
 
 drawUI :: AppState -> [Widget]
 drawUI appState =
-  [ center $ txt "hello world"
+  [
+    appState ^.. #events . folded
+    & map (\event -> txt $ show event)
+    & vBox
+    & center
   ]

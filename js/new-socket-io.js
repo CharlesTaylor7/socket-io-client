@@ -6,11 +6,6 @@ const socket = Socket(url);
 socket.on('connect', function() {
   process.stdout.write('"connect"')
   process.stdout.write('\n')
-
-  setTimeout(function() {
-    process.stdout.write('"disconnect"')
-    process.exit(1)
-  }, 2000)
 });
 
 // forward diconnect event & exit process
