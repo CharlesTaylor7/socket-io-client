@@ -46,14 +46,21 @@ connect (Url server) = do
       , std_out = CreatePipe
       , std_err = CreatePipe
       }
-  writeLock <- newEmptyMVar
+  writeLock <- newMVar ()
   pure $ SocketIO stdin stdout writeLock
 
 send :: SocketIO -> Json.Array -> IO ()
 send socket payload = do
   let handle = socket ^. #sendHandle
-  let bs = Json.encode payload <> "\n"
+  let lock = socket ^. #writeLock
+  let bs = Json.encode payload
+
+  -- Lazy bytestring put is not threadsafe, so we wrap it in an mvar write lock
+  takeMVar lock
   BS.hPut handle bs
+  BS.hPut handle "\n"
+  putMVar lock ()
+
 
 receive :: SocketIO -> IO Json.Value
 receive = undefined
