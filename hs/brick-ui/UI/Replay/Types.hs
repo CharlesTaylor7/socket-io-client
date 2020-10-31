@@ -1,4 +1,4 @@
-module UI.Types where
+module UI.Replay.Types where
 
 import Types
 import qualified Brick as Brick

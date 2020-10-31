@@ -1,7 +1,9 @@
-module UI.Replay where
+module UI.Replay (runUI) where
 
 import Prelude hiding (Empty, on)
 import Control.Lens.Unsafe
+import Types
+import Generals.Replay.Simulate (toHistory)
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)
 import qualified Brick as Scroll (ViewportType(..))
@@ -19,8 +21,22 @@ import UI.Replay.Types
 import UI.Replay.Attrs (gridAttrMap)
 import UI.Replay.Events (handleEvent)
 import UI.Replay.Views (drawUI)
+import UI.Replay.Forms (newJumpToTurnForm)
 
--- App definition
+
+runUI :: Replay -> IO AppState
+runUI replay = do
+  history <- toHistory replay
+
+  let turnIndex = TurnIndex 0
+  let jumpToTurnForm = newJumpToTurnForm turnIndex
+  defaultMain app $ AppState
+    { history
+    , turnIndex
+    , replay
+    , jumpToTurnForm
+    }
+
 app :: App AppState CustomEvent Name
 app = App
   { appDraw = drawUI

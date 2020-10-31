@@ -133,7 +133,7 @@ library generals-lib
     , Generals.Replay.Simulate
     , Types
 
-executable generals-brick-ui
+executable brick-ui
   import: common
   main-is: Main.hs
   hs-source-dirs:
@@ -150,6 +150,7 @@ executable generals-brick-ui
     -threaded -rtsopts -with-rtsopts=-N
     -Wall
   other-modules:
+      UI.Bot
     , UI.Replay
     , UI.Replay.Types
     , UI.Replay.Attrs

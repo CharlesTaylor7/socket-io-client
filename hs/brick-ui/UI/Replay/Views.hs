@@ -1,4 +1,4 @@
-module UI.Views
+module UI.Replay.Views
   ( drawUI
   )
   where
@@ -19,8 +19,8 @@ import qualified Brick.Grid as Grid
 
 import qualified Data.Text as T
 
-import UI.Types
-import UI.Attrs (ownerAttr, terrainAttr)
+import UI.Replay.Types
+import UI.Replay.Attrs (ownerAttr, terrainAttr)
 
 import qualified Data.IntSet as Set
 

@@ -1,28 +1,19 @@
-import Node.FFI
+import Node.FFI (loadReplay)
 import Types
-import UI
-import UI.Types
-import UI.Forms
-import Generals.Replay.Simulate
+import qualified UI.Replay as Replay
 
-import Brick.Main (defaultMain)
 
 
 main :: IO ()
 main = do
+  pure ()
+
+replayMain :: IO ()
+replayMain = do
   replay <- loadReplay ReplayLocation
     { server = Server_Local
     , id = "rtQyMFIwv"
     }
 
-  history <- toHistory replay
-
-  let turnIndex = TurnIndex 0
-  let jumpToTurnForm = newJumpToTurnForm turnIndex
-  _ <- defaultMain app $ AppState
-    { history
-    , turnIndex
-    , replay
-    , jumpToTurnForm
-    }
+  _ <- Replay.runUI replay
   pure ()

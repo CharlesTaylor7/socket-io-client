@@ -1,4 +1,4 @@
-module UI.Attrs where
+module UI.Replay.Attrs where
 
 import Prelude hiding (Empty, on)
 import Types

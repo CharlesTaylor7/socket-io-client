@@ -1,9 +1,9 @@
-module UI.Forms where
+module UI.Replay.Forms where
 
 import Types
 import Brick.Forms (Form, newForm, editShowableField, setFormFocus)
 
-import UI.Types
+import UI.Replay.Types
 
 
 newJumpToTurnForm :: TurnIndex -> Form TurnIndex e Name

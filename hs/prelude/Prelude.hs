@@ -30,12 +30,6 @@ import Data.Sequence as X (Seq)
 -- vector
 import Data.Vector as X (Vector)
 
--- these
-import Data.These as X
-
--- semialign
-import Data.Align as X (Semialign, alignWith)
-
 -- data-default
 import Data.Default as X
 

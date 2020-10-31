@@ -352,11 +352,13 @@ applyPerspective (Perspective playerId) gameInfo =
     fog = Set.difference allTiles visible
 
     markFog :: Tile -> Tile
-    markFog (Clear _)   = Fog_Clear
-    markFog (General _) = Fog_Clear
-    markFog Mountain    = Fog_Obstacle
-    markFog (City _)    = Fog_Obstacle
-    markFog (Swamp _)   = Fog_Obstacle
+    markFog (Clear _)    = Fog_Clear
+    markFog (General _)  = Fog_Clear
+    markFog Fog_Clear    = Fog_Clear
+    markFog Mountain     = Fog_Obstacle
+    markFog (City _)     = Fog_Obstacle
+    markFog (Swamp _)    = Fog_Obstacle
+    markFog Fog_Obstacle = Fog_Obstacle
   in
     foldrOf
       members

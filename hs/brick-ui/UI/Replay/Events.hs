@@ -1,10 +1,10 @@
-module UI.Events
+module UI.Replay.Events
   ( handleEvent
   )
   where
 
 import Types
-import UI.Types
+import UI.Replay.Types
 
 import Brick hiding (Widget, Horizontal, Vertical, Both)
 import qualified Brick.Forms as Brick
