@@ -15,13 +15,16 @@ import GHC.Generics (Generic)
 import Data.Word (Word8)
 import Lens.Micro
 import Data.Generics.Labels
+import Control.Monad (unless)
 
 import Data.Text (Text)
 import qualified Data.Text as T
 
 import qualified Data.Aeson as Json
-import qualified Data.ByteString.Lazy as BS
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 
+import Pipes
 import Control.Concurrent.MVar
 import System.IO
 import System.Process
@@ -38,9 +41,7 @@ data Client = Client
 type Url = String
 
 -- lazy stream of socket events
--- attempting to read the whole list will block the current thread
--- so make sure to process events in a background thread
-type EventStream = [Json.Value]
+type EventStream = Producer Json.Value IO ()
 
 
 connect :: Url -> IO (Client, EventStream)
@@ -53,7 +54,7 @@ connect server = do
       , std_err = CreatePipe
       }
 
-  events <- toEventStream stdout
+  let events = toEventStream stdout
 
   -- set our input handle to binary mode
   hSetBinaryMode stdin True
@@ -72,18 +73,24 @@ send socket payload = do
 
   -- Lazy bytestring put is not threadsafe, so we wrap it in an mvar write lock
   takeMVar lock
-  BS.hPut handle bs
-  BS.hPut handle "\n"
+  BSL.hPut handle bs
+  BSL.hPut handle "\n"
   putMVar lock ()
 
 
-toEventStream :: Handle -> IO EventStream
+toEventStream :: Handle -> EventStream
 toEventStream handle = do
-  hSetBinaryMode handle True
-  bs <- BS.hGetContents handle
-  bs
-    & BS.split (fromIntegral $ fromEnum $ '\n')
-    & traverse (throwLeft . Json.eitherDecode')
+  liftIO $ hSetBinaryMode handle True
+  liftIO $ hSetBuffering handle LineBuffering
+  loop
+  where
+    loop :: EventStream
+    loop = do
+      eof <- liftIO $ hIsEOF handle
+      unless eof $ do
+        value <- liftIO $ BS.hGetLine handle >>= throwLeft . Json.eitherDecode' . BSL.fromStrict
+        yield value
+        loop
 
 data ParseError = ParseError String
   deriving (Show)

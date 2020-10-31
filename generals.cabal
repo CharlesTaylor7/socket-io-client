@@ -103,6 +103,7 @@ library socket-io
     , generic-lens
     , microlens
     , bytestring
+    , pipes
   exposed-modules:
       SocketIO
     , GeneralsIO
@@ -141,14 +142,14 @@ executable brick-ui
     , generals-lib
     , containers
     , brick
-    , brick-grid
     , vty
     , text
     , aeson
     , bytestring
-    , lens-aeson
-    -- local libraries
+    , pipes
+    -- own libraries
     , socket-io
+    , brick-grid
   ghc-options:
     -threaded -rtsopts -with-rtsopts=-N
     -Wall
