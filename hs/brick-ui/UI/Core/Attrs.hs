@@ -1,4 +1,4 @@
-module UI.Replay.Attrs where
+module UI.Core.Attrs where
 
 import Prelude hiding (Empty, on)
 import Generals.Types
@@ -6,17 +6,20 @@ import Generals.Types
 import Brick
 import qualified Graphics.Vty as V
 
-
+-- colors
 rgbColor :: Word8 -> Word8 -> Word8 -> V.Color
 rgbColor = V.rgbColor @Word8
 
-gridAttrMap :: AttrMap
-gridAttrMap = attrMap V.defAttr
-  $  combinations playerAttributes ownedTerrainAttributes
-  <> combinations playerAttributes playerStatusAttributes
-  <> playerAttributes
-  where
-    grey = rgbColor 0x71 0x6f 0x6f
+grey    = rgbColor 0x71 0x6f 0x6f
+blue    = V.brightBlue
+red     = V.red
+cyan    = V.cyan
+magenta = V.magenta
+green   = rgbColor 0x2f 0xd2 0x49
+purple  = rgbColor 0x80 0    0x80
+teal    = rgbColor 0    0x80 0x80
+orange  = rgbColor 0xff 0x6c 0x02
+
 
 combinations :: Semigroup a => [a] -> [a] -> [a]
 combinations outer inner = do
@@ -48,15 +51,6 @@ playerAttributes =
       , orange -- needs to be darker
       , teal   -- needs to be replaced
       ]
-blue    = V.brightBlue
-red     = V.red
-cyan    = V.cyan
-magenta = V.magenta
-green   = rgbColor 0x2f 0xd2 0x49
-purple  = rgbColor 0x80 0    0x80
-teal    = rgbColor 0    0x80 0x80
-orange  = rgbColor 0xff 0x6c 0x02
-
 ownedTerrainAttributes :: [(AttrName, V.Attr)]
 ownedTerrainAttributes =
   [ ("clear",    mempty)

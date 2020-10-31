@@ -1,4 +1,4 @@
-module UI.Replay.Views
+module UI.Bot.Views
   ( drawUI
   )
   where
@@ -19,8 +19,8 @@ import qualified Brick.Grid as Grid
 
 import qualified Data.Text as T
 
-import UI.Replay.Types
-import UI.Replay.Attrs (ownerAttr, terrainAttr)
+import UI.Bot.Types
+import UI.Bot.Attrs (ownerAttr, terrainAttr)
 
 import qualified Data.IntSet as Set
 
@@ -74,7 +74,7 @@ drawHeader = do
 
   let
     dimensions = show width <> "x" <> show height
-    titleWidget = txt $ "Replay " <> dimensions
+    titleWidget = txt $ "Bot " <> dimensions
     paddingWidget = txt $ T.replicate 20 " "
     turnInputWidget =
       (txt ("Jump to: ") <+>) $

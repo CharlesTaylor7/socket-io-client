@@ -1,4 +1,4 @@
-module UI.Replay.Types where
+module UI.Bot.Types where
 
 import Generals.Types
 import qualified Brick as Brick
@@ -22,7 +22,7 @@ type Widget = Brick.Widget Name
 data AppState = AppState
   { history :: History
   , turnIndex :: TurnIndex
-  , replay :: Replay
+  , replay :: Bot
   , jumpToTurnForm :: Form TurnIndex CustomEvent Name
   }
   deriving stock (Generic)
