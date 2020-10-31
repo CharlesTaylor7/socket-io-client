@@ -315,3 +315,51 @@ attack attacking defending
   | otherwise
   = defending & #size -~ attacking ^. #size
 
+
+applyPerspective
+  :: Perspective
+  -> GameInfo
+  -> Grid
+applyPerspective Global gameInfo =
+  gameInfo ^. #grid
+
+applyPerspective (Perspective playerId) gameInfo =
+  let
+    -- check tile & each of its 8 neighbors in the player owned cached
+    allTiles :: IntSet
+    allTiles = fromList [0 .. gameInfo ^. #numTiles - 1]
+
+    owned :: IntSet
+    owned = gameInfo ^. #owned . ix playerId
+
+    visible :: IntSet
+    visible = owned ^. members . to visibleFrom . to fromList
+
+    visibleFrom :: Int -> [Int]
+    visibleFrom i =
+      let
+        w = gameInfo ^. #replay . #mapWidth
+        column = [i - w, i, i + w]
+        next = column <&> (+ 1)
+        prev = column <&> subtract 1
+      in
+        case i `rem` w of
+          0              -> column <> next
+          r | r == (w-1) -> column <> prev
+          _              -> column <> next <> prev
+
+    fog :: IntSet
+    fog = Set.difference allTiles visible
+
+    markFog :: Tile -> Tile
+    markFog (Clear _)   = Fog_Clear
+    markFog (General _) = Fog_Clear
+    markFog Mountain    = Fog_Obstacle
+    markFog (City _)    = Fog_Obstacle
+    markFog (Swamp _)   = Fog_Obstacle
+  in
+    foldrOf
+      members
+      (\tile -> _Grid . ix tile %~ markFog)
+      (gameInfo ^. #grid)
+      fog

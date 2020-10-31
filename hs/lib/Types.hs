@@ -213,8 +213,8 @@ instance Wrapped TurnIndex
 _TurnIndex :: Iso' TurnIndex Int
 _TurnIndex = _Wrapped'
 
+
 data Perspective
   = Global
   | Perspective Int
   deriving (Show, Eq)
-
