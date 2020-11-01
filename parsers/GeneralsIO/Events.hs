@@ -1,4 +1,5 @@
 {-# Language DeriveGeneric #-}
+{-# Language DuplicateRecordFields #-}
 module GeneralsIO.Events
   ( SetUsernameError(..)
   , SetUsernameResponse(..)
@@ -6,9 +7,33 @@ module GeneralsIO.Events
   where
 
 import GHC.Generics (Generic)
+
+import Data.Text (Text)
+import Data.Vector (Vector)
+
+import Data.Aeson (FromJson(..))
 import qualified Data.Aeson as Json
 
 
+-- | pre_game_start
+type PreGameStart = Json.Object
+
+-- | queue_update
+data QueueUpdate = QueueUpdate
+  { isForcing     :: Bool
+  , usernames     :: Json.Array
+  , map_title     :: Maybe Text
+  , teams         :: Vector Int
+  , lobbyIndex    :: Int
+  , playerIndices :: Vector Int
+  , numForce      :: Int
+  , numPlayers    :: Int
+  }
+  deriving (Generic)
+
+
+-- | error_set_username
+-- Note: this event is a misnomer. the generals protocol sends this event with an empty string when the username is valid
 data SetUsernameResponse
   = UsernameValid
   | UsernameTaken
