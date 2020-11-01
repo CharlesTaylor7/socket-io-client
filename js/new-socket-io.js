@@ -1,24 +1,27 @@
-const Socket = require('socket.io-client');
+const Socket = require('socket.io-client')
 const url = process.argv[2]
-const socket = Socket(url);
+const socket = Socket(url)
+
+function sendEvent(data) {
+  process.stdout.write(JSON.stringify(data))
+  process.stdout.write('\n')
+}
 
 // forward socket.io events to parent process
 socket.on('connect', function() {
-  process.stdout.write('"connect"')
-  process.stdout.write('\n')
+  sendEvent({'type': 'connect'})
 });
 
 // forward diconnect event & exit process
 socket.on('disconnect', function() {
-  process.stdout.write('"disconnect"')
+  sendEvent({'type': 'disconnect'})
   process.exit(1)
 });
 
 // forward other events
 socket.onevent = function (packet) {
   const { data } = packet;
-  process.stdout.write(JSON.stringify(data))
-  process.stdout.write("\n")
+  sendEvent(data)
 }
 
 // forward input from parent process to socket.io server
