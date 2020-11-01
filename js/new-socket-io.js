@@ -23,12 +23,15 @@ socket.on('disconnect', function() {
 });
 
 // forward other events
-onEventOriginal = socket.onevent
-socket.onevent = function (packet) {
+ const onEvent = socket.onevent;
+ socket.onevent = function (packet) {
   const { data } = packet
   sendEvent(data)
-
-  onEventOriginal(packet)
+  onEvent.call(this, packet)
+  // check if callback is registered
+  // if (!socket._callbacks.hasOwnProperty(`$${eventName}`)) {
+  //    console.log('Unhandled packet:', JSON.stringify(packet))
+  // }
 }
 
 // forward input from parent process to socket.io server
