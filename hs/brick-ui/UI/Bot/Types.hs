@@ -13,17 +13,20 @@ data Name
   = GridView
   deriving (Eq, Ord, Show)
 
-type SocketEvent = Json.Value
+data AppEvent
+  = GameEvent Json.Value
+  | ErrorEvent Text
+  deriving (Show)
 
 type Widget = Brick.Widget Name
 
 
 data AppState = AppState
-  { events     :: !(Seq SocketEvent)
+  { events     :: !(Seq AppEvent)
   , turnIndex  :: !TurnIndex
   , bot        :: !G.Bot
   , gameConfig :: !G.GameConfig
   , client     :: !G.Client
   -- grid :: Grid
   }
-  deriving stock (Generic)
+  deriving stock (Generic, Show)

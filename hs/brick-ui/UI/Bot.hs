@@ -20,16 +20,23 @@ import qualified Pipes
 runUI :: G.Bot -> G.GameConfig -> IO AppState
 runUI bot gameConfig = do
   -- connect to the generals server
-  (client, eventStream) <- G.connect
+  (client, eventStream, errorStream) <- G.connect
 
   -- send the server events through the brick side channel
   customEventChannel <- newBChan 20
-  forkIO $ Pipes.runEffect $ do
-    Pipes.for eventStream $ \(event :: SocketEvent) ->
-      liftIO $ writeBChan customEventChannel event
+
+  forkIO $ Pipes.runEffect $
+    Pipes.for errorStream $ \event -> liftIO $ do
+      print event
+      writeBChan customEventChannel (ErrorEvent event)
+
+  forkIO $ Pipes.runEffect $
+    Pipes.for eventStream $ \event -> liftIO $ do
+      print event
+      writeBChan customEventChannel (GameEvent event)
 
   -- setup initial app state
-  let initialState = AppState
+  let appState = AppState
         { events    = []
         , turnIndex = 0
         , bot
@@ -39,16 +46,18 @@ runUI bot gameConfig = do
 
   let buildVty = V.mkVty V.defaultConfig
   initialVty <- buildVty
-  customMain initialVty buildVty (Just customEventChannel) app initialState
+  customMain initialVty buildVty (Just customEventChannel) app appState
 
 
 startEvent :: AppState -> EventM n AppState
 startEvent appState = do
-  G.register (appState ^. #bot) (appState ^. #client)
+  let client = appState ^. #client
+  client & G.register (appState ^. #bot)
+  client & G.join (appState ^. #gameConfig) (appState ^. #bot)
   pure appState
 
 
-app :: App AppState SocketEvent Name
+app :: App AppState AppEvent Name
 app = App
   { appDraw = drawUI
   , appChooseCursor = neverShowCursor

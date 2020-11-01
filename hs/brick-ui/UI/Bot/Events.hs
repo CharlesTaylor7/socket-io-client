@@ -15,7 +15,7 @@ import qualified Graphics.Vty as V
 scrollAmount :: Int
 scrollAmount = 3
 
-handleEvent :: BrickEvent Name SocketEvent -> AppState -> EventM Name (Next AppState)
+handleEvent :: BrickEvent Name AppEvent -> AppState -> EventM Name (Next AppState)
 handleEvent (AppEvent js) = \s -> do
   s
   & #events %~ (`snoc` js)
