@@ -62,30 +62,3 @@ generalsBotServer :: Socket.Url
 generalsBotServer = "http://botws.generals.io"
 
 
-data SetUsernameError
-  = UsernameTaken
-  | UsernameTooLong
-  | UsernameMustBeginWithBot
-  | UsernameCannotBeChanged
-  | UsernameProfanity
-
--- | errors messages mapped to union
--- empty strings means the username was successfully chosen
-setUserNameErrors :: [(String, SetUsernameError)]
-setUserNameErrors =
-  [ ( "You already have a username! Only Supporters can change usernames."
-    , UsernameCannotBeChanged
-    )
-  , ( "Usernames of Bots must begin with [Bot]"
-    , UsernameMustBeginWithBot
-    )
-  , ( "Username too long."
-    , UsernameTooLong
-    )
-  , ( "This username is already taken."
-    , UsernameTaken
-    )
-  , ( "This username contains profanity."
-    , UsernameProfanity
-    )
-  ]
