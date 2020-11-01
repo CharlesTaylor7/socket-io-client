@@ -4,7 +4,6 @@ const socket = Socket(url)
 
 function sendEvent(data) {
   process.stdout.write(JSON.stringify(data))
-  process.stdout.write('\n')
 }
 
 // forward socket.io events to parent process
@@ -19,13 +18,16 @@ socket.on('disconnect', function() {
 });
 
 // forward other events
+onEventOriginal = socket.onevent
 socket.onevent = function (packet) {
-  const { data } = packet;
+  const { data } = packet
   sendEvent(data)
+
+  onEventOriginal(packet)
 }
 
 // forward input from parent process to socket.io server
 process.stdin.on('data', function(data) {
   args = JSON.parse(data.toString())
   socket.emit(...args)
-});
+})

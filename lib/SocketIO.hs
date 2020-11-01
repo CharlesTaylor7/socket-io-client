@@ -77,7 +77,7 @@ send (Client handle lock) payload = do
 toErrorStream :: Handle -> Producer BS.ByteString IO ()
 toErrorStream handle = do
   liftIO $ hSetBinaryMode handle True
-  liftIO $ hSetBuffering handle LineBuffering
+  liftIO $ hSetBuffering handle NoBuffering
 
   forever $ do
     value <- liftIO $ BS.hGetLine handle
@@ -87,7 +87,7 @@ toErrorStream handle = do
 toEventStream :: Handle -> EventStream
 toEventStream handle = do
   liftIO $ hSetBinaryMode handle True
-  liftIO $ hSetBuffering handle LineBuffering
+  liftIO $ hSetBuffering handle NoBuffering
   loop
   where
     loop = do
