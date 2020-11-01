@@ -3,9 +3,11 @@ const url = process.argv[2]
 const socket = Socket(url)
 
 
-function sendEvent(data) {
+function sendEvent(data, final=false) {
   process.stdout.write(JSON.stringify(data))
-  process.stdout.write("\n")
+  if (!final) {
+    process.stdout.write("\n")
+  }
 }
 
 
@@ -16,7 +18,7 @@ socket.on('connect', function() {
 
 // forward diconnect event & exit process
 socket.on('disconnect', function() {
-  sendEvent({'type': 'disconnect'})
+  sendEvent({'type': 'disconnect'}, true)
   process.exit(1)
 });
 
@@ -31,6 +33,11 @@ socket.onevent = function (packet) {
 
 // forward input from parent process to socket.io server
 process.stdin.on('data', function(data) {
-  const args = JSON.parse(data.toString())
+
+  process.stdout.write(data.toString())
+  process.stdout.write("\n")
+
+
+  const { args } = JSON.parse(data.toString())
   socket.emit(...args)
 })

@@ -38,13 +38,7 @@ main = do
       writeTBQueue eventChannel (ErrorEvent event)
 
 
-  let botId = "43216"
-  Socket.send client $
-    [ Json.String "set_username"
-    , Json.String botId
-    , Json.String "asdfqwerty.ew"
-    ]
-
+  let botId = "4321687"
   gameId <- UUID.nextRandom
   Socket.send client $
       [ Json.String "join_private"
@@ -53,7 +47,6 @@ main = do
       ]
 
   putStrLn $ "gameid: " <> show gameId
-
   -- print events to the main thread
   forever $ do
     event <- atomically $ readTBQueue eventChannel
@@ -61,9 +54,38 @@ main = do
 
 
 data SocketEvent
-  = ErrorEvent BS.ByteString
-  | GameEvent Json.Object
+  = ErrorEvent Socket.Error
+  | GameEvent Socket.Event
   deriving Show
 
 generalsBotServer :: Socket.Url
 generalsBotServer = "http://botws.generals.io"
+
+
+data SetUsernameError
+  = UsernameTaken
+  | UsernameTooLong
+  | UsernameMustBeginWithBot
+  | UsernameCannotBeChanged
+  | UsernameProfanity
+
+-- | errors messages mapped to union
+-- empty strings means the username was successfully chosen
+setUserNameErrors :: [(String, SetUsernameError)]
+setUserNameErrors =
+  [ ( "You already have a username! Only Supporters can change usernames."
+    , UsernameCannotBeChanged
+    )
+  , ( "Usernames of Bots must begin with [Bot]"
+    , UsernameMustBeginWithBot
+    )
+  , ( "Username too long."
+    , UsernameTooLong
+    )
+  , ( "This username is already taken."
+    , UsernameTaken
+    )
+  , ( "This username contains profanity."
+    , UsernameProfanity
+    )
+  ]

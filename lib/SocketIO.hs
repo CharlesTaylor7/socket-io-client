@@ -1,12 +1,14 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE DeriveGeneric #-}
 module SocketIO
   ( Client
   , Url
-  , EventStream
-  , ErrorStream
+  , Stream
+  , Event
+  , Error
   , connect
   , send
   )
@@ -30,8 +32,9 @@ import qualified Pipes.Prelude as Pipes
 
 type Url = String
 type Stream a = Producer a IO ()
-type EventStream = Stream Json.Object
-type ErrorStream = Stream BS.ByteString
+type Event = Either String Json.Value
+type Error = BS.ByteString
+
 
 data Client = Client
   { handle :: Handle
@@ -39,7 +42,7 @@ data Client = Client
   }
 
 
-connect :: Url -> IO (Client, EventStream, ErrorStream)
+connect :: Url -> IO (Client, Stream Event, Stream Error)
 connect server = do
   -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, _) <-
@@ -50,7 +53,7 @@ connect server = do
       }
 
   client <- mkClient stdin
-  let events = readLines stdout >-> Pipes.mapM toJsonValue
+  let events = readLines stdout >-> Pipes.map toJsonValue
   let errors = readLines stderr
 
   pure $ (client, events, errors)
@@ -66,7 +69,8 @@ mkClient handle = do
 
 
 send :: Client -> Json.Array -> IO ()
-send (Client handle lock) payload = do
+send (Client handle lock) args = do
+  let payload = Json.Object [("args", Json.Array args)]
   let bs = Json.encode payload
 
   -- Lazy bytestring put is not threadsafe,
@@ -104,15 +108,5 @@ getLineBS :: MonadIO m => Handle -> m BS.ByteString
 getLineBS = liftIO . BS.hGetLine
 
 
-toJsonValue :: BS.ByteString -> IO Json.Object
-toJsonValue = throwLeft . Json.eitherDecode' . BSL.fromStrict
-  where
-    throwLeft :: Either String a -> IO a
-    throwLeft (Right a) = pure a
-    throwLeft (Left str) = throwIO $ ParseError str
-
-
-data ParseError = ParseError String
-  deriving (Show)
-
-instance Exception ParseError
+toJsonValue :: BS.ByteString -> Either String Json.Value
+toJsonValue = Json.eitherDecode' . BSL.fromStrict
