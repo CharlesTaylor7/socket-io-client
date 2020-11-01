@@ -1,35 +1,6 @@
-# generals-bot
+# socket-io-client
+Socket.io client for Haskell.
 
-## Install for development
-- clone repo
-- cabal build
-- cabal run
+Right now this is just a light wrapper around the npm package [socket.io-client](https://www.npmjs.com/package/socket.io-client).
 
-## To do
-- Remove Node dependencies
-
-### Features
-- style replay toggle to make it clear which perspective is active
-- handle afks / surrenders
-
-#### UI
-- add player roster to the left hand side
-  - live or dead
-  - label columns
-  - justify numbers to the right
-  - justify names to the left
-
-#### Replays
-- replay management
-  - delete a replay
-  - download a replay
-  - choose persistence layer?
-- autoplay
-
-#### Bots
-- Port old bot client to Haskell
-- Hot reloading of bot strategies (strategies in haskell)
-
-### Debugging
-- debug menu for showing the game info cache
-- replace unsafe lens with alternatives that run in MonadError
+Eventually, I may try to reimplement the Socket.io protocol in Haskell.
