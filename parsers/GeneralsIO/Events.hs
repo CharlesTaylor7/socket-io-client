@@ -17,6 +17,29 @@ import Data.Aeson (FromJson(..))
 import qualified Data.Aeson as Json
 
 
+data Event
+  = QueueUpdate QueueUpdate
+  | ChatMessage ChatMessage
+  | Notify Notify
+  | PreGameStart PreGameStart
+  | GameStart GameStart
+  | GameWon GameWon
+  | GameLost GameLost
+  | GameOver GameOver
+  | Rank Rank
+  | Stars Stars
+  | ErrorUserId ErrorUserId
+  | ErrorBanned ErrorBanned
+  | ErrorSetUsername ErrorSetUsername
+  deriving (Generic)
+
+
+-- | rank
+type Rank = Json.Object
+
+-- | stars
+type Stars = Json.Object
+
 -- | pre_game_start
 type PreGameStart = Json.Object
 

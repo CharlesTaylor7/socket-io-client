@@ -11,12 +11,14 @@ import qualified Data.UUID.V4 as UUID
 import qualified Data.UUID as UUID
 import qualified Data.Aeson as Json
 import qualified Pipes
-import qualified SocketIO as Socket
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBQueue
+
+import qualified SocketIO as Socket
+import qualified GeneralsIO.Events as Event
 
 
 main :: IO ()
