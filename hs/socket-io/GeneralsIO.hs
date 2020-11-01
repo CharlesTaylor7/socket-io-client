@@ -6,6 +6,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 module GeneralsIO
   ( module SocketIO
   , GameConfig(..)
@@ -42,18 +43,18 @@ data GameConfig = GameConfig
   { id         :: UUID
   , numPlayers :: Int
   }
-  deriving (Generic)
+  deriving (Generic, Show)
 
 data Bot = Bot
   { id         :: Text
   , name       :: Text
   , registered :: Bool
   }
-  deriving (Generic)
+  deriving (Generic, Show)
   deriving anyclass (Json.FromJSON)
 
 
-connect :: MonadIO m => m (Client, EventStream)
+connect :: MonadIO m => m _
 connect = liftIO $ Socket.connect generalsBotServer
   where
     generalsBotServer :: Url

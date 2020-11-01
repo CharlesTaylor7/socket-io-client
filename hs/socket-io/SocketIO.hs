@@ -15,7 +15,7 @@ import GHC.Generics (Generic)
 import Data.Word (Word8)
 import Lens.Micro
 import Data.Generics.Labels
-import Control.Monad (unless)
+import Control.Monad (unless, forever)
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -23,46 +23,56 @@ import qualified Data.Text as T
 import qualified Data.Aeson as Json
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.Text.Encoding (decodeUtf8)
 
 import Pipes
 import Control.Concurrent.MVar
 import System.IO
 import System.Process
-import Control.Exception (Exception, throwIO)
+import Control.Exception (Exception, throwIO, catch)
 
 
 data Client = Client
   { handle :: Handle
   , lock   :: MVar ()
   }
-  deriving (Generic)
+  deriving (Generic, Show)
+
+instance Show (MVar a) where
+  show _ = "MVar"
 
 
 type Url = String
 
 -- lazy stream of socket events
 type EventStream = Producer Json.Value IO ()
+type ErrorStream = Producer Text IO ()
 
 
-connect :: Url -> IO (Client, EventStream)
+connect :: Url -> IO (Client, EventStream, ErrorStream)
 connect server = do
   -- start the node process running the socket.io client
-  (Just stdin, Just stdout, _, _) <-
+  (Just stdin, Just stdout, Just stderr, _) <-
     createProcess (proc "node" ["js/new-socket-io", server])
       { std_in = CreatePipe
       , std_out = CreatePipe
       , std_err = CreatePipe
       }
 
+  client <- mkClient stdin
   let events = toEventStream stdout
+  let errors = toErrorStream stderr
 
-  -- set our input handle to binary mode
+  pure $ (client, events, errors)
+
+
+mkClient :: Handle -> IO Client
+mkClient handle = do
   hSetBinaryMode stdin True
+  hSetBuffering stdin LineBuffering
 
-  -- initialize lock
   lock <- newMVar ()
-
-  pure $ (Client { handle = stdin, lock }, events)
+  pure $ Client { handle, lock }
 
 
 send :: Client -> Json.Array -> IO ()
@@ -78,13 +88,22 @@ send socket payload = do
   putMVar lock ()
 
 
+toErrorStream :: Handle -> Producer Text IO ()
+toErrorStream handle = do
+  liftIO $ hSetBinaryMode handle True
+  liftIO $ hSetBuffering handle LineBuffering
+
+  forever $ do
+    value <- liftIO $ BS.hGetLine handle
+    yield $ decodeUtf8 value
+
+
 toEventStream :: Handle -> EventStream
 toEventStream handle = do
   liftIO $ hSetBinaryMode handle True
   liftIO $ hSetBuffering handle LineBuffering
   loop
   where
-    loop :: EventStream
     loop = do
       eof <- liftIO $ hIsEOF handle
       unless eof $ do

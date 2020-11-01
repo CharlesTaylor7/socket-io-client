@@ -27,12 +27,10 @@ runUI bot gameConfig = do
 
   forkIO $ Pipes.runEffect $
     Pipes.for errorStream $ \event -> liftIO $ do
-      print event
       writeBChan customEventChannel (ErrorEvent event)
 
   forkIO $ Pipes.runEffect $
     Pipes.for eventStream $ \event -> liftIO $ do
-      print event
       writeBChan customEventChannel (GameEvent event)
 
   -- setup initial app state
@@ -53,7 +51,7 @@ startEvent :: AppState -> EventM n AppState
 startEvent appState = do
   let client = appState ^. #client
   client & G.register (appState ^. #bot)
-  client & G.join (appState ^. #gameConfig) (appState ^. #bot)
+  -- client & G.join (appState ^. #gameConfig) (appState ^. #bot)
   pure appState
 
 
