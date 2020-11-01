@@ -29,11 +29,7 @@ library
   build-depends:
       base >= 4.13 && < 5.0
     , process
-    , uuid
-    , text
     , aeson
-    , generic-lens
-    , microlens
     , bytestring
     , pipes
   exposed-modules:
@@ -49,11 +45,7 @@ executable demo
   build-depends:
       base >= 4.13 && < 5.0
     , socket-io-client
-    , process
-    , uuid
-    , text
-    , aeson
-    , generic-lens
-    , microlens
-    , bytestring
     , pipes
+    , aeson
+    , bytestring
+    , uuid

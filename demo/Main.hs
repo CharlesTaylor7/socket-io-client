@@ -1,85 +1,52 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-module GeneralsIO
-  ( module SocketIO
-  , GameConfig(..)
-  , Bot(..)
-  , Client
-  , newGame
-  , connect
-  , register
-  , join
-  )
-  where
-
-import GHC.Generics (Generic)
-import Control.Monad.IO.Class
-import Lens.Micro
-import Data.Generics.Labels
-
+module Main where
 import Data.UUID (UUID)
-import Data.UUID.V4 (nextRandom)
+import qualified Data.UUID.V4 as UUID
 import qualified Data.UUID as UUID
-
-import Data.Text (Text)
-import qualified Data.Text as T
 import qualified Data.Aeson as Json
-
-import SocketIO hiding (connect)
+import qualified Pipes
 import qualified SocketIO as Socket
 
-
--- domain models
-type NumPlayers = Int
-
-data GameConfig = GameConfig
-  { id         :: UUID
-  , numPlayers :: Int
-  }
-  deriving (Generic, Show)
-
-data Bot = Bot
-  { id         :: Text
-  , name       :: Text
-  , registered :: Bool
-  }
-  deriving (Generic, Show)
-  deriving anyclass (Json.FromJSON)
+import Control.Concurrent (forkIO)
 
 
-connect :: MonadIO m => m _
-connect = liftIO $ Socket.connect generalsBotServer
-  where
-    generalsBotServer :: Url
-    generalsBotServer = "http://botws.generals.io"
+main :: IO ()
+main = do
+  -- connect to the bot server
+  (client, events, errors) <- Socket.connect generalsBotServer
 
+  -- send the server events through the brick side channel
+  customEventChannel <- newBChan 20
 
-register :: MonadIO m => Bot -> Client -> m ()
-register bot socket = liftIO $ do
-  send socket $
-      [ Json.String "set_username"
-      , Json.String (bot ^. #id)
-      , Json.String (bot ^. #name)
-      ]
+  forkIO $ Pipes.runEffect $
+    Pipes.for errorStream $ \event -> liftIO $ do
+      writeBChan customEventChannel (ErrorEvent event)
 
+  forkIO $ Pipes.runEffect $
+    Pipes.for eventStream $ \event -> liftIO $ do
+      writeBChan customEventChannel (GameEvent event)
 
-newGame :: MonadIO m => NumPlayers -> m GameConfig
-newGame numPlayers = liftIO $ do
-  id <- nextRandom
-  pure GameConfig { id, numPlayers }
+  let botId = "43216"
+  Socket.send client $
+    [ Json.String "set_username"
+    , Json.String botId
+    , Json.String "asdfqwerty.ew"
+    ]
 
-
-join :: MonadIO m => GameConfig -> Bot -> Client -> m ()
-join config bot client = liftIO $ do
-  send client $
+  gameId <- UUID.nextRandom
+  Socket.send client $
       [ Json.String "join_private"
-      , Json.String (config ^. #id . to UUID.toText)
-      , Json.String (bot ^. #id)
+      , Json.String "demo-test-543" (UUID.toText gameId)
+      , Json.String botId
       ]
+
+  pure ()
+
+
+data SocketEvent
+  = ErrorEvent BS.ByteString
+  | NormalEvent Json.Object
+
+generalsBotServer :: Socket.Url
+generalsBotServer = "http://botws.generals.io"
