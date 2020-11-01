@@ -13,7 +13,10 @@ import qualified Data.Aeson as Json
 import qualified Pipes
 import qualified SocketIO as Socket
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TBQueue
 
 
 main :: IO ()
@@ -23,16 +26,17 @@ main = do
 
   -- send the server events through a channel
   -- customEventChannel <- newBChan 20
+  eventChannel <- atomically $ newTBQueue 100
 
   forkIO $ Pipes.runEffect $
-    Pipes.for errors $ \event -> liftIO $ do
-      print event
-      -- writeBChan customEventChannel (ErrorEvent event)
+    Pipes.for events $ \event -> liftIO $ atomically $ do
+      writeTBQueue eventChannel (GameEvent event)
+
 
   forkIO $ Pipes.runEffect $
-    Pipes.for events $ \event -> liftIO $ do
-      print event
-      -- writeBChan customEventChannel (GameEvent event)
+    Pipes.for errors $ \event -> liftIO $ atomically $ do
+      writeTBQueue eventChannel (ErrorEvent event)
+
 
   let botId = "43216"
   Socket.send client $
@@ -50,13 +54,16 @@ main = do
 
   putStrLn $ "gameid: " <> show gameId
 
-  -- keep main thread alive
-  forever $ pure ()
+  -- print events to the main thread
+  forever $ do
+    event <- atomically $ readTBQueue eventChannel
+    print event
 
 
 data SocketEvent
   = ErrorEvent BS.ByteString
   | GameEvent Json.Object
+  deriving Show
 
 generalsBotServer :: Socket.Url
 generalsBotServer = "http://botws.generals.io"

@@ -2,9 +2,12 @@ const Socket = require('socket.io-client')
 const url = process.argv[2]
 const socket = Socket(url)
 
+
 function sendEvent(data) {
   process.stdout.write(JSON.stringify(data))
+  process.stdout.write("\n")
 }
+
 
 // forward socket.io events to parent process
 socket.on('connect', function() {
@@ -28,6 +31,6 @@ socket.onevent = function (packet) {
 
 // forward input from parent process to socket.io server
 process.stdin.on('data', function(data) {
-  args = JSON.parse(data.toString())
+  const args = JSON.parse(data.toString())
   socket.emit(...args)
 })

@@ -49,3 +49,4 @@ executable demo
     , aeson
     , bytestring
     , uuid
+    , stm
