@@ -70,8 +70,7 @@ mkClient handle = do
 
 send :: Client -> Json.Array -> IO ()
 send (Client handle lock) args = do
-  let payload = Json.Object [("args", Json.Array args)]
-  let bs = Json.encode payload
+  let bs = Json.encode args
 
   -- Lazy bytestring put is not threadsafe,
   -- so we wrap it in a write lock

@@ -3,9 +3,9 @@ const url = process.argv[2]
 const socket = Socket(url)
 
 
-function sendEvent(data, final=false) {
+function sendEvent(data, options = { final: false }) {
   process.stdout.write(JSON.stringify(data))
-  if (!final) {
+  if (!options.final) {
     process.stdout.write("\n")
   }
 }
@@ -13,12 +13,12 @@ function sendEvent(data, final=false) {
 
 // forward socket.io events to parent process
 socket.on('connect', function() {
-  sendEvent({'type': 'connect'})
+  sendEvent(['connect'])
 });
 
 // forward diconnect event & exit process
 socket.on('disconnect', function() {
-  sendEvent({'type': 'disconnect'}, true)
+  sendEvent(['disconnect'], { final: true})
   process.exit(1)
 });
 
@@ -28,19 +28,10 @@ socket.on('disconnect', function() {
   const { data } = packet
   sendEvent(data)
   onEvent.call(this, packet)
-  // check if callback is registered
-  // if (!socket._callbacks.hasOwnProperty(`$${eventName}`)) {
-  //    console.log('Unhandled packet:', JSON.stringify(packet))
-  // }
 }
 
 // forward input from parent process to socket.io server
 process.stdin.on('data', function(data) {
-
-  process.stdout.write(data.toString())
-  process.stdout.write("\n")
-
-
-  const { args } = JSON.parse(data.toString())
+  const args = JSON.parse(data.toString())
   socket.emit(...args)
 })
