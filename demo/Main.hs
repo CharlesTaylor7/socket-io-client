@@ -2,7 +2,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import Control.Monad (unless, forever)
+import Control.Concurrent (forkIO)
 import Control.Monad.IO.Class (liftIO)
+
 import Data.UUID (UUID)
 import qualified Data.UUID.V4 as UUID
 import qualified Data.UUID as UUID
@@ -11,7 +14,6 @@ import qualified Pipes
 import qualified SocketIO as Socket
 import qualified Data.ByteString as BS
 
-import Control.Concurrent (forkIO)
 
 
 main :: IO ()
@@ -45,6 +47,8 @@ main = do
       , Json.String (UUID.toText gameId)
       , Json.String botId
       ]
+
+  putStrLn $ "gameid: " <> show gameId
 
   -- keep main thread alive
   forever $ pure ()
