@@ -9,7 +9,7 @@ import qualified Prelude
 import Control.Arrow ((|||))
 import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
-import System.Exit (ExitCode(..))
+import System.Exit (ExitCode(..), exitWith)
 
 import Data.Generics.Labels ()
 import Lens.Micro
@@ -65,6 +65,9 @@ main = do
   -- print events to the main thread
   Pipes.runEffect $ Pipes.for (pullFromQueue eventChannel) $ \event -> liftIO $ do
     case event of
+      ClientDied exitCode -> do
+        putStrLn $ "socket.io client process exited with " <> show exitCode
+        exitWith (ExitFailure 1)
       GameEvent generalsEvent ->
         case generalsEvent of
           QueueUpdate q ->
@@ -76,6 +79,7 @@ main = do
                 ]
           _ -> print generalsEvent
       _ -> print event
+
 
 data SocketOutput
   = GameEvent GeneralsIO.Event
