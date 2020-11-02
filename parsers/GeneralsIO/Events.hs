@@ -3,13 +3,7 @@
 {-# Language OverloadedLists #-}
 {-# Language OverloadedStrings #-}
 {-# Language NamedFieldPuns #-}
-module GeneralsIO.Events
-{--
-  ( SetUsernameError(..)
-  , SetUsernameResponse(..)
-  )
---}
-  where
+module GeneralsIO.Events where
 
 import GHC.Generics (Generic)
 
@@ -19,6 +13,7 @@ import qualified Data.Text as T
 
 import Data.Vector (Vector, (!?))
 import Data.HashMap.Strict (HashMap)
+import qualified Data.HashMap.Strict as HashMap
 
 import Data.Aeson
 import qualified Data.Aeson.Types as Json
@@ -45,13 +40,15 @@ data Event
 
 instance FromJSON Event where
   parseJSON = Json.withArray "Event" $ \v -> do
-    eventName <- v .@ 0 & traceShow v
+    eventName <- v .@ 0
     obj <- v .@ 1
 
     withContext (Json.Key eventName) $
       case eventName of
         "queue_update" -> QueueUpdate <$> parseJSON obj
         "chat_message" -> ChatMessage <$> parseJSON (Json.Array v)
+        "error_set_username" -> ErrorSetUsername <$> parseJSON obj
+
         _ -> fail $ "invalid event of: " <> T.unpack eventName
 
 withContext :: Json.JSONPathElement -> Json.Parser a -> Json.Parser a
@@ -141,6 +138,11 @@ data ErrorSetUsername
   | UsernameProfanity
   deriving (Generic, Show)
 
+instance FromJSON ErrorSetUsername where
+  parseJSON = withText "error_set_username" $ \v -> do
+      case usernameErrors HashMap.!? v of
+        Just e -> pure e
+        Nothing -> fail $ T.unpack v
 
 
 usernameErrors :: HashMap Text ErrorSetUsername

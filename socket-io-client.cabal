@@ -38,7 +38,7 @@ library
   exposed-modules:
       SocketIO
 
-library generals-io-parsers
+library generals-io-types
   import: common
   hs-source-dirs:
     parsers/
@@ -51,7 +51,7 @@ library generals-io-parsers
     , unordered-containers
   exposed-modules:
       GeneralsIO.Events
-      --, GeneralsIO.Commands
+    , GeneralsIO.Commands
       --, GeneralsIO.Replays
 
 
@@ -64,9 +64,11 @@ executable demo
   build-depends:
       base >= 4.13 && < 5.0
     , socket-io-client
-    , generals-io-parsers
+    , generals-io-types
     , pipes
     , aeson
     , bytestring
     , uuid
     , stm
+    , microlens
+    , generic-lens

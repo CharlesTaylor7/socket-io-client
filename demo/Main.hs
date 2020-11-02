@@ -1,12 +1,16 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedLabels #-}
 module Main where
 
 import Prelude hiding (print)
 import qualified Prelude
 
-import Control.Monad (forever)
+import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
+
+import Data.Generics.Labels ()
+import Lens.Micro
 
 import qualified Data.UUID.V4 as UUID
 import qualified Data.UUID as UUID
@@ -20,13 +24,15 @@ import qualified Pipes.Prelude as Pipes
 import Control.Concurrent.STM
 
 import qualified SocketIO as Socket
+
+import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 
 
 main :: IO ()
 main = do
   -- connect to the bot server
-  (client, output, errors) <- Socket.connect generalsBotServer
+  (socketEmit, output, errors) <- Socket.connect generalsBotServer
 
   -- send the server events through a channel
   eventChannel <- atomically $ newTBQueue 100
@@ -41,7 +47,9 @@ main = do
 
   let botId = "4321687"
   gameId <- UUID.nextRandom
-  Socket.send client $
+  let gameSize = 2
+
+  liftIO $ socketEmit
       [ Json.String "join_private"
       , Json.String (UUID.toText gameId)
       , Json.String botId
@@ -50,11 +58,17 @@ main = do
   putStrLn $ "gameid: " <> show gameId
 
   -- print events to the main thread
-  Pipes.runEffect $ Pipes.for (pullFromQueue eventChannel) $ \event -> do
+  Pipes.runEffect $ Pipes.for (pullFromQueue eventChannel) $ \event -> liftIO $ do
     case event of
       GameEvent (Right generalsEvent) ->
         case generalsEvent of
-
+          QueueUpdate q ->
+            when ((not $ q ^. #isForcing) && q ^. #numForce == gameSize) $
+              socketEmit
+                [ Json.String "set_force_start"
+                , Json.String (UUID.toText gameId)
+                , Json.Bool True
+                ]
           _ -> print generalsEvent
       _ -> print event
 

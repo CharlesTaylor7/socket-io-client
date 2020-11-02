@@ -4,11 +4,10 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE DeriveGeneric #-}
 module SocketIO
-  ( Client
-  , Url
+  ( Url
   , Stream
+  , SocketEmit
   , connect
-  , send
   )
   where
 
@@ -27,7 +26,7 @@ import Pipes
 
 type Url = String
 type Stream = Producer BS.ByteString IO ()
-
+type SocketEmit = Json.Array -> IO ()
 
 data Client = Client
   { handle :: Handle
@@ -35,7 +34,7 @@ data Client = Client
   }
 
 
-connect :: Url -> IO (Client, Stream, Stream)
+connect :: Url -> IO (SocketEmit, Stream, Stream)
 connect server = do
   -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, _) <-
@@ -49,7 +48,7 @@ connect server = do
   let events = readLines stdout
   let errors = readLines stderr
 
-  pure $ (client, events, errors)
+  pure $ (send client, events, errors)
 
 
 mkClient :: Handle -> IO Client
