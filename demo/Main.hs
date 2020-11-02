@@ -41,7 +41,7 @@ main = do
 
   -- write game events
   _ <- background $
-    output >-> Pipes.map ((ParserError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
+    output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
 
   -- write errors
   _ <- background $
@@ -67,7 +67,7 @@ main = do
     case event of
       ClientDied exitCode -> do
         putStrLn $ "socket.io client process exited with " <> show exitCode
-        exitWith (ExitFailure 1)
+        exitWith $ ExitFailure 1
       GameEvent generalsEvent ->
         case generalsEvent of
           QueueUpdate q ->
@@ -84,7 +84,7 @@ main = do
 data SocketOutput
   = GameEvent GeneralsIO.Event
   -- ^ generals event
-  | ParserError String
+  | ParseError String
   -- ^ error parsing generals event
   | ClientErrorLine BS.ByteString
   -- ^ line from stderr of socket client
@@ -96,6 +96,7 @@ data SocketOutput
 
 print :: (Show a, MonadIO m) => a -> m ()
 print = liftIO . Prelude.print
+
 
 background :: Effect IO () -> IO ThreadId
 background = forkIO . Pipes.runEffect
