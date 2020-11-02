@@ -1,5 +1,8 @@
 {-# Language DeriveGeneric #-}
 {-# Language DuplicateRecordFields #-}
+{-# Language OverloadedLists #-}
+{-# Language OverloadedStrings #-}
+{-# Language NamedFieldPuns #-}
 module GeneralsIO.Events
 {--
   ( SetUsernameError(..)
@@ -10,13 +13,20 @@ module GeneralsIO.Events
 
 import GHC.Generics (Generic)
 
+import Data.Function ((&))
 import Data.Text (Text)
-import Data.Vector (Vector)
+import qualified Data.Text as T
 
-import Data.Aeson (FromJson(..))
-import qualified Data.Aeson as Json
+import Data.Vector (Vector, (!?))
+import Data.HashMap.Strict (HashMap)
+
+import Data.Aeson
+import qualified Data.Aeson.Types as Json
+
+import Debug.Trace (traceShow)
 
 
+-- | Generals Event
 data Event
   = QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
@@ -31,47 +41,82 @@ data Event
   | ErrorUserId ErrorUserId
   | ErrorBanned ErrorBanned
   | ErrorSetUsername ErrorSetUsername
-  deriving (Generic)
+  deriving (Generic, Show)
 
+instance FromJSON Event where
+  parseJSON = Json.withArray "Event" $ \v -> do
+    eventName <- v .@ 0 & traceShow v
+    obj <- v .@ 1
+
+    withContext (Json.Key eventName) $
+      case eventName of
+        "queue_update" -> QueueUpdate <$> parseJSON obj
+        "chat_message" -> ChatMessage <$> parseJSON (Json.Array v)
+        _ -> fail $ "invalid event of: " <> T.unpack eventName
+
+withContext :: Json.JSONPathElement -> Json.Parser a -> Json.Parser a
+withContext = flip (<?>)
+
+-- helpers
+explicitParseAt :: (Json.Value -> Json.Parser a) -> Json.Array -> Int -> Json.Parser a
+explicitParseAt p array key =
+  case array !? key of
+    Nothing -> fail $ "key " ++ show key ++ " not found"
+    Just v  -> p v <?> Json.Index key
+
+(.@) :: FromJSON a => Json.Array -> Int -> Json.Parser a
+(.@) = explicitParseAt parseJSON
 
 -- | rank
-type Rank = Json.Object
+type Rank = Json.Value
 
 -- | stars
-type Stars = Json.Object
+type Stars = Json.Value
 
 -- | pre_game_start
-type PreGameStart = Json.Object
+type PreGameStart = Json.Value
 
 -- | notify
-type Notify = Json.Object
+type Notify = Json.Value
 
 -- | chat_message
-type ChatMessage = Json.Object
+data ChatMessage = MkChatMessage
+  { chatRoomId :: Text
+  , text :: Text
+  }
+  deriving (Show)
+
+instance FromJSON ChatMessage where
+  parseJSON = withArray "ChatMessage" $ \v -> do
+    chatRoomId <- v .@ 1
+    inner <- v .@ 2
+    text <- inner & withObject "inner" (.: "text")
+    pure $ MkChatMessage { chatRoomId, text }
+
 
 -- | error_user_id
-type ErrorUserId = Json.Object
+type ErrorUserId = Json.Value
 
 -- | error_banned
-type ErrorBanned = Json.Object
+type ErrorBanned = Json.Value
 
 -- | game_start
-type GameStart = Json.Object
+type GameStart = Json.Value
 
 -- | game_won
-type GameWon = Json.Object
+type GameWon = Json.Value
 
 -- | game_lost
-type GameLost = Json.Object
+type GameLost = Json.Value
 
 -- | game_over
-type GameOver = Json.Object
+type GameOver = Json.Value
 
 
 -- | queue_update
-data QueueUpdate = QueueUpdate
+data QueueUpdate = MkQueueUpdate
   { isForcing     :: Bool
-  , usernames     :: Json.Array
+  , usernames     :: Vector (Maybe Text)
   , map_title     :: Maybe Text
   , teams         :: Vector Int
   , lobbyIndex    :: Int
@@ -79,7 +124,9 @@ data QueueUpdate = QueueUpdate
   , numForce      :: Int
   , numPlayers    :: Int
   }
-  deriving (Generic)
+  deriving (Generic, Show)
+
+instance FromJSON QueueUpdate
 
 
 -- | error_set_username
@@ -92,13 +139,12 @@ data ErrorSetUsername
   | UsernameMustBeginWithBot
   | UsernameCannotBeChanged
   | UsernameProfanity
-  deriving (Generic)
+  deriving (Generic, Show)
 
 
--- | errors messages mapped to union
--- empty strings means the username was successfully chosen
-setUserNameResponses :: [(String, SetUsernameResponse)]
-setUserNameResponses =
+
+usernameErrors :: HashMap Text ErrorSetUsername
+usernameErrors =
   [ ( ""
     , UsernameValid
     )

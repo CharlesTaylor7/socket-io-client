@@ -46,6 +46,9 @@ library generals-io-parsers
       base >= 4.13 && < 5.0
     , aeson
     , bytestring
+    , vector
+    , text
+    , unordered-containers
   exposed-modules:
       GeneralsIO.Events
       --, GeneralsIO.Commands

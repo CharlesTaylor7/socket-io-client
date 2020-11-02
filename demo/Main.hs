@@ -2,43 +2,42 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Control.Monad (unless, forever)
-import Control.Concurrent (forkIO)
-import Control.Monad.IO.Class (liftIO)
+import Prelude hiding (print)
+import qualified Prelude
 
-import Data.UUID (UUID)
+import Control.Monad (forever)
+import Control.Concurrent (ThreadId, forkIO)
+
 import qualified Data.UUID.V4 as UUID
 import qualified Data.UUID as UUID
 import qualified Data.Aeson as Json
-import qualified Pipes
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 
+import Pipes
+import qualified Pipes.Prelude as Pipes
+
 import Control.Concurrent.STM
-import Control.Concurrent.STM.TBQueue
 
 import qualified SocketIO as Socket
-import qualified GeneralsIO.Events as Event
+import qualified GeneralsIO.Events as GeneralsIO
 
 
 main :: IO ()
 main = do
   -- connect to the bot server
-  (client, events, errors) <- Socket.connect generalsBotServer
+  (client, output, errors) <- Socket.connect generalsBotServer
 
   -- send the server events through a channel
-  -- customEventChannel <- newBChan 20
   eventChannel <- atomically $ newTBQueue 100
 
-  forkIO $ Pipes.runEffect $
-    Pipes.for events $ \event -> liftIO $ atomically $ do
-      writeTBQueue eventChannel (GameEvent event)
+  -- write game events
+  _ <- background $
+    output >-> Pipes.map (GameEvent . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
 
-
-  forkIO $ Pipes.runEffect $
-    Pipes.for errors $ \event -> liftIO $ atomically $ do
-      writeTBQueue eventChannel (ErrorEvent event)
-
+  -- write errors
+  _ <- background $
+    errors >-> Pipes.map ErrorEvent >-> pushToQueue eventChannel
 
   let botId = "4321687"
   gameId <- UUID.nextRandom
@@ -49,18 +48,43 @@ main = do
       ]
 
   putStrLn $ "gameid: " <> show gameId
+
   -- print events to the main thread
-  forever $ do
-    event <- atomically $ readTBQueue eventChannel
-    print event
+  Pipes.runEffect $ Pipes.for (pullFromQueue eventChannel) $ \event -> do
+    case event of
+      GameEvent (Right generalsEvent) ->
+        case generalsEvent of
 
+          _ -> print generalsEvent
+      _ -> print event
 
-data SocketEvent
-  = ErrorEvent Socket.Error
-  | GameEvent Socket.Event
+data SocketOutput
+  = ErrorEvent BS.ByteString
+  | GameEvent (Either String GeneralsIO.Event)
   deriving Show
+
+
+
+print :: (Show a, MonadIO m) => a -> m ()
+print = liftIO . Prelude.print
+
+background :: Effect IO () -> IO ThreadId
+background = forkIO . Pipes.runEffect
+
+
+pushToQueue :: TBQueue a -> Consumer a IO ()
+pushToQueue queue =
+  forever $ do
+    item <- await
+    liftIO $ atomically $ writeTBQueue queue item
+
+
+pullFromQueue :: TBQueue a -> Producer a IO ()
+pullFromQueue queue =
+  forever $ do
+    item <- liftIO $ atomically $ readTBQueue queue
+    yield item
+
 
 generalsBotServer :: Socket.Url
 generalsBotServer = "http://botws.generals.io"
-
-
