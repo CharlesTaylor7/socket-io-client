@@ -7,6 +7,7 @@ module GeneralsIO.Events where
 
 import GHC.Generics (Generic)
 
+import Control.Applicative ((<|>))
 import Data.Function ((&))
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -43,7 +44,7 @@ data Event
 instance FromJSON Event where
   parseJSON = Json.withArray "Event" $ \v -> do
     eventName <- v .@ 0
-    obj <- v .@ 1
+    obj <- v .@ 1 <|> pure Json.Null
 
     withContext (Json.Key eventName) $
       case eventName of

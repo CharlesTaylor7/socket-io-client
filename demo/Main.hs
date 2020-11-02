@@ -41,7 +41,7 @@ main = do
 
   -- write game events
   _ <- background $
-    output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
+    output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> Pipes.mapM (tap print) >-> pushToQueue eventChannel
 
   -- write errors
   _ <- background $
@@ -77,9 +77,12 @@ main = do
                 , Json.String (UUID.toText gameId)
                 , Json.Bool True
                 ]
-          _ -> print generalsEvent
-      _ -> print event
+          _ -> pure ()
+      _ -> pure ()
 
+-- | Run an effect, and replace the output with the input
+tap :: Functor f => (a -> f b) -> (a -> f a)
+tap f a = f a $> a
 
 data SocketOutput
   = GameEvent GeneralsIO.Event
