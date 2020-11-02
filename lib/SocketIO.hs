@@ -15,6 +15,7 @@ import Prelude hiding (until)
 import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import System.IO (Handle, hSetBinaryMode, hSetBuffering, hIsEOF, BufferMode(..))
 import System.Process
+import System.Exit (ExitCode)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
@@ -34,10 +35,10 @@ data Client = Client
   }
 
 
-connect :: Url -> IO (SocketEmit, Stream, Stream)
+connect :: Url -> IO (SocketEmit, Stream, Stream, Producer ExitCode IO ())
 connect server = do
   -- start the node process running the socket.io client
-  (Just stdin, Just stdout, Just stderr, _) <-
+  (Just stdin, Just stdout, Just stderr, processHandle) <-
     createProcess (proc "node" ["js/new-socket-io", server])
       { std_in = CreatePipe
       , std_out = CreatePipe
@@ -47,8 +48,15 @@ connect server = do
   client <- mkClient stdin
   let events = readLines stdout
   let errors = readLines stderr
+  let exitCode = readExitCode processHandle
+  pure $ (send client, events, errors, exitCode)
 
-  pure $ (send client, events, errors)
+
+readExitCode :: ProcessHandle -> Producer ExitCode IO ()
+readExitCode handle = do
+
+  exitCode <- liftIO $ waitForProcess handle
+  yield exitCode
 
 
 mkClient :: Handle -> IO Client

@@ -23,7 +23,6 @@ common common
     -Werror=missing-home-modules
     -Werror=incomplete-patterns
     -Werror=missing-fields
-    -threaded
 
 
 library
@@ -62,6 +61,8 @@ executable demo
     demo/
   main-is:
     Main.hs
+  ghc-options:
+    -threaded
   build-depends:
       base >= 4.13 && < 5.0
     , socket-io-client

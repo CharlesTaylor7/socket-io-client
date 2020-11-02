@@ -23,7 +23,9 @@ import Debug.Trace (traceShow)
 
 -- | Generals Event
 data Event
-  = QueueUpdate QueueUpdate
+  = Connect
+  | Disconnect
+  | QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
   | PreGameStart PreGameStart
@@ -45,6 +47,8 @@ instance FromJSON Event where
 
     withContext (Json.Key eventName) $
       case eventName of
+        "connect"      -> pure Connect
+        "disconnect"   -> pure Disconnect
         "queue_update" -> QueueUpdate <$> parseJSON obj
         "chat_message" -> ChatMessage <$> parseJSON (Json.Array v)
         "error_set_username" -> ErrorSetUsername <$> parseJSON obj

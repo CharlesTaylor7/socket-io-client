@@ -6,8 +6,10 @@ module Main where
 import Prelude hiding (print)
 import qualified Prelude
 
+import Control.Arrow ((|||))
 import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
+import System.Exit (ExitCode(..))
 
 import Data.Generics.Labels ()
 import Lens.Micro
@@ -32,18 +34,21 @@ import qualified GeneralsIO.Events as GeneralsIO
 main :: IO ()
 main = do
   -- connect to the bot server
-  (socketEmit, output, errors) <- Socket.connect generalsBotServer
+  (socketEmit, output, errors, exitCode) <- Socket.connect generalsBotServer
 
   -- send the server events through a channel
   eventChannel <- atomically $ newTBQueue 100
 
   -- write game events
   _ <- background $
-    output >-> Pipes.map (GameEvent . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
+    output >-> Pipes.map ((ParserError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
 
   -- write errors
   _ <- background $
-    errors >-> Pipes.map ErrorEvent >-> pushToQueue eventChannel
+    errors >-> Pipes.map ClientErrorLine >-> pushToQueue eventChannel
+
+  _ <- background $
+    exitCode >-> Pipes.map ClientDied >-> pushToQueue eventChannel
 
   let botId = "4321687"
   gameId <- UUID.nextRandom
@@ -60,7 +65,7 @@ main = do
   -- print events to the main thread
   Pipes.runEffect $ Pipes.for (pullFromQueue eventChannel) $ \event -> liftIO $ do
     case event of
-      GameEvent (Right generalsEvent) ->
+      GameEvent generalsEvent ->
         case generalsEvent of
           QueueUpdate q ->
             when ((not $ q ^. #isForcing) && q ^. #numForce == gameSize) $
@@ -73,8 +78,14 @@ main = do
       _ -> print event
 
 data SocketOutput
-  = ErrorEvent BS.ByteString
-  | GameEvent (Either String GeneralsIO.Event)
+  = GameEvent GeneralsIO.Event
+  -- ^ generals event
+  | ParserError String
+  -- ^ error parsing generals event
+  | ClientErrorLine BS.ByteString
+  -- ^ line from stderr of socket client
+  | ClientDied ExitCode
+  -- ^ exit code from stderr of socket client
   deriving Show
 
 
