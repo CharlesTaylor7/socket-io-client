@@ -23,6 +23,7 @@ common common
     -Werror=missing-home-modules
     -Werror=incomplete-patterns
     -Werror=missing-fields
+    -threaded
 
 
 library
