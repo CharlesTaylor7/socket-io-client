@@ -53,8 +53,6 @@ library generals-io-client
       GeneralsIO.Events
     , GeneralsIO.Commands
       --, GeneralsIO.Replays
-  other-modules:
-      GeneralsIO.Commands.Internal
 
 
 executable demo
