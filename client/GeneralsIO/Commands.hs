@@ -31,15 +31,6 @@ class Command where
   toArgs :: Json.Array
 
 
--- | leave_game
--- Leave game
-data LeaveGame = LeaveGame
-  deriving (Show, Generic)
-
-instance Command LeaveGame where
-  toArgs LeaveGame = Json.Array [ Json.String "leave_game" ]
-
-
 -- | set_username
 -- Register username to bot
 data SetUsername = SetUsername
@@ -217,4 +208,25 @@ instance Command ChatMessage where
     [ Json.String "chat_message"
     , Json.String (chatRoomId cmd)
     , Json.String (text cmd)
+    ]
+
+-- | leave_game
+-- Leave game
+data LeaveGame = LeaveGame
+  deriving (Show, Generic)
+
+instance Command LeaveGame where
+  toArgs LeaveGame = Json.Array [ Json.String "leave_game" ]
+
+-- | stars_and_rank
+-- Ask for a users stars & rank
+data StarsAndRank = StarsAndRank
+  { userId :: Text
+  }
+  deriving (Show, Generic)
+
+instance Command ChatMessage where
+  toArgs cmd = Json.Array
+    [ Json.String "stars_and_rank"
+    , Json.String (userId cmd)
     ]
