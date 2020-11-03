@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module SocketIO
   ( Url
   , Stream
@@ -33,19 +34,14 @@ import System.Exit (ExitCode(..))
 
 
 type Url = String
-type Stream = Producer BS.ByteString IO ()
-type SocketEmit = Json.Array -> IO ()
-
-data Client = Client
-  { handle :: Handle
-  , lock   :: MVar ()
-  }
+type Stream m = Producer BS.ByteString m ()
+type SocketEmit m = Consumer Json.Array m ()
 
 
-connect :: Url -> IO (SocketEmit, Stream)
+connect :: forall m. (MonadFail m, MonadIO m) => Url -> m (SocketEmit m, Stream m)
 connect server = do
   -- start the node process running the socket.io client
-  (Just stdin, Just stdout, Just stderr, processHandle) <-
+  (Just stdin, Just stdout, Just stderr, processHandle) <- liftIO $
     createProcess (proc "node" ["js/new-socket-io", server])
       { std_in = CreatePipe
       , std_out = CreatePipe
@@ -53,50 +49,49 @@ connect server = do
       }
 
   -- write errors to file
-  _ <- forkIO $ do
+  _ <- liftIO $ forkIO $ do
     Pipes.runEffect $
       ( readLines stderr >>
         readExitCode processHandle >-> Pipes.map exitCodeString
-      )
-      >-> appendToFile "socket.io-client.error-log"
+      ) >->
+      appendToFile "socket.io-client.error-log"
 
-  client <- mkClient stdin
-  events <- readLines stdout & waitForConnect
+  let client = mkClient stdin
+  events :: Producer BS.ByteString m () <-
+    readLines stdout & waitForConnect
 
-  pure $ (send client, events)
+  pure $ (client, events)
 
 
 exitCodeString :: ExitCode -> BS.ByteString
 exitCodeString code = Char8.pack $ "process exited with: " <> show code
 
-readExitCode :: ProcessHandle -> Producer ExitCode IO ()
+readExitCode :: MonadIO m => ProcessHandle -> Producer ExitCode m ()
 readExitCode handle = do
   exitCode <- liftIO $ waitForProcess handle
   yield exitCode
 
 
-mkClient :: Handle -> IO Client
+setBinaryLineBuffering :: MonadIO m => Handle -> m ()
+setBinaryLineBuffering handle =
+  liftIO $ do
+    hSetBinaryMode handle True
+    hSetBuffering  handle LineBuffering
+
+
+mkClient :: MonadIO m => Handle -> Consumer Json.Array m ()
 mkClient handle = do
-  hSetBinaryMode handle True
-  hSetBuffering handle LineBuffering
+  setBinaryLineBuffering handle
 
-  lock <- newMVar ()
-  pure $ Client { handle, lock }
+  Pipes.for Pipes.cat $ \args -> liftIO $ do
+    let bs = Json.encode args
 
-
-send :: Client -> Json.Array -> IO ()
-send (Client handle lock) args = do
-  let bs = Json.encode args
-
-  -- Lazy bytestring put is not threadsafe,
-  -- so we wrap it in a write lock
-  takeMVar lock
-  BSL.hPut handle bs
-  BSL.hPut handle "\n"
-  putMVar lock ()
+    -- write bytes to handle
+    BSL.hPut handle bs
+    BSL.hPut handle "\n"
 
 
-appendToFile :: FilePath -> Consumer BS.ByteString IO ()
+appendToFile :: MonadIO m => FilePath -> Consumer BS.ByteString m ()
 appendToFile path = do
   handle <- liftIO $ openFile path AppendMode
   Pipes.for cat $ \line -> liftIO $ do
@@ -121,12 +116,9 @@ data InvalidConnection
   deriving (Show)
 instance Exception InvalidConnection
 
-readLines :: Handle -> Producer BS.ByteString IO ()
+readLines :: MonadIO m => Handle -> Producer BS.ByteString m ()
 readLines handle = do
-  liftIO $ do
-    hSetBinaryMode handle True
-    hSetBuffering  handle LineBuffering
-
+  setBinaryLineBuffering handle
   until (isEOF handle) $ do
     value <- getLineBS handle
     yield value
