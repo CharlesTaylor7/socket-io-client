@@ -17,7 +17,7 @@
 *.swp
 
 # error logs
-node-process-errors.txt
+socket.io-client.error-log
 
 # stack
 *.stack-work

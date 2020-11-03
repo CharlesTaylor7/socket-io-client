@@ -13,18 +13,23 @@ module SocketIO
 
 import Prelude hiding (until)
 import Data.Function ((&))
+import Control.Concurrent (forkIO)
 import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import System.IO (Handle, hSetBinaryMode, hSetBuffering, hIsEOF, BufferMode(..))
 import System.Process
-import System.Exit (ExitCode)
 import Control.Exception (Exception, throwIO)
 
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Lazy as BSL
 
 import qualified Data.Aeson as Json
 
 import Pipes
+import qualified Pipes.Prelude as Pipes
+
+import System.IO (IOMode(..), openFile)
+import System.Exit (ExitCode(..), exitWith)
 
 
 type Url = String
@@ -37,7 +42,7 @@ data Client = Client
   }
 
 
-connect :: Url -> IO (SocketEmit, Stream, Stream, Producer ExitCode IO ())
+connect :: Url -> IO (SocketEmit, Stream)
 connect server = do
   -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, processHandle) <-
@@ -47,16 +52,26 @@ connect server = do
       , std_err = CreatePipe
       }
 
+  -- write errors to file
+  _ <- forkIO $ do
+    Pipes.runEffect $
+      ( readLines stderr >>
+        readExitCode processHandle >-> Pipes.map exitCodeString
+      )
+      >-> appendToFile "socket.io-client.error-log"
+
+
   client <- mkClient stdin
   events <- readLines stdout & waitForConnect
-  let errors = readLines stderr
-  let exitCode = readExitCode processHandle
-  pure $ (send client, events, errors, exitCode)
 
+  pure $ (send client, events)
+
+
+exitCodeString :: ExitCode -> BS.ByteString
+exitCodeString code = Char8.pack $ "process exited with: " <> show code
 
 readExitCode :: ProcessHandle -> Producer ExitCode IO ()
 readExitCode handle = do
-
   exitCode <- liftIO $ waitForProcess handle
   yield exitCode
 
@@ -80,6 +95,15 @@ send (Client handle lock) args = do
   BSL.hPut handle bs
   BSL.hPut handle "\n"
   putMVar lock ()
+
+
+appendToFile :: FilePath -> Consumer BS.ByteString IO ()
+appendToFile path = do
+  handle <- liftIO $ openFile path AppendMode
+  Pipes.for cat $ \line -> liftIO $ do
+    BS.hPutStr handle line
+    BS.hPutStr handle "\n"
+
 
 waitForConnect :: MonadIO m => Producer BS.ByteString m () -> m (Producer BS.ByteString m ())
 waitForConnect producer = do

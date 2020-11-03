@@ -10,7 +10,6 @@ import Data.Functor (($>))
 import Control.Arrow ((|||))
 import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
-import System.Exit (ExitCode(..), exitWith)
 
 import Data.Generics.Labels ()
 import Lens.Micro
@@ -32,13 +31,11 @@ import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 import GeneralsIO.Commands
 
-import System.IO (IOMode(..), openFile)
-
 
 main :: IO ()
 main = do
   -- connect to the bot server
-  (socketEmit, output, errors, exitCode) <- Socket.connect generalsBotServer
+  (socketEmit, output) <- Socket.connect generalsBotServer
 
   -- send the server events through a channel
   eventChannel <- atomically $ newTBQueue 100
@@ -46,13 +43,6 @@ main = do
   -- write game events
   _ <- background $
     output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
-
-  -- write errors
-  _ <- background $
-    errors >-> appendToFile "node-process-errors.txt"
-
-  _ <- background $
-    exitCode >-> Pipes.map ClientDied >-> pushToQueue eventChannel
 
   let botId = "4321687"
   gameId <- UUID.nextRandom
@@ -74,9 +64,6 @@ main = do
   let pipeline = pullFromQueue eventChannel >-> Pipes.mapM (tap print)
   Pipes.runEffect $ Pipes.for pipeline $ \event -> liftIO $ do
     case event of
-      ClientDied exitCode -> do
-        putStrLn $ "socket.io client process exited with " <> show exitCode
-        exitWith $ ExitFailure 1
       GameEvent generalsEvent ->
         case generalsEvent of
           QueueUpdate q ->
@@ -94,19 +81,7 @@ data SocketOutput
   -- ^ generals event
   | ParseError String
   -- ^ error parsing generals event
-  | ClientErrorLine BS.ByteString
-  -- ^ line from stderr of socket client
-  | ClientDied ExitCode
-  -- ^ exit code from stderr of socket client
   deriving Show
-
-
-appendToFile :: FilePath -> Consumer BS.ByteString IO ()
-appendToFile path = do
-  handle <- liftIO $ openFile path AppendMode
-  Pipes.for cat $ \line -> liftIO $ do
-    BS.hPutStr handle line
-    BS.hPutStr handle "\n"
 
 
 print :: (Show a, MonadIO m) => a -> m ()
