@@ -5,13 +5,13 @@ const socket = Socket(url)
 function sendEvent(data, options = { final: false }) {
   process.stdout.write(JSON.stringify(data))
   if (!options.final) {
-    process.stdout.write("\n")
+    process.stdout.write('\n')
   }
 }
 
 // forward socket.io events to parent process
 socket.on('connect', function() {
-  sendEvent(['connect'])
+  process.stdout.write('connect\n')
 });
 
 // forward diconnect event & exit process

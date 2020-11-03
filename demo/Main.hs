@@ -65,6 +65,8 @@ main = do
   putStrLn $ "http://bot.generals.io/games/" <> show gameId
 
   sendCommand $ JoinPrivate (UUID.toText gameId) botId
+  sendCommand $ Cancel
+  sendCommand $ StarsAndRank botId
 
   -- log all events to the main thread
   let pipeline = pullFromQueue eventChannel >-> Pipes.mapM (tap print)

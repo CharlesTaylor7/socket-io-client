@@ -22,8 +22,7 @@ import qualified Data.Aeson.Types as Json
 
 -- | Generals Event
 data Event
-  = Connect Connect
-  | Disconnect Disconnect
+  = Disconnect Disconnect
   | QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
@@ -44,7 +43,6 @@ data Event
 instance FromJSON Event where
   parseJSON v = (asum :: [Json.Parser Event] -> Json.Parser Event)
     [ Disconnect <$> parseJSON v
-    , Connect    <$> parseJSON v
     , QueueUpdate <$> parseJSON v
     , ChatMessage <$> parseJSON v
     , Notify <$> parseJSON v
@@ -62,14 +60,8 @@ instance FromJSON Event where
     , pure $ Unknown v
     ]
 
-data Connect = MkConnect
-  deriving (Show)
-
 data Disconnect = MkDisconnect
   deriving (Show)
-
-instance FromJSON Connect where
-  parseJSON = withEvent "connect" (const $ pure MkConnect)
 
 instance FromJSON Disconnect where
   parseJSON = withEvent "disconnect" (const $ pure MkDisconnect)

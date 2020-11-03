@@ -12,10 +12,12 @@ module SocketIO
   where
 
 import Prelude hiding (until)
+import Data.Function ((&))
 import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import System.IO (Handle, hSetBinaryMode, hSetBuffering, hIsEOF, BufferMode(..))
 import System.Process
 import System.Exit (ExitCode)
+import Control.Exception (Exception, throwIO)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
@@ -46,7 +48,7 @@ connect server = do
       }
 
   client <- mkClient stdin
-  let events = readLines stdout
+  events <- readLines stdout & waitForConnect
   let errors = readLines stderr
   let exitCode = readExitCode processHandle
   pure $ (send client, events, errors, exitCode)
@@ -79,6 +81,22 @@ send (Client handle lock) args = do
   BSL.hPut handle "\n"
   putMVar lock ()
 
+waitForConnect :: MonadIO m => Producer BS.ByteString m () -> m (Producer BS.ByteString m ())
+waitForConnect producer = do
+  connect <- next producer
+  case connect of
+    Right ("connect", rest) -> pure rest
+    Right (msg, _) -> liftIO $ throwIO $
+      BadString msg
+    Left _ -> liftIO $ throwIO $
+      NoOutput
+
+data InvalidConnection
+  = BadString BS.ByteString
+  | NoOutput
+
+  deriving (Show)
+instance Exception InvalidConnection
 
 readLines :: Handle -> Producer BS.ByteString IO ()
 readLines handle = do
