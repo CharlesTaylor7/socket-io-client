@@ -52,7 +52,7 @@ library generals-io-client
   exposed-modules:
       GeneralsIO.Events
     , GeneralsIO.Commands
-      --, GeneralsIO.Replays
+    , GeneralsIO.Replays
 
 
 executable demo

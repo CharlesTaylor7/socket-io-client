@@ -3,8 +3,6 @@
 {-# Language NamedFieldPuns #-}
 {-# Language RecordWildCards #-}
 {-# Language DeriveGeneric #-}
-{-# Language TypeApplications #-}
-{-# Language DataKinds #-}
 module GeneralsIO.Commands where
 
 import GHC.Generics (Generic)
