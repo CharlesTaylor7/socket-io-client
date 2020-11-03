@@ -41,7 +41,7 @@ library
 library generals-io-client
   import: common
   hs-source-dirs:
-    client/
+    generals-io-client/
   build-depends:
       base >= 4.13 && < 5.0
     , aeson
