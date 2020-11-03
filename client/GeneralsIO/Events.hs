@@ -31,11 +31,12 @@ data Event
   | QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
- --  | PreGameStart PreGameStart
- --  | GameStart GameStart
- --  | GameWon GameWon
- --  | GameLost GameLost
- --  | GameOver GameOver
+  | PreGameStart PreGameStart
+  | GameStart GameStart
+  | GameUpdate GameUpdate
+  | GameWon GameWon
+ -- | GameLost GameLost
+  | GameOver GameOver
  --  | Rank Rank
  --  | Stars Stars
  --  | ErrorUserId ErrorUserId
@@ -51,11 +52,12 @@ instance FromJSON Event where
     , QueueUpdate <$> parseJSON v
     , ChatMessage <$> parseJSON v
     , Notify <$> parseJSON v
- --   , PreGameStart <$> parseJSON v
- --   , GameStart <$> parseJSON v
- --   , GameWon <$> parseJSON v
+    , PreGameStart <$> parseJSON v
+    , GameStart <$> parseJSON v
+    , GameUpdate <$> parseJSON v
+    , GameWon <$> parseJSON v
  --   , GameLost <$> parseJSON v
- --   , GameOver <$> parseJSON v
+    , GameOver <$> parseJSON v
  --   , Rank <$> parseJSON v
  --   , Stars <$> parseJSON v
  --   , ErrorUserId <$> parseJSON v
@@ -82,15 +84,12 @@ type Rank = Json.Value
 -- | stars
 type Stars = Json.Value
 
--- | pre_game_start
-type PreGameStart = Json.Value
-
 -- | notify
 data Notify = MkNotify
   { event :: Text
   , info :: Text
   }
-  deriving (Show)
+  deriving (Show, Generic)
 
 instance FromJSON Notify where
   parseJSON = withEvent "notify" $ \v -> do
@@ -113,25 +112,110 @@ instance FromJSON ChatMessage where
     text <- inner & withObject "inner" (.: "text")
     pure $ MkChatMessage { chatRoomId, text }
 
+-- | pre_game_start
+data PreGameStart = MkPreGameStart
+  deriving (Show )
 
--- | error_user_id
-type ErrorUserId = Json.Value
-
--- | error_banned
-type ErrorBanned = Json.Value
+instance FromJSON PreGameStart where
+  parseJSON = withEvent "pre_game_start" (const $ pure MkPreGameStart)
 
 -- | game_start
-type GameStart = Json.Value
+data GameStart = MkGameStart
+  { playerIndex :: Int
+  , usernames   :: Vector Text
+  , swamps      :: Json.Array
+  , teams       :: Vector Int
+  , chat_room   :: Text
+  , game_type   :: Text
+  , replay_id   :: Text
+  }
+  deriving (Generic, Show)
+
+instance FromJSON GameStart where
+  parseJSON = withEvent "game_start" $ \v -> do
+    obj <- v .@ 1
+    flip (withObject "GameStart") obj $ \v ->
+      MkGameStart
+        <$> v .: "playerIndex"
+        <*> v .: "usernames"
+        <*> v .: "swamps"
+        <*> v .: "teams"
+        <*> v .: "chat_room"
+        <*> v .: "game_type"
+        <*> v .: "replay_id"
+
+
+-- | game_update
+data GameUpdate = MkGameUpdate
+  { turn        :: Int
+  , generals    :: Vector Int
+  , citiesDiff  :: Vector Int
+  , attackIndex :: Int
+  , scores      :: Vector Score
+  , mapDiff     :: Vector Int
+  }
+  deriving (Generic, Show)
+
+instance FromJSON GameUpdate where
+  parseJSON = withEvent "game_update" $ \v -> do
+    obj <- v .@ 1
+    flip (withObject "GameUpdate") obj $ \v ->
+      MkGameUpdate
+        <$> v .: "turn"
+        <*> v .: "generals"
+        <*> v .: "cities_diff"
+        <*> v .: "attackIndex"
+        <*> v .: "scores"
+        <*> v .: "map_diff"
+
+data Score = MkScore
+  { dead  :: Bool
+  , tiles :: Int
+  , total :: Int
+  , i     :: Int
+  }
+  deriving (Generic, Show)
+
+instance FromJSON Score
 
 -- | game_won
-type GameWon = Json.Value
+data GameWon = MkGameWon
+  { unknown1 :: Json.Value
+  , unknown2 :: Json.Value
+  }
+  deriving (Generic, Show)
+
+instance FromJSON GameWon where
+  parseJSON = withEvent "game_won" $ \v -> do
+    MkGameWon
+      <$> v .@ 1
+      <*> v .@ 2
 
 -- | game_lost
-type GameLost = Json.Value
+data GameLost = MkGameLost
+  { killer :: Int
+  , unknown :: Json.Value
+  }
+  deriving (Generic, Show)
+
+instance FromJSON GameLost where
+  parseJSON = withEvent "game_lost" $ \v -> do
+    MkGameLost
+      <$> (v .@ 1 >>= withObject "GameLost" (.: "killer"))
+      <*> v .@ 2
 
 -- | game_over
-type GameOver = Json.Value
+data GameOver = MkGameOver
+  { unknown1 :: Json.Value
+  , unknown2 :: Json.Value
+  }
+  deriving (Generic, Show)
 
+instance FromJSON GameOver where
+  parseJSON = withEvent "game_over" $ \v -> do
+    MkGameOver
+      <$> v .@ 1
+      <*> v .@ 2
 
 -- | queue_update
 data QueueUpdate = MkQueueUpdate
@@ -159,6 +243,12 @@ instance FromJSON QueueUpdate where
         <*> v .: "playerIndices"
         <*> v .: "numForce"
         <*> v .: "numPlayers"
+
+-- | error_user_id
+type ErrorUserId = Json.Value
+
+-- | error_banned
+type ErrorBanned = Json.Value
 
 -- | error_set_username
 -- Note: this event is a misnomer. the generals protocol sends this event with an empty string when the username is valid

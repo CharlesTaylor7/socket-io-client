@@ -38,10 +38,10 @@ library
   exposed-modules:
       SocketIO
 
-library generals-io-types
+library generals-io-client
   import: common
   hs-source-dirs:
-    parsers/
+    client/
   build-depends:
       base >= 4.13 && < 5.0
     , aeson
@@ -53,6 +53,8 @@ library generals-io-types
       GeneralsIO.Events
     , GeneralsIO.Commands
       --, GeneralsIO.Replays
+  other-modules:
+      GeneralsIO.Commands.Internal
 
 
 executable demo
@@ -66,7 +68,7 @@ executable demo
   build-depends:
       base >= 4.13 && < 5.0
     , socket-io-client
-    , generals-io-types
+    , generals-io-client
     , pipes
     , aeson
     , bytestring

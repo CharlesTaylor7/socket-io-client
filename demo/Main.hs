@@ -69,12 +69,6 @@ main = do
     , Json.String botId
     ]
 
-  sendCommand
-    [ Json.String "set_force_start"
-    , Json.String (UUID.toText gameId)
-    , Json.Bool True
-    ]
-
   -- log all events to the main thread
   let pipeline = pullFromQueue eventChannel >-> Pipes.mapM (tap print)
   Pipes.runEffect $ Pipes.for pipeline $ \event -> liftIO $ do

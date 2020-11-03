@@ -32,8 +32,6 @@ socket.on('disconnect', function() {
 const readline = require('readline').createInterface({input: process.stdin})
 readline.on('line', data => {
   const string = data.toString()
-  sendEvent([string])
   const args = JSON.parse(string)
-
   socket.emit(...args)
 })
