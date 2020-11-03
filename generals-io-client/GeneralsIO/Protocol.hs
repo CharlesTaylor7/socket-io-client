@@ -1,5 +1,8 @@
+{-# Language GADTs #-}
+{-# Language DataKinds #-}
+{-# Language TypeFamilies #-}
 module GeneralsIO.Protocol where
-import Pipes (Pipe)
+-- import Pipes (Pipe)
 import GeneralsIO.Events (Event)
 import qualified GeneralsIO.Commands as Cmd
 
@@ -18,5 +21,5 @@ data Phase
   | GameOver  -- ^ game has ended
 
 
-data Command (phase :: 'Phase, gameType :: 'GameType) where
-  SetUsername :: Cmd.SetUserName -> Command phase gameType
+data Command (phase :: Phase) (gameType :: GameType) where
+  SetUsername :: Cmd.SetUsername -> Command phase gameType

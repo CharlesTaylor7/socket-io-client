@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 import Prelude hiding (print)
@@ -29,19 +30,27 @@ import qualified SocketIO as Socket
 import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 import GeneralsIO.Commands
+import GeneralsIO.Strategy (Strategy)
 
 
 main :: IO ()
-main = do
+main = botClient
+
+
+botClient :: forall m. (MonadIO m) => m ()
+botClient = do
   -- connect to the bot server
   (socketEmit, output) <- Socket.connect generalsBotServer
 
   -- wrap socketEmit
   let
-    sendCommand :: (MonadIO m, Command cmd) => cmd -> m ()
-    sendCommand cmd = liftIO $ do
-        print cmd
-        socketEmit $ toArgs cmd
+    sendCommand :: Consumer SomeCommand m ()
+    sendCommand = socketEmit <-< Pipes.mapM logAndConvert
+      where
+        logAndConvert :: SomeCommand -> m Json.Array
+        logAndConvert (SomeCommand cmd) = do
+          print cmd
+          pure $ toArgs cmd
 
   -- write game events
   let
@@ -51,27 +60,6 @@ main = do
       Pipes.mapM (tap print)
 
     parseJson = (ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict
-
-  -- drive bot
-  let botId = "4321687"
-  gameId <- UUID.nextRandom
-  let gameSize = 2
-
-  putStrLn $ "http://bot.generals.io/games/" <> show gameId
-
-  sendCommand $ JoinPrivate (UUID.toText gameId) botId
-
-  -- have bot respond to events
-  Pipes.runEffect $ Pipes.for events $ \event -> liftIO $ do
-    case event of
-      GameEvent generalsEvent ->
-        case generalsEvent of
-          QueueUpdate q ->
-            when ((not $ q ^. #isForcing) && q ^. #numPlayers == gameSize) $
-              sendCommand $ SetForceStart (UUID.toText gameId) True
-          _ -> pure ()
-      _ -> pure ()
-
 
 -- | Run an effect, and replace the output with the input
 tap :: Functor f => (a -> f b) -> (a -> f a)

@@ -3,6 +3,8 @@
 {-# Language NamedFieldPuns #-}
 {-# Language RecordWildCards #-}
 {-# Language DeriveGeneric #-}
+{-# Language GADTs #-}
+{-# Language RankNTypes #-}
 module GeneralsIO.Commands where
 
 import GHC.Generics (Generic)
@@ -11,8 +13,13 @@ import Data.Text (Text)
 import Data.Aeson
 import qualified Data.Aeson.Types as Json
 
+data SomeCommand where
+  SomeCommand
+    :: forall cmd. (Show cmd, Command cmd)
+    => cmd
+    -> SomeCommand
 
-class Show cmd => Command cmd where
+class Command cmd where
   toArgs :: cmd -> Json.Array
 
 
