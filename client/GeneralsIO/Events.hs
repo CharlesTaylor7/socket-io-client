@@ -1,15 +1,13 @@
 {-# Language DeriveGeneric #-}
 {-# Language DuplicateRecordFields #-}
+{-# Language RecordWildCards #-}
 {-# Language OverloadedLists #-}
 {-# Language OverloadedStrings #-}
-{-# Language NamedFieldPuns #-}
 module GeneralsIO.Events where
 
 import GHC.Generics (Generic)
 
-import Data.Functor
 import Data.Foldable (asum)
-import Control.Applicative ((<|>))
 import Data.Function ((&))
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -20,8 +18,6 @@ import qualified Data.HashMap.Strict as HashMap
 
 import Data.Aeson
 import qualified Data.Aeson.Types as Json
-
-import Debug.Trace (traceShow)
 
 
 -- | Generals Event
@@ -95,7 +91,7 @@ instance FromJSON Notify where
   parseJSON = withEvent "notify" $ \v -> do
     event <- v .@ 1
     info <- v .@ 2
-    pure $ MkNotify { event, info }
+    pure $ MkNotify {..}
 
 
 -- | chat_message
@@ -110,7 +106,7 @@ instance FromJSON ChatMessage where
     chatRoomId <- v .@ 1
     inner <- v .@ 2
     text <- inner & withObject "inner" (.: "text")
-    pure $ MkChatMessage { chatRoomId, text }
+    pure $ MkChatMessage {..}
 
 -- | pre_game_start
 data PreGameStart = MkPreGameStart
