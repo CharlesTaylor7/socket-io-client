@@ -64,6 +64,7 @@ connect server = do
 
 
 exitCodeString :: ExitCode -> BS.ByteString
+exitCodeString (ExitFailure 125) = "Server disconnected"
 exitCodeString code = Char8.pack $ "process exited with: " <> show code
 
 readExitCode :: MonadIO m => ProcessHandle -> Producer ExitCode m ()

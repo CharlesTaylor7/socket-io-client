@@ -22,8 +22,7 @@ import qualified Data.Aeson.Types as Json
 
 -- | Generals Event
 data Event
-  = Disconnect Disconnect
-  | QueueUpdate QueueUpdate
+  = QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
   | PreGameStart PreGameStart
@@ -42,8 +41,7 @@ data Event
 
 instance FromJSON Event where
   parseJSON v = (asum :: [Json.Parser Event] -> Json.Parser Event)
-    [ Disconnect <$> parseJSON v
-    , QueueUpdate <$> parseJSON v
+    [ QueueUpdate <$> parseJSON v
     , ChatMessage <$> parseJSON v
     , Notify <$> parseJSON v
     , PreGameStart <$> parseJSON v

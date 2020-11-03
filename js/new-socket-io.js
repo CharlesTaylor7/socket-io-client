@@ -14,10 +14,10 @@ socket.on('connect', function() {
   process.stdout.write('connect\n')
 });
 
-// forward diconnect event & exit process
+// forward exit process
 socket.on('disconnect', function() {
-  sendEvent(['disconnect'], { final: true})
-  process.exit(1)
+  // node makes use of exit codes 1 through 12
+  process.exit(125)
 });
 
 // forward other events
