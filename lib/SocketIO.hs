@@ -89,11 +89,11 @@ waitForConnect producer = do
     Right (msg, _) -> liftIO $ throwIO $
       BadString msg
     Left _ -> liftIO $ throwIO $
-      NoOutput
+      NoConnection
 
 data InvalidConnection
   = BadString BS.ByteString
-  | NoOutput
+  | NoConnection
 
   deriving (Show)
 instance Exception InvalidConnection

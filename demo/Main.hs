@@ -32,6 +32,8 @@ import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 import GeneralsIO.Commands
 
+import System.IO (IOMode(..), openFile)
+
 
 main :: IO ()
 main = do
@@ -47,7 +49,7 @@ main = do
 
   -- write errors
   _ <- background $
-    errors >-> Pipes.map ClientErrorLine >-> pushToQueue eventChannel
+    errors >-> appendToFile "node-process-errors.txt"
 
   _ <- background $
     exitCode >-> Pipes.map ClientDied >-> pushToQueue eventChannel
@@ -98,6 +100,13 @@ data SocketOutput
   -- ^ exit code from stderr of socket client
   deriving Show
 
+
+appendToFile :: FilePath -> Consumer BS.ByteString IO ()
+appendToFile path = do
+  handle <- liftIO $ openFile path AppendMode
+  Pipes.for cat $ \line -> liftIO $ do
+    BS.hPutStr handle line
+    BS.hPutStr handle "\n"
 
 
 print :: (Show a, MonadIO m) => a -> m ()

@@ -16,8 +16,8 @@
 # vim
 *.swp
 
-# reflex logs
-*.log
+# error logs
+node-process-errors.txt
 
 # stack
 *.stack-work

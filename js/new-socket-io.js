@@ -12,6 +12,7 @@ function sendEvent(data, options = { final: false }) {
 // forward socket.io events to parent process
 socket.on('connect', function() {
   process.stdout.write('connect\n')
+  throw null
 });
 
 // forward diconnect event & exit process
