@@ -17,7 +17,6 @@ import Lens.Micro
 import qualified Data.UUID.V4 as UUID
 import qualified Data.UUID as UUID
 import qualified Data.Aeson as Json
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 
 import Pipes
@@ -37,32 +36,33 @@ main = do
   -- connect to the bot server
   (socketEmit, output) <- Socket.connect generalsBotServer
 
-  -- send the server events through a channel
-  eventChannel <- atomically $ newTBQueue 100
-
-  -- write game events
-  _ <- background $
-    output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
-
-  let botId = "4321687"
-  gameId <- UUID.nextRandom
-  let gameSize = 2
-
+  -- wrap socketEmit
   let
     sendCommand :: (MonadIO m, Command cmd) => cmd -> m ()
     sendCommand cmd = liftIO $ do
         print cmd
         socketEmit $ toArgs cmd
 
+  -- write game events
+  let
+    events =
+      output >->
+      Pipes.map parseJson >->
+      Pipes.mapM (tap print)
+
+    parseJson = (ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict
+
+  -- drive bot
+  let botId = "4321687"
+  gameId <- UUID.nextRandom
+  let gameSize = 2
+
   putStrLn $ "http://bot.generals.io/games/" <> show gameId
 
   sendCommand $ JoinPrivate (UUID.toText gameId) botId
-  sendCommand $ Cancel
-  sendCommand $ StarsAndRank botId
 
-  -- log all events to the main thread
-  let pipeline = pullFromQueue eventChannel >-> Pipes.mapM (tap print)
-  Pipes.runEffect $ Pipes.for pipeline $ \event -> liftIO $ do
+  -- have bot respond to events
+  Pipes.runEffect $ Pipes.for events $ \event -> liftIO $ do
     case event of
       GameEvent generalsEvent ->
         case generalsEvent of
@@ -71,6 +71,7 @@ main = do
               sendCommand $ SetForceStart (UUID.toText gameId) True
           _ -> pure ()
       _ -> pure ()
+
 
 -- | Run an effect, and replace the output with the input
 tap :: Functor f => (a -> f b) -> (a -> f a)

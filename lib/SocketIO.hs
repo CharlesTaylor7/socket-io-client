@@ -29,7 +29,7 @@ import Pipes
 import qualified Pipes.Prelude as Pipes
 
 import System.IO (IOMode(..), openFile)
-import System.Exit (ExitCode(..), exitWith)
+import System.Exit (ExitCode(..))
 
 
 type Url = String
@@ -59,7 +59,6 @@ connect server = do
         readExitCode processHandle >-> Pipes.map exitCodeString
       )
       >-> appendToFile "socket.io-client.error-log"
-
 
   client <- mkClient stdin
   events <- readLines stdout & waitForConnect
