@@ -30,6 +30,7 @@ import qualified SocketIO as Socket
 
 import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
+import GeneralsIO.Commands
 
 
 main :: IO ()
@@ -56,18 +57,14 @@ main = do
   let gameSize = 2
 
   let
-    sendCommand :: MonadIO m => Json.Array -> m ()
-    sendCommand array = liftIO $ do
-        print array
-        socketEmit array
+    sendCommand :: (MonadIO m, Command cmd) => cmd -> m ()
+    sendCommand cmd = liftIO $ do
+        print cmd
+        socketEmit $ toArgs cmd
 
   putStrLn $ "http://bot.generals.io/games/" <> show gameId
 
-  sendCommand
-    [ Json.String "join_private"
-    , Json.String (UUID.toText gameId)
-    , Json.String botId
-    ]
+  sendCommand $ JoinPrivate (UUID.toText gameId) botId
 
   -- log all events to the main thread
   let pipeline = pullFromQueue eventChannel >-> Pipes.mapM (tap print)
@@ -80,11 +77,7 @@ main = do
         case generalsEvent of
           QueueUpdate q ->
             when ((not $ q ^. #isForcing) && q ^. #numPlayers == gameSize) $
-              sendCommand
-                [ Json.String "set_force_start"
-                , Json.String (UUID.toText gameId)
-                , Json.Bool True
-                ]
+              sendCommand $ SetForceStart (UUID.toText gameId) True
           _ -> pure ()
       _ -> pure ()
 

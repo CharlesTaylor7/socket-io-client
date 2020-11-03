@@ -9,24 +9,12 @@ module GeneralsIO.Commands where
 
 import GHC.Generics (Generic)
 
-import Data.Functor
-import Data.Foldable (asum)
-import Control.Applicative ((<|>))
-import Data.Function ((&))
 import Data.Text (Text)
-import qualified Data.Text as T
-
-import Data.Vector (Vector, (!?))
-import Data.HashMap.Strict (HashMap)
-import qualified Data.HashMap.Strict as HashMap
-
 import Data.Aeson
 import qualified Data.Aeson.Types as Json
 
-import Debug.Trace (traceShow)
 
-
-class Command cmd where
+class Show cmd => Command cmd where
   toArgs :: cmd -> Json.Array
 
 
