@@ -6,6 +6,7 @@ module Main where
 import Prelude hiding (print)
 import qualified Prelude
 
+import Data.Functor (($>))
 import Control.Arrow ((|||))
 import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
@@ -41,7 +42,7 @@ main = do
 
   -- write game events
   _ <- background $
-    output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> Pipes.mapM (tap print) >-> pushToQueue eventChannel
+    output >-> Pipes.map ((ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict) >-> pushToQueue eventChannel
 
   -- write errors
   _ <- background $
@@ -54,16 +55,29 @@ main = do
   gameId <- UUID.nextRandom
   let gameSize = 2
 
-  liftIO $ socketEmit
-      [ Json.String "join_private"
-      , Json.String (UUID.toText gameId)
-      , Json.String botId
-      ]
+  let
+    sendCommand :: MonadIO m => Json.Array -> m ()
+    sendCommand array = liftIO $ do
+        print array
+        socketEmit array
 
-  putStrLn $ "gameid: " <> show gameId
+  putStrLn $ "http://bot.generals.io/games/" <> show gameId
 
-  -- print events to the main thread
-  Pipes.runEffect $ Pipes.for (pullFromQueue eventChannel) $ \event -> liftIO $ do
+  sendCommand
+    [ Json.String "join_private"
+    , Json.String (UUID.toText gameId)
+    , Json.String botId
+    ]
+
+  sendCommand
+    [ Json.String "set_force_start"
+    , Json.String (UUID.toText gameId)
+    , Json.Bool True
+    ]
+
+  -- log all events to the main thread
+  let pipeline = pullFromQueue eventChannel >-> Pipes.mapM (tap print)
+  Pipes.runEffect $ Pipes.for pipeline $ \event -> liftIO $ do
     case event of
       ClientDied exitCode -> do
         putStrLn $ "socket.io client process exited with " <> show exitCode
@@ -71,8 +85,8 @@ main = do
       GameEvent generalsEvent ->
         case generalsEvent of
           QueueUpdate q ->
-            when ((not $ q ^. #isForcing) && q ^. #numForce == gameSize) $
-              socketEmit
+            when ((not $ q ^. #isForcing) && q ^. #numPlayers == gameSize) $
+              sendCommand
                 [ Json.String "set_force_start"
                 , Json.String (UUID.toText gameId)
                 , Json.Bool True

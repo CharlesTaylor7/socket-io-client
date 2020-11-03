@@ -29,7 +29,11 @@ socket.on('disconnect', function() {
 }
 
 // forward input from parent process to socket.io server
-process.stdin.on('data', function(data) {
-  const args = JSON.parse(data.toString())
+const readline = require('readline').createInterface({input: process.stdin})
+readline.on('line', data => {
+  const string = data.toString()
+  sendEvent([string])
+  const args = JSON.parse(string)
+
   socket.emit(...args)
 })

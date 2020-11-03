@@ -7,6 +7,8 @@ module GeneralsIO.Events where
 
 import GHC.Generics (Generic)
 
+import Data.Functor
+import Data.Foldable (asum)
 import Control.Applicative ((<|>))
 import Data.Function ((&))
 import Data.Text (Text)
@@ -24,50 +26,55 @@ import Debug.Trace (traceShow)
 
 -- | Generals Event
 data Event
-  = Connect
-  | Disconnect
+  = Connect Connect
+  | Disconnect Disconnect
   | QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
-  | PreGameStart PreGameStart
-  | GameStart GameStart
-  | GameWon GameWon
-  | GameLost GameLost
-  | GameOver GameOver
-  | Rank Rank
-  | Stars Stars
-  | ErrorUserId ErrorUserId
-  | ErrorBanned ErrorBanned
+ --  | PreGameStart PreGameStart
+ --  | GameStart GameStart
+ --  | GameWon GameWon
+ --  | GameLost GameLost
+ --  | GameOver GameOver
+ --  | Rank Rank
+ --  | Stars Stars
+ --  | ErrorUserId ErrorUserId
+ --  | ErrorBanned ErrorBanned
   | ErrorSetUsername ErrorSetUsername
+  | Unknown Json.Value
   deriving (Generic, Show)
 
 instance FromJSON Event where
-  parseJSON = Json.withArray "Event" $ \v -> do
-    eventName <- v .@ 0
-    obj <- v .@ 1 <|> pure Json.Null
+  parseJSON v = (asum :: [Json.Parser Event] -> Json.Parser Event)
+    [ Disconnect <$> parseJSON v
+    , Connect    <$> parseJSON v
+    , QueueUpdate <$> parseJSON v
+    , ChatMessage <$> parseJSON v
+    , Notify <$> parseJSON v
+ --   , PreGameStart <$> parseJSON v
+ --   , GameStart <$> parseJSON v
+ --   , GameWon <$> parseJSON v
+ --   , GameLost <$> parseJSON v
+ --   , GameOver <$> parseJSON v
+ --   , Rank <$> parseJSON v
+ --   , Stars <$> parseJSON v
+ --   , ErrorUserId <$> parseJSON v
+ --   , ErrorBanned <$> parseJSON v
+    , ErrorSetUsername <$> parseJSON v
+    , pure $ Unknown v
+    ]
 
-    withContext (Json.Key eventName) $
-      case eventName of
-        "connect"      -> pure Connect
-        "disconnect"   -> pure Disconnect
-        "queue_update" -> QueueUpdate <$> parseJSON obj
-        "chat_message" -> ChatMessage <$> parseJSON (Json.Array v)
-        "error_set_username" -> ErrorSetUsername <$> parseJSON obj
+data Connect = MkConnect
+  deriving (Show)
 
-        _ -> fail $ "invalid event of: " <> T.unpack eventName
+data Disconnect = MkDisconnect
+  deriving (Show)
 
-withContext :: Json.JSONPathElement -> Json.Parser a -> Json.Parser a
-withContext = flip (<?>)
+instance FromJSON Connect where
+  parseJSON = withEvent "connect" (const $ pure MkConnect)
 
--- helpers
-explicitParseAt :: (Json.Value -> Json.Parser a) -> Json.Array -> Int -> Json.Parser a
-explicitParseAt p array key =
-  case array !? key of
-    Nothing -> fail $ "key " ++ show key ++ " not found"
-    Just v  -> p v <?> Json.Index key
-
-(.@) :: FromJSON a => Json.Array -> Int -> Json.Parser a
-(.@) = explicitParseAt parseJSON
+instance FromJSON Disconnect where
+  parseJSON = withEvent "disconnect" (const $ pure MkDisconnect)
 
 -- | rank
 type Rank = Json.Value
@@ -79,7 +86,18 @@ type Stars = Json.Value
 type PreGameStart = Json.Value
 
 -- | notify
-type Notify = Json.Value
+data Notify = MkNotify
+  { event :: Text
+  , info :: Text
+  }
+  deriving (Show)
+
+instance FromJSON Notify where
+  parseJSON = withEvent "notify" $ \v -> do
+    event <- v .@ 1
+    info <- v .@ 2
+    pure $ MkNotify { event, info }
+
 
 -- | chat_message
 data ChatMessage = MkChatMessage
@@ -89,7 +107,7 @@ data ChatMessage = MkChatMessage
   deriving (Show)
 
 instance FromJSON ChatMessage where
-  parseJSON = withArray "ChatMessage" $ \v -> do
+  parseJSON = withEvent "chat_message" $ \v -> do
     chatRoomId <- v .@ 1
     inner <- v .@ 2
     text <- inner & withObject "inner" (.: "text")
@@ -119,17 +137,28 @@ type GameOver = Json.Value
 data QueueUpdate = MkQueueUpdate
   { isForcing     :: Bool
   , usernames     :: Vector (Maybe Text)
-  , map_title     :: Maybe Text
+  , mapTitle      :: Maybe Text
   , teams         :: Vector Int
   , lobbyIndex    :: Int
   , playerIndices :: Vector Int
-  , numForce      :: Int
+  , numForcing    :: Int
   , numPlayers    :: Int
   }
   deriving (Generic, Show)
 
-instance FromJSON QueueUpdate
-
+instance FromJSON QueueUpdate where
+  parseJSON = withEvent "queue_update" $ \v -> do
+    obj <- v .@ 1
+    flip (withObject "QueueUpdate") obj $ \v ->
+      MkQueueUpdate
+        <$> v .: "isForcing"
+        <*> v .: "usernames"
+        <*> v .: "map_title"
+        <*> v .: "teams"
+        <*> v .: "lobbyIndex"
+        <*> v .: "playerIndices"
+        <*> v .: "numForce"
+        <*> v .: "numPlayers"
 
 -- | error_set_username
 -- Note: this event is a misnomer. the generals protocol sends this event with an empty string when the username is valid
@@ -144,7 +173,9 @@ data ErrorSetUsername
   deriving (Generic, Show)
 
 instance FromJSON ErrorSetUsername where
-  parseJSON = withText "error_set_username" $ \v -> do
+  parseJSON = withEvent "error_set_username" $ \v -> do
+    message <- v .@ 1
+    flip (withText "message") message $ \v ->
       case usernameErrors HashMap.!? v of
         Just e -> pure e
         Nothing -> fail $ T.unpack v
@@ -171,3 +202,28 @@ usernameErrors =
     , UsernameProfanity
     )
   ]
+
+
+-- helpers
+withEvent :: Text -> (Json.Array -> Json.Parser a) -> Json.Value -> Json.Parser a
+withEvent eventName continuation = do
+  Json.withArray "Event" $ \v -> do
+    firstArrayElement <- v .@ 0
+    if firstArrayElement == eventName
+    then continuation v
+    else fail $ "not " <> T.unpack eventName
+
+withContext :: Json.JSONPathElement -> Json.Parser a -> Json.Parser a
+withContext = flip (<?>)
+
+-- helpers
+explicitParseAt :: (Json.Value -> Json.Parser a) -> Json.Array -> Int -> Json.Parser a
+explicitParseAt p array key =
+  case array !? key of
+    Nothing -> fail $ "key " ++ show key ++ " not found"
+    Just v  -> p v <?> Json.Index key
+
+(.@) :: FromJSON a => Json.Array -> Int -> Json.Parser a
+(.@) = explicitParseAt parseJSON
+
+
