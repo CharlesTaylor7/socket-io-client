@@ -15,7 +15,6 @@ module SocketIO
 import Prelude hiding (until)
 import Data.Function ((&))
 import Control.Concurrent (forkIO)
-import Control.Concurrent.MVar (MVar, newMVar, takeMVar, putMVar)
 import System.IO (Handle, hSetBinaryMode, hSetBuffering, hIsEOF, BufferMode(..))
 import System.Process
 import Control.Exception (Exception, throwIO)
@@ -66,6 +65,7 @@ connect server = do
 exitCodeString :: ExitCode -> BS.ByteString
 exitCodeString (ExitFailure 125) = "Server disconnected"
 exitCodeString code = Char8.pack $ "process exited with: " <> show code
+
 
 readExitCode :: MonadIO m => ProcessHandle -> Producer ExitCode m ()
 readExitCode handle = do

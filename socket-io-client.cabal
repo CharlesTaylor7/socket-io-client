@@ -53,6 +53,8 @@ library generals-io-client
       GeneralsIO.Events
     , GeneralsIO.Commands
     , GeneralsIO.Replays
+    , GeneralsIO.Protocol
+    , GeneralsIO.Strategies
 
 
 executable demo
