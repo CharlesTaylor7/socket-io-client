@@ -61,6 +61,8 @@ library generals-io-client
     generals-io-client/
   build-depends:
       base >= 4.13 && < 5.0
+    , socket-io-client
+    , generals-io-types
     , aeson
     , bytestring
     , vector
@@ -68,8 +70,11 @@ library generals-io-client
     , unordered-containers
     , pipes
     , generic-lens
+    , microlens
+    , uuid
+
   exposed-modules:
-    , GeneralsIO.Protocol
+      GeneralsIO.Protocol
     , GeneralsIO.Strategy
 
 
@@ -84,6 +89,7 @@ executable demo
   build-depends:
       base >= 4.13 && < 5.0
     , socket-io-client
+    , generals-io-types
     , generals-io-client
     , pipes
     , aeson

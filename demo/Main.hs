@@ -23,29 +23,27 @@ import qualified Data.ByteString.Lazy as BSL
 import Pipes
 import qualified Pipes.Prelude as Pipes
 
-import Control.Concurrent.STM
-
 import qualified SocketIO as Socket
 
 import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 import GeneralsIO.Commands
-import GeneralsIO.Strategy (Strategy)
+import GeneralsIO.Strategy (basicStrategy)
 
 
 main :: IO ()
 main = botClient
 
 
-botClient :: forall m. (MonadIO m) => m ()
+botClient :: forall m. (MonadFail m, MonadIO m) => m ()
 botClient = do
   -- connect to the bot server
   (socketEmit, output) <- Socket.connect generalsBotServer
 
   -- wrap socketEmit
   let
-    sendCommand :: Consumer SomeCommand m ()
-    sendCommand = socketEmit <-< Pipes.mapM logAndConvert
+    emitCommands :: Consumer SomeCommand m ()
+    emitCommands = socketEmit <-< Pipes.mapM logAndConvert
       where
         logAndConvert :: SomeCommand -> m Json.Array
         logAndConvert (SomeCommand cmd) = do
@@ -57,9 +55,15 @@ botClient = do
     events =
       output >->
       Pipes.map parseJson >->
-      Pipes.mapM (tap print)
+      Pipes.mapM (tap print) >->
+      Pipes.wither (const (pure Nothing) ||| pure . Just)
 
-    parseJson = (ParseError ||| GameEvent) . Json.eitherDecode' . BSL.fromStrict
+    parseJson =  Json.eitherDecode' . BSL.fromStrict
+
+
+  Pipes.runEffect $
+    events >-> basicStrategy >-> emitCommands
+
 
 -- | Run an effect, and replace the output with the input
 tap :: Functor f => (a -> f b) -> (a -> f a)
@@ -79,20 +83,6 @@ print = liftIO . Prelude.print
 
 background :: Effect IO () -> IO ThreadId
 background = forkIO . Pipes.runEffect
-
-
-pushToQueue :: TBQueue a -> Consumer a IO ()
-pushToQueue queue =
-  forever $ do
-    item <- await
-    liftIO $ atomically $ writeTBQueue queue item
-
-
-pullFromQueue :: TBQueue a -> Producer a IO ()
-pullFromQueue queue =
-  forever $ do
-    item <- liftIO $ atomically $ readTBQueue queue
-    yield item
 
 
 generalsBotServer :: Socket.Url
