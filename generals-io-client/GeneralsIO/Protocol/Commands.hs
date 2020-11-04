@@ -3,9 +3,11 @@
 {-# Language TypeFamilies #-}
 {-# Language MultiParamTypeClasses #-}
 module GeneralsIO.Protocol.Commands
--- import Pipes (Pipe)
-import GeneralsIO.Events as Evt
+  ( Command(..)
+  ) where
+
 import qualified GeneralsIO.Commands as Cmd
+import GeneralsIO.Protocol.Phases
 
 
 data Command (phase :: Phase)  where
@@ -21,7 +23,7 @@ data Command (phase :: Phase)  where
   Attack        ::                              Cmd.Attack        -> Command (InGame    gameType)
   ClearMoves    ::                              Cmd.ClearMoves    -> Command (InGame    gameType)
   PingTile      :: IsTeamGame gameType       => Cmd.PingTile      -> Command (InGame    gameType)
-  ChatMessage   :: CanChat phase             => Cmd.ChatMessage   -> Command phase
+  ChatMessageC  :: CanChat phase             => Cmd.ChatMessage   -> Command phase
   LeaveGame     :: CanLeaveGame phase        => Cmd.LeaveGame     -> Command phase
 
 class CanLeaveGame (phase :: Phase)

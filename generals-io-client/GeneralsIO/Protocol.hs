@@ -2,11 +2,9 @@
 {-# Language DataKinds #-}
 {-# Language TypeFamilies #-}
 {-# Language MultiParamTypeClasses #-}
-module GeneralsIO.Protocol where
--- import Pipes (Pipe)
-import GeneralsIO.Events as Evt
-import qualified GeneralsIO.Commands as Cmd
-import GeneralsIO.Protocol
+module GeneralsIO.Protocol
+  ( module X
+  ) where
 
-
-
+import GeneralsIO.Protocol.Commands as X
+import GeneralsIO.Protocol.Events as X

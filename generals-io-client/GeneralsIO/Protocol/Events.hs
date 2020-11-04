@@ -2,17 +2,19 @@
 {-# Language DataKinds #-}
 {-# Language TypeFamilies #-}
 {-# Language MultiParamTypeClasses #-}
-module GeneralsIO.Protocol.Events where
+module GeneralsIO.Protocol.Events
+  ( Event(..)
+  ) where
 -- import Pipes (Pipe)
-import GeneralsIO.Events as Evt
-import qualified GeneralsIO.Commands as Cmd
+import qualified GeneralsIO.Events as Evt
+import GeneralsIO.Protocol.Phases
 
 
 -- | Event GADT
 -- Event triggers the current next change
 data Event (current :: Phase) (next :: Phase) where
   QueueUpdate      :: Evt.QueueUpdate      -> Event current next
-  ChatMessage      :: ChatMessageEvent current next => Evt.ChatMessage      -> Event current next
+  ChatMessageE     :: ChatMessageEvent current next => Evt.ChatMessage      -> Event current next
   Notify           :: Evt.Notify           -> Event current next -- any
   PreGameStart     :: Evt.PreGameStart     -> Event current next -- ?
   GameUpdate       :: Evt.GameUpdate       -> Event (InGame g) (InGame g)
