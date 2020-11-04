@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 module Main where
 
 import Prelude hiding (print)
@@ -12,11 +13,7 @@ import Control.Arrow ((|||))
 import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
 
-import Data.Generics.Labels ()
-import Lens.Micro
 
-import qualified Data.UUID.V4 as UUID
-import qualified Data.UUID as UUID
 import qualified Data.Aeson as Json
 import qualified Data.ByteString.Lazy as BSL
 
@@ -28,15 +25,18 @@ import qualified SocketIO as Socket
 import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 import GeneralsIO.Commands
-import GeneralsIO.Strategy (basicStrategy)
+import GeneralsIO.Strategy
 
 
 main :: IO ()
-main = botClient
+main = do
+  let bot = Bot  "4321687" "[Bot] Vorhees"
+  gameConfig <- mkGameConfig 2
+  botClient $ playPrivateGame gameConfig bot
 
 
-botClient :: forall m. (MonadFail m, MonadIO m) => m ()
-botClient = do
+botClient :: forall m. (MonadFail m, MonadIO m) => Strategy m -> m ()
+botClient strategy = do
   -- connect to the bot server
   (socketEmit, output) <- Socket.connect generalsBotServer
 
@@ -62,15 +62,7 @@ botClient = do
 
 
   Pipes.runEffect $
-    events >-> basicStrategy >-> emitCommands
-
-
--- | Run an effect, and replace the output with the input
-tap :: Functor f => (a -> f b) -> (a -> f a)
-tap f a = f a $> a
-
-print :: (Show a, MonadIO m) => a -> m ()
-print = liftIO . Prelude.print
+    events >-> strategy >-> emitCommands
 
 
 background :: Effect IO () -> IO ThreadId

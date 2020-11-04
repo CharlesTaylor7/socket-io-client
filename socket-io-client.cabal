@@ -71,7 +71,7 @@ library generals-io-client
     , unordered-containers
     , pipes
     , generic-lens
-    , microlens
+    , lens
     , uuid
 
   exposed-modules:
@@ -97,10 +97,6 @@ executable demo
     , socket-io-client
     , generals-io-types
     , generals-io-client
-    , pipes
     , aeson
     , bytestring
-    , uuid
-    , stm
-    , microlens
-    , generic-lens
+    , pipes

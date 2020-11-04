@@ -13,6 +13,7 @@ import Data.Text (Text)
 import Data.Aeson
 import qualified Data.Aeson.Types as Json
 
+
 data SomeCommand where
   SomeCommand
     :: forall cmd. (Show cmd, Command cmd)
@@ -41,27 +42,27 @@ instance Command SetUsername where
 -- | play
 -- Join FFA queue
 data Play = Play
-  { userId   :: Text
+  { botId :: Text
   }
   deriving (Show, Generic)
 
 instance Command Play where
   toArgs Play{..} =
     [ toJSON "play"
-    , toJSON userId
+    , toJSON botId
     ]
 
 -- | join_1v1
 -- Join 1v1 queue
 data Join1v1 = Join1v1
-  { userId   :: Text
+  { botId :: Text
   }
   deriving (Show, Generic)
 
 instance Command Join1v1 where
   toArgs Join1v1{..} =
     [ toJSON "join_1v1"
-    , toJSON userId
+    , toJSON botId
     ]
 
 -- | join_private
@@ -82,7 +83,7 @@ instance Command JoinPrivate where
 -- | set_custom_team
 -- Choose team number in a custom game
 data SetCustomTeam = SetCustomTeam
-  { customGameId :: Text
+  { gameId :: Text
   , team         :: Int -- ^ between 1 & 8 inclusive
   }
   deriving (Show, Generic)
@@ -90,7 +91,7 @@ data SetCustomTeam = SetCustomTeam
 instance Command SetCustomTeam where
   toArgs SetCustomTeam{..} =
     [ toJSON "set_custom_team"
-    , toJSON customGameId
+    , toJSON gameId
     , toJSON team
     ]
 
@@ -134,7 +135,7 @@ instance Command Cancel where
 -- Toggle force start status in multiplayer game
 data SetForceStart = SetForceStart
   { queueId :: Text
-  , doForce :: Bool
+  , force   :: Bool
   }
   deriving (Show, Generic)
 
@@ -142,7 +143,7 @@ instance Command SetForceStart where
   toArgs SetForceStart{..}  =
     [ toJSON "set_force_start"
     , toJSON queueId
-    , toJSON doForce
+    , toJSON force
     ]
 
 -- | attack
