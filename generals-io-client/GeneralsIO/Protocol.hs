@@ -44,8 +44,8 @@ instance CanLeaveGame GameOver
 
 class IsTeamGame (gameType :: GameType)
 instance IsTeamGame TwoVsTwo
+instance IsTeamGame Custom
 instance IsTeamGame FFA
-instance IsTeamGame Team
 
 class CanSetForceStart (gameType :: GameType)
 instance CanSetForceStart Custom
