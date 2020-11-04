@@ -78,6 +78,11 @@ library generals-io-client
       GeneralsIO.Protocol
     , GeneralsIO.Strategy
 
+  other-modules:
+      GeneralsIO.Protocol.Phases
+    , GeneralsIO.Protocol.Events
+    , GeneralsIO.Protocol.Commands
+
 
 executable demo
   import: common
