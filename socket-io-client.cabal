@@ -19,6 +19,7 @@ common common
     -Wall
     -- don't warn about name shadowing
     -fno-warn-name-shadowing
+    -fno-warn-unticked-promoted-constructors
     -- errors on these
     -Werror=missing-home-modules
     -Werror=incomplete-patterns

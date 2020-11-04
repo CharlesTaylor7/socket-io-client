@@ -33,7 +33,6 @@ import qualified SocketIO as Socket
 import GeneralsIO.Events (Event(..))
 import qualified GeneralsIO.Events as GeneralsIO
 import GeneralsIO.Commands
-import GeneralsIO.Protocol
 
 
 type Strategy m = Pipe Event SomeCommand m ()

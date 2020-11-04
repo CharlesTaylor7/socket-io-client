@@ -23,17 +23,30 @@ data Phase
 
 
 data Command (phase :: Phase) (gameType :: GameType) where
-  SetUsername   :: Cmd.SetUsername   -> Command phase     gameType
-  Play          :: Cmd.Play          -> Command Connected gameType
-  Join1v1       :: Cmd.Join1v1       -> Command Connected gameType
-  SetCustomTeam :: Cmd.SetCustomTeam -> Command InQueue   Custom
-  JoinTeam      :: Cmd.JoinTeam      -> Command InQueue   TwoVsTwo
-  LeaveTeam     :: Cmd.LeaveTeam     -> Command InQueue   TwoVsTwo
-  Cancel        :: Cmd.Cancel        -> Command InQueue   gameType
-  SetForceStart :: Cmd.SetForceStart -> Command InQueue   gameType
-  Attack        :: Cmd.Attack        -> Command InGame    gameType
-  ClearMoves    :: Cmd.ClearMoves    -> Command InGame    gameType
-  PingTile      :: Cmd.PingTile      -> Command InGame    gameType
-  ChatMessage   :: Cmd.ChatMessage   -> Command phase     gameType
-  LeaveGame     :: Cmd.LeaveGame     -> Command phase     gameType
-  StarsAndRank  :: Cmd.StarsAndRank  -> Command phase     gameType
+  SetUsername   ::   {- ?? -}                   Cmd.SetUsername   -> Command phase     gameType
+  StarsAndRank  ::   {- ?? -}                   Cmd.StarsAndRank  -> Command phase     gameType
+  Play          ::                              Cmd.Play          -> Command Connected gameType
+  Join1v1       ::                              Cmd.Join1v1       -> Command Connected gameType
+  SetCustomTeam ::                              Cmd.SetCustomTeam -> Command InQueue   Custom
+  JoinTeam      ::                              Cmd.JoinTeam      -> Command InQueue   TwoVsTwo
+  LeaveTeam     ::                              Cmd.LeaveTeam     -> Command InQueue   TwoVsTwo
+  Cancel        ::                              Cmd.Cancel        -> Command InQueue   gameType
+  SetForceStart :: CanSetForceStart gameType => Cmd.SetForceStart -> Command InQueue   gameType
+  Attack        ::                              Cmd.Attack        -> Command InGame    gameType
+  ClearMoves    ::                              Cmd.ClearMoves    -> Command InGame    gameType
+  PingTile      :: IsTeamGame gameType       => Cmd.PingTile      -> Command InGame    gameType
+  ChatMessage   ::                              Cmd.ChatMessage   -> Command phase     gameType
+  LeaveGame     :: CanLeaveGame phase        => Cmd.LeaveGame     -> Command phase     gameType
+
+class CanLeaveGame (phase :: Phase)
+instance CanLeaveGame InGame
+instance CanLeaveGame GameOver
+
+class IsTeamGame (gameType :: GameType)
+instance IsTeamGame TwoVsTwo
+instance IsTeamGame FFA
+instance IsTeamGame Team
+
+class CanSetForceStart (gameType :: GameType)
+instance CanSetForceStart Custom
+instance CanSetForceStart FFA
