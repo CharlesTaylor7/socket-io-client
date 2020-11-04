@@ -69,14 +69,6 @@ botClient = do
 tap :: Functor f => (a -> f b) -> (a -> f a)
 tap f a = f a $> a
 
-data SocketOutput
-  = GameEvent GeneralsIO.Event
-  -- ^ generals event
-  | ParseError String
-  -- ^ error parsing generals event
-  deriving Show
-
-
 print :: (Show a, MonadIO m) => a -> m ()
 print = liftIO . Prelude.print
 
