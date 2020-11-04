@@ -68,12 +68,12 @@ library generals-io-client
     , bytestring
     , vector
     , text
-    , unordered-containers
+    , containers
     , pipes
     , generic-lens
     , lens
     , uuid
-
+    , mtl
   exposed-modules:
       GeneralsIO.Protocol
     , GeneralsIO.Strategy
