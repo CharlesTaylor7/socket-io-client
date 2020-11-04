@@ -6,13 +6,9 @@
 module Main where
 
 import Prelude hiding (print)
-import qualified Prelude
 
-import Data.Functor (($>))
 import Control.Arrow ((|||))
-import Control.Monad (forever, when)
 import Control.Concurrent (ThreadId, forkIO)
-
 
 import qualified Data.Aeson as Json
 import qualified Data.ByteString.Lazy as BSL
@@ -22,9 +18,7 @@ import qualified Pipes.Prelude as Pipes
 
 import qualified SocketIO as Socket
 
-import GeneralsIO.Events (Event(..))
-import qualified GeneralsIO.Events as GeneralsIO
-import GeneralsIO.Commands
+import GeneralsIO.Commands (SomeCommand(..), Command(..))
 import GeneralsIO.Strategy
 
 
