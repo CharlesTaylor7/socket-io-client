@@ -24,7 +24,7 @@ data Command (phase :: Phase)  where
   SetForceStart :: CanSetForceStart gameType => Cmd.SetForceStart -> Command (InQueue   gameType)
   Attack        ::                              Cmd.Attack        -> Command (InGame    gameType)
   ClearMoves    ::                              Cmd.ClearMoves    -> Command (InGame    gameType)
-  PingTile      :: IsTeamGame gameType       => Cmd.PingTile      -> Command (InGame    gameType)
+  PingTile      :: CanPingTile gameType       => Cmd.PingTile      -> Command (InGame    gameType)
   ChatMessageC  :: CanChat phase             => Cmd.ChatMessage   -> Command phase
   LeaveGame     :: CanLeaveGame phase        => Cmd.LeaveGame     -> Command phase
 
@@ -32,10 +32,10 @@ class CanLeaveGame (phase :: Phase)
 instance CanLeaveGame (InGame g)
 instance CanLeaveGame GameOver
 
-class IsTeamGame (gameType :: GameType)
-instance IsTeamGame TwoVsTwo
-instance IsTeamGame Custom
-instance IsTeamGame FFA
+class CanPingTile (gameType :: GameType)
+instance CanPingTile TwoVsTwo
+instance CanPingTile Custom
+instance CanPingTile FFA
 
 class CanSetForceStart (gameType :: GameType)
 instance CanSetForceStart Custom
