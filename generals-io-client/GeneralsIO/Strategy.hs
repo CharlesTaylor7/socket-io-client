@@ -3,15 +3,13 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE NamedFieldPuns #-}
 module GeneralsIO.Strategy where
-
-import Pipes (Pipe)
-import GeneralsIO.Events (Event)
-import GeneralsIO.Commands (Command)
 
 import Prelude hiding (print, putStrLn)
 import qualified Prelude
 
+import GHC.Generics (Generic)
 import Data.Functor (($>))
 import Control.Arrow ((|||))
 import Control.Monad (forever, when)
@@ -20,7 +18,9 @@ import Control.Concurrent (ThreadId, forkIO)
 import Data.Generics.Labels ()
 import Lens.Micro
 
+import Data.Text (Text)
 import qualified Data.UUID.V4 as UUID
+import Data.UUID (UUID)
 import qualified Data.UUID as UUID
 import qualified Data.Aeson as Json
 import qualified Data.ByteString.Lazy as BSL
@@ -30,19 +30,39 @@ import qualified Pipes.Prelude as Pipes
 
 import qualified SocketIO as Socket
 
-import GeneralsIO.Events (Event(..))
-import qualified GeneralsIO.Events as GeneralsIO
-import GeneralsIO.Commands
+import GeneralsIO.Events
+import GeneralsIO.Protocol hiding (Event(..))
 
 
-type Strategy m = Pipe Event SomeCommand m ()
+type Strategy phase =
+  forall m. MonadIO m =>
+  Pipe Event (Command phase) m ()
 
-sendCommand
-  :: (Show cmd, Command cmd, Functor m)
-  => cmd
-  -> Producer' SomeCommand m ()
-sendCommand cmd = yield $ SomeCommand cmd
 
+
+data GameConfig = GameConfig
+  { gameId   :: UUID
+  , gameSize :: Int
+  }
+  deriving (Generic)
+
+mkGameConfig :: Int -> IO GameConfig
+mkGameConfig gameSize = do
+  gameId <- UUID.nextRandom
+  pure GameConfig { gameId, gameSize }
+
+data Bot = Bot
+  { botId   :: Text
+  , botName :: Text
+  }
+  deriving (Generic)
+
+
+joinPrivateGame :: GameConfig -> Bot -> Strategy Connected
+joinPrivateGame gameConfig bot = do
+  let gameId = gameConfig ^. #gameId . to UUID.toText
+  let botId = bot ^. #botId
+  sendCommand $ JoinPrivate { gameId, botId }
 
 basicStrategy :: MonadIO m => Strategy m
 basicStrategy = do

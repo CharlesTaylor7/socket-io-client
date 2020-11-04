@@ -67,16 +67,16 @@ instance Command Join1v1 where
 -- | join_private
 -- Join a private game
 data JoinPrivate = JoinPrivate
-  { customGameId :: Text
-  , userId       :: Text
+  { gameId :: Text
+  , botId  :: Text
   }
   deriving (Show, Generic)
 
 instance Command JoinPrivate where
   toArgs JoinPrivate{..} =
     [ toJSON "join_private"
-    , toJSON customGameId
-    , toJSON userId
+    , toJSON gameId
+    , toJSON botId
     ]
 
 -- | set_custom_team

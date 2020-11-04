@@ -15,9 +15,11 @@ data Command (phase :: Phase)  where
   StarsAndRank  ::   {- ?? -}                   Cmd.StarsAndRank  -> Command phase
   Play          ::                              Cmd.Play          -> Command Connected
   Join1v1       ::                              Cmd.Join1v1       -> Command Connected
-  SetCustomTeam ::                              Cmd.SetCustomTeam -> Command (InQueue   Custom)
+  Join2v2       ::                              Cmd.Join1v1       -> Command Connected
   JoinTeam      ::                              Cmd.JoinTeam      -> Command (InQueue   TwoVsTwo)
   LeaveTeam     ::                              Cmd.LeaveTeam     -> Command (InQueue   TwoVsTwo)
+  JoinPrivate   ::                              Cmd.JoinPrivate   -> Command Connected
+  SetCustomTeam ::                              Cmd.SetCustomTeam -> Command (InQueue   Custom)
   Cancel        ::                              Cmd.Cancel        -> Command (InQueue   gameType)
   SetForceStart :: CanSetForceStart gameType => Cmd.SetForceStart -> Command (InQueue   gameType)
   Attack        ::                              Cmd.Attack        -> Command (InGame    gameType)
