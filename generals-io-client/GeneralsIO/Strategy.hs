@@ -30,11 +30,12 @@ import qualified Pipes.Prelude as Pipes
 
 import GeneralsIO.Events
 import GeneralsIO.Commands
+import GeneralsIO.State
 
 
-type Strategy m =
-  MonadIO m =>
-  Pipe Event SomeCommand m ()
+
+type Strategy m = Pipe Event SomeCommand m ()
+
 
 sendCommand :: (Show cmd, Command cmd, Functor m) => cmd -> Producer' SomeCommand m ()
 sendCommand cmd = yield $ SomeCommand cmd
@@ -57,7 +58,7 @@ data Bot = Bot
   deriving (Generic)
 
 
-playPrivateGame :: GameConfig -> Bot -> Strategy m
+playPrivateGame :: MonadState GameState m => GameConfig -> Bot -> Strategy m
 playPrivateGame gameConfig bot = do
   let gameId = gameConfig ^. #gameId . to UUID.toText
   let gameSize = gameConfig ^. #gameSize
@@ -70,8 +71,14 @@ playPrivateGame gameConfig bot = do
 
   sendCommand $ SetForceStart {force = True, queueId = gameId }
 
-  Pipes.for cat $ \event ->
+  Pipes.for $ cat >-> match #_GameUpdate $ \game ->
+
     pure ()
+
+-- | match all
+match :: Monad m => Getting (First a) s a -> Pipe s a m r
+match optic = Pipes.wither (pure . preview optic)
+
 
 -- | drop until first item in pipe matching traversal
 matchFirst :: Functor m => Getting (First a) s a -> Consumer' s m a
@@ -82,6 +89,7 @@ matchFirst f = go
       case s ^? f of
         Just a  -> pure a
         Nothing -> go
+
 
 -- | Run an effect, and replace the output with the input
 tap :: Functor f => (a -> f b) -> (a -> f a)
