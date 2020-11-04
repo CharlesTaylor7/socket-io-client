@@ -82,7 +82,7 @@ library generals-io-client
       GeneralsIO.Protocol.Phases
     , GeneralsIO.Protocol.Events
     , GeneralsIO.Protocol.Commands
-
+    , GeneralsIO.State
 
 executable demo
   import: common
