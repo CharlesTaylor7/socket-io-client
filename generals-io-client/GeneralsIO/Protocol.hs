@@ -3,9 +3,8 @@
 {-# Language TypeFamilies #-}
 module GeneralsIO.Protocol where
 -- import Pipes (Pipe)
--- import GeneralsIO.Events (Event)
+import GeneralsIO.Events as Evt
 import qualified GeneralsIO.Commands as Cmd
-
 
 
 data GameType
@@ -55,7 +54,3 @@ class CanChat (phase :: Phase)
 instance CanChat (InQueue g)
 instance CanChat (InGame g)
 instance CanChat GameOver
-
-checkPingTile :: Command (InQueue TwoVsTwo) -> Cmd.PingTile
-checkPingTile (PingTile pt) = pt
-checkPingTile (PingTile pt) = pt
