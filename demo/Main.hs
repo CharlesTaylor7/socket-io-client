@@ -35,7 +35,7 @@ main = do
   gameConfig <- mkGameConfig 2
   playPrivateGame gameConfig bot
     & botClient
-    & flip evalStateT (GameState (-1) mempty)
+    & flip evalStateT initialGameState
 
 
 botClient :: forall m. StrategyConstraints m => Strategy m -> m ()

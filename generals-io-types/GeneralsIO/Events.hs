@@ -136,7 +136,7 @@ data GameUpdate = MkGameUpdate
   , citiesDiff  :: Vector Int
   , attackIndex :: Int
   , scores      :: Vector Score
-  , mapDiff     :: Vector Int
+  , mapDiff     :: [Int]
   }
   deriving (Generic, Show)
 

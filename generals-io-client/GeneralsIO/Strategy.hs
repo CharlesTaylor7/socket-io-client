@@ -97,9 +97,6 @@ matchFirst f = go
         Nothing -> go
 
 
--- | Run an effect, and replace the output with the input
-tap :: Functor f => (a -> f b) -> (a -> f a)
-tap f a = f a $> a
 
 print :: (Show a, MonadIO m) => a -> m ()
 print = liftIO . Prelude.print

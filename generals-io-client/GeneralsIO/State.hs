@@ -7,11 +7,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module GeneralsIO.State
   ( GameState(..)
   , GridIndex
   , PlayerId
   , MonadState(..)
+  , initialGameState
   , applyGameStart
   , applyGameUpdate
   )
@@ -64,13 +66,20 @@ data GameState = GameState
   }
   deriving (Generic)
 
+initialGameState = GameState Nothing mempty mempty
+
 newtype GridIndex = GridIndex Int
 newtype PlayerId = PlayerId Int
   deriving (Show, Eq)
+
 newtype ChatRoomId = ChatRoomId Text
   deriving (Show, Eq)
+
 newtype Grid = Grid (IntMap Tile)
+  deriving (Monoid, Semigroup)
+
 newtype LookupByPlayerId a = LookupByPlayerId (Vector a)
+  deriving (Monoid, Semigroup)
 
 applyGameStart :: MonadState GameState m => GameStart -> m ()
 applyGameStart event = do
@@ -79,6 +88,10 @@ applyGameStart event = do
 
 applyGameUpdate :: MonadState GameState m => GameUpdate -> m ()
 applyGameUpdate event = do
+  let diff = event ^. #mapDiff
+  let
+    mapTiles :: IntMap Int
+    mapTiles = patch & flip evalState (diff, 0, mempty)
   -- #grid .
 
 
@@ -113,3 +126,5 @@ patch = do
       -- insert new tiles
       for_ (apply `zip` [i, i+1 ..]) $ \(tile, i) ->
         _3 . ix i .= tile
+
+      _2 += useDiff
