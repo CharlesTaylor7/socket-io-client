@@ -54,7 +54,7 @@ botClient strategy = do
     events =
       output >->
       Pipes.map parseJson >->
-      Pipes.mapM (tap print) >->
+      Pipes.chain print >->
       Pipes.wither (const (pure Nothing) ||| pure . Just)
 
     parseJson =  Json.eitherDecode' . BSL.fromStrict

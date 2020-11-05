@@ -23,6 +23,9 @@ import qualified Data.Aeson.Types as Json
 -- | Generals Event
 data Event
   = QueueUpdate QueueUpdate
+  | Unknown Json.Value
+{-
+  = QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
   | PreGameStart PreGameStart
@@ -37,24 +40,25 @@ data Event
  --  | ErrorBanned ErrorBanned
   | ErrorSetUsername ErrorSetUsername
   | Unknown Json.Value
+-}
   deriving (Generic, Show)
 
 instance FromJSON Event where
   parseJSON v = (asum :: [Json.Parser Event] -> Json.Parser Event)
     [ QueueUpdate <$> parseJSON v
-    , ChatMessage <$> parseJSON v
-    , Notify <$> parseJSON v
-    , PreGameStart <$> parseJSON v
-    , GameStart <$> parseJSON v
-    , GameUpdate <$> parseJSON v
-    , GameWon <$> parseJSON v
+  -- , ChatMessage <$> parseJSON v
+  -- , Notify <$> parseJSON v
+  -- , PreGameStart <$> parseJSON v
+  -- , GameStart <$> parseJSON v
+  -- , GameUpdate <$> parseJSON v
+  -- , GameWon <$> parseJSON v
  --   , GameLost <$> parseJSON v
-    , GameOver <$> parseJSON v
+  -- , GameOver <$> parseJSON v
  --   , Rank <$> parseJSON v
  --   , Stars <$> parseJSON v
  --   , ErrorUserId <$> parseJSON v
  --   , ErrorBanned <$> parseJSON v
-    , ErrorSetUsername <$> parseJSON v
+  -- , ErrorSetUsername <$> parseJSON v
     , pure $ Unknown v
     ]
 
