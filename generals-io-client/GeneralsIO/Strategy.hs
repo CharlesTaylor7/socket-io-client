@@ -66,7 +66,6 @@ playPrivateGame gameConfig bot = do
   let gameSize = gameConfig ^. #gameSize
   let botId = bot ^. #botId
   sendCommand $ JoinPrivate {..}
-  sendCommand $ SetForceStart {force = True, queueId = gameId }
   liftIO $ T.putStrLn $ "http://bot.generals.io/games/" <> gameId
 
   -- set the game to force start after all players have joined
@@ -75,14 +74,10 @@ playPrivateGame gameConfig bot = do
   sendCommand $ SetForceStart {force = True, queueId = gameId }
 
   gameStart <- matchFirst #_GameStart
-
   applyGameStart gameStart
 
-  let
-    applyUpdates :: Pipe Event GameUpdate m ()
-    applyUpdates = match #_GameUpdate >-> Pipes.chain applyGameUpdate
 
-  Pipes.for cat $ \event -> do
+  Pipes.for (match #_GameUpdate >-> Pipes.chain applyGameUpdate) $ \e ->
     pure ()
 
 

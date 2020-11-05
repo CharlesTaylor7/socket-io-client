@@ -299,5 +299,3 @@ explicitParseAt p array key =
 
 (.@) :: FromJSON a => Json.Array -> Int -> Json.Parser a
 (.@) = explicitParseAt parseJSON
-
-

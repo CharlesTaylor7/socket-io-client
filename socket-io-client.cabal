@@ -74,6 +74,7 @@ library generals-io-client
     , lens
     , uuid
     , mtl
+    , transformers
   exposed-modules:
       GeneralsIO.Protocol
     , GeneralsIO.Strategy
