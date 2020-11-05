@@ -49,6 +49,7 @@ library generals-io-types
     , vector
     , text
     , unordered-containers
+    , jsonifier >= 0.1 && < 0.2
   exposed-modules:
       GeneralsIO.Events
     , GeneralsIO.Commands

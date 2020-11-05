@@ -1,5 +1,5 @@
 {-# Language DuplicateRecordFields #-}
-{-# Language OverloadedLists #-}
+{-# Language OverloadedStrings #-}
 {-# Language NamedFieldPuns #-}
 {-# Language RecordWildCards #-}
 {-# Language DeriveGeneric #-}
@@ -10,8 +10,10 @@ module GeneralsIO.Commands where
 import GHC.Generics (Generic)
 
 import Data.Text (Text)
-import Data.Aeson
-import qualified Data.Aeson.Types as Json
+import Data.ByteString (ByteString)
+
+import Jsonifier (Json)
+import qualified Jsonifier as Json
 
 
 data SomeCommand where
@@ -20,8 +22,12 @@ data SomeCommand where
     => cmd
     -> SomeCommand
 
+encode :: Command cmd => cmd -> ByteString
+encode = Json.toByteString . Json.array . toArgs
+
+
 class Command cmd where
-  toArgs :: cmd -> Json.Array
+  toArgs :: cmd -> [Json]
 
 
 -- | set_username
@@ -34,9 +40,9 @@ data SetUsername = SetUsername
 
 instance Command SetUsername where
   toArgs (SetUsername userId username) =
-    [ toJSON "set_username"
-    , toJSON userId
-    , toJSON username
+    [ Json.textString "set_username"
+    , Json.textString userId
+    , Json.textString username
     ]
 
 -- | play
@@ -48,8 +54,8 @@ data Play = Play
 
 instance Command Play where
   toArgs Play{..} =
-    [ toJSON "play"
-    , toJSON botId
+    [ Json.textString "play"
+    , Json.textString botId
     ]
 
 -- | join_1v1
@@ -61,8 +67,8 @@ data Join1v1 = Join1v1
 
 instance Command Join1v1 where
   toArgs Join1v1{..} =
-    [ toJSON "join_1v1"
-    , toJSON botId
+    [ Json.textString "join_1v1"
+    , Json.textString botId
     ]
 
 -- | join_private
@@ -75,9 +81,9 @@ data JoinPrivate = JoinPrivate
 
 instance Command JoinPrivate where
   toArgs JoinPrivate{..} =
-    [ toJSON "join_private"
-    , toJSON gameId
-    , toJSON botId
+    [ Json.textString "join_private"
+    , Json.textString gameId
+    , Json.textString botId
     ]
 
 -- | set_custom_team
@@ -90,9 +96,9 @@ data SetCustomTeam = SetCustomTeam
 
 instance Command SetCustomTeam where
   toArgs SetCustomTeam{..} =
-    [ toJSON "set_custom_team"
-    , toJSON gameId
-    , toJSON team
+    [ Json.textString "set_custom_team"
+    , Json.textString gameId
+    , Json.intNumber team
     ]
 
 -- | join_team
@@ -105,9 +111,9 @@ data JoinTeam = JoinTeam
 
 instance Command JoinTeam where
   toArgs JoinTeam{..} =
-    [ toJSON "join_team"
-    , toJSON teamId
-    , toJSON userId
+    [ Json.textString "join_team"
+    , Json.textString teamId
+    , Json.intNumber userId
     ]
 
 -- | leave_team
@@ -119,8 +125,8 @@ data LeaveTeam = LeaveTeam
 
 instance Command LeaveTeam where
   toArgs LeaveTeam{..} =
-    [ toJSON "leave_team"
-    , toJSON teamId
+    [ Json.textString "leave_team"
+    , Json.textString teamId
     ]
 
 -- | cancel
@@ -129,7 +135,7 @@ data Cancel = Cancel
   deriving (Show, Generic)
 
 instance Command Cancel where
-  toArgs Cancel = [ toJSON "cancel" ]
+  toArgs Cancel = [ Json.textString "cancel" ]
 
 -- | set_force_start
 -- Toggle force start status in multiplayer game
@@ -141,9 +147,9 @@ data SetForceStart = SetForceStart
 
 instance Command SetForceStart where
   toArgs SetForceStart{..}  =
-    [ toJSON "set_force_start"
-    , toJSON queueId
-    , toJSON force
+    [ Json.textString "set_force_start"
+    , Json.textString queueId
+    , Json.bool force
     ]
 
 -- | attack
@@ -157,10 +163,10 @@ data Attack = Attack
 
 instance Command Attack where
   toArgs Attack{..}  =
-    [ toJSON "attack"
-    , toJSON start
-    , toJSON end
-    , toJSON onlyHalf
+    [ Json.textString "attack"
+    , Json.intNumber start
+    , Json.intNumber end
+    , Json.bool onlyHalf
     ]
 
 -- | clear_moves
@@ -169,7 +175,7 @@ data ClearMoves = ClearMoves
   deriving (Show, Generic)
 
 instance Command ClearMoves where
-  toArgs ClearMoves = [ toJSON "clear_moves" ]
+  toArgs ClearMoves = [ Json.textString "clear_moves" ]
 
 -- | ping_tile
 -- Signals a tile to all teammates in a team game
@@ -180,8 +186,8 @@ data PingTile = PingTile
 
 instance Command PingTile where
   toArgs PingTile{..} =
-    [ toJSON "ping_tile"
-    , toJSON tile
+    [ Json.textString "ping_tile"
+    , Json.intNumber tile
     ]
 
 -- | chat_message
@@ -194,9 +200,9 @@ data Message = Message
 
 instance Command Message where
   toArgs Message{..} =
-    [ toJSON "chat_message"
-    , toJSON chatRoomId
-    , toJSON text
+    [ Json.textString "chat_message"
+    , Json.textString chatRoomId
+    , Json.textString text
     ]
 
 -- | leave_game
@@ -205,7 +211,7 @@ data LeaveGame = LeaveGame
   deriving (Show, Generic)
 
 instance Command LeaveGame where
-  toArgs LeaveGame = [ toJSON "leave_game" ]
+  toArgs LeaveGame = [ Json.textString "leave_game" ]
 
 -- | stars_and_rank
 -- Ask for a users stars & rank
@@ -216,6 +222,6 @@ data StarsAndRank = StarsAndRank
 
 instance Command StarsAndRank where
   toArgs StarsAndRank{..} =
-    [ toJSON "stars_and_rank"
-    , toJSON userId
+    [ Json.textString "stars_and_rank"
+    , Json.textString userId
     ]
