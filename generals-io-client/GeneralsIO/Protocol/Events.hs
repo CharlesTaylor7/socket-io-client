@@ -16,9 +16,9 @@ data Event (phase :: Phase) where
   ChatMessageE     :: ChatMessageEvent current => Evt.ChatMessage      -> Event current
   Notify           ::                             Evt.Notify           -> Event current
   PreGameStart     ::                             Evt.PreGameStart     -> Event current
-  GameStart        ::                             Evt.GameStart        -> Event (InQueue g) (InGame g)
-  GameUpdate       ::                             Evt.GameUpdate       -> Event (InGame g)  (InGame g)
-  GameOver         ::                             Evt.GameOver         -> Event (InGame g)  Phase.GameOver
+  GameStart        ::                             Evt.GameStart        -> Event (InQueue g)
+  GameUpdate       ::                             Evt.GameUpdate       -> Event (InGame g)
+  GameOver         ::                             Evt.GameOver         -> Event (InGame g)
   ErrorSetUsername ::                             Evt.ErrorSetUsername -> Event current
 
 
