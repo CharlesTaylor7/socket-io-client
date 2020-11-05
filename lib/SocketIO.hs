@@ -53,8 +53,8 @@ connect server = do
       appendToFile "socket.io-client.error-log"
 
   let client = mkClient stdin
-  events :: Producer BS.ByteString m () <-
-    readLines stdout & waitForConnect
+  let print = liftIO . Prelude.print
+  let events = readLines stdout >-> Pipes.chain print >-> waitForConnect
 
   pure $ (client, events)
 
@@ -95,15 +95,13 @@ appendToFile path = do
     BS.hPutStr handle "\n"
 
 
-waitForConnect :: MonadIO m => Producer BS.ByteString m () -> m (Producer BS.ByteString m ())
-waitForConnect producer = do
-  connect <- next producer
+waitForConnect :: MonadIO m => Pipe BS.ByteString BS.ByteString m r
+waitForConnect = do
+  connect <- await
   case connect of
-    Right ("connect", rest) -> pure rest
-    Right (msg, _) -> liftIO $ throwIO $
+    "connect" -> cat
+    msg -> liftIO $ throwIO $
       BadString msg
-    Left _ -> liftIO $ throwIO $
-      NoConnection
 
 data InvalidConnection
   = BadString BS.ByteString
