@@ -23,9 +23,6 @@ import qualified Data.Aeson.Types as Json
 -- | Generals Event
 data Event
   = QueueUpdate QueueUpdate
-  | Unknown Json.Value
-{-
-  = QueueUpdate QueueUpdate
   | ChatMessage ChatMessage
   | Notify Notify
   | PreGameStart PreGameStart
@@ -40,7 +37,6 @@ data Event
  --  | ErrorBanned ErrorBanned
   | ErrorSetUsername ErrorSetUsername
   | Unknown Json.Value
--}
   deriving (Generic, Show)
 
 instance FromJSON Event where

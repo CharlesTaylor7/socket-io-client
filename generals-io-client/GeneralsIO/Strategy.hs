@@ -61,18 +61,13 @@ data Bot = Bot
 
 playPrivateGame :: forall m. GameConfig -> Bot -> Strategy m
 playPrivateGame gameConfig bot = do
-  let gameId = gameConfig ^. #gameId . to UUID.toText
+  -- let gameId = gameConfig ^. #gameId . to UUID.toText
+  let gameId = "452"
   let gameSize = gameConfig ^. #gameSize
   let botId = bot ^. #botId
   sendCommand $ JoinPrivate {..}
   liftIO $ T.putStrLn $ "http://bot.generals.io/games/" <> gameId
 
-  Pipes.for cat $ \event -> do
-    -- sendCommand $ Message { chatRoomId = "hey" , text = "hey"}
-    pure ()
-
-
-{--
   -- set the game to force start after all players have joined
   let startGame q = (not $ q ^. #isForcing) && q ^. #numPlayers == gameSize
   _ <- matchFirst $ #_QueueUpdate . filtered startGame
@@ -85,7 +80,9 @@ playPrivateGame gameConfig bot = do
   let
     applyUpdates :: Pipe Event GameUpdate m ()
     applyUpdates = match #_GameUpdate >-> Pipes.chain applyGameUpdate
---}
+
+  Pipes.for cat $ \event -> do
+    pure ()
 
 
 -- | match all
