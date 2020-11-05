@@ -29,33 +29,31 @@ data Event
   | GameStart GameStart
   | GameUpdate GameUpdate
   | GameWon GameWon
- -- | GameLost GameLost
+  | GameLost GameLost
   | GameOver GameOver
- --  | Rank Rank
- --  | Stars Stars
- --  | ErrorUserId ErrorUserId
- --  | ErrorBanned ErrorBanned
+  | Rank Rank
+  | Stars Stars
+  | ErrorUserId ErrorUserId
+  | ErrorBanned ErrorBanned
   | ErrorSetUsername ErrorSetUsername
-  | Unknown Json.Value
   deriving (Generic, Show)
 
 instance FromJSON Event where
   parseJSON v = (asum :: [Json.Parser Event] -> Json.Parser Event)
     [ QueueUpdate <$> parseJSON v
-  -- , ChatMessage <$> parseJSON v
-  -- , Notify <$> parseJSON v
-  -- , PreGameStart <$> parseJSON v
-  -- , GameStart <$> parseJSON v
-  -- , GameUpdate <$> parseJSON v
-  -- , GameWon <$> parseJSON v
- --   , GameLost <$> parseJSON v
-  -- , GameOver <$> parseJSON v
- --   , Rank <$> parseJSON v
- --   , Stars <$> parseJSON v
- --   , ErrorUserId <$> parseJSON v
- --   , ErrorBanned <$> parseJSON v
-  -- , ErrorSetUsername <$> parseJSON v
-    , pure $ Unknown v
+    , ChatMessage <$> parseJSON v
+    , Notify <$> parseJSON v
+    , PreGameStart <$> parseJSON v
+    , GameStart <$> parseJSON v
+    , GameUpdate <$> parseJSON v
+    , GameWon <$> parseJSON v
+    , GameLost <$> parseJSON v
+    , GameOver <$> parseJSON v
+    , Rank <$> parseJSON v
+    , Stars <$> parseJSON v
+    , ErrorUserId <$> parseJSON v
+    , ErrorBanned <$> parseJSON v
+    , ErrorSetUsername <$> parseJSON v
     ]
 
 data Disconnect = MkDisconnect

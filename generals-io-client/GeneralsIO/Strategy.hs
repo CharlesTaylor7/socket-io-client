@@ -66,6 +66,7 @@ playPrivateGame gameConfig bot = do
   let gameSize = gameConfig ^. #gameSize
   let botId = bot ^. #botId
   sendCommand $ JoinPrivate {..}
+  sendCommand $ SetForceStart {force = True, queueId = gameId }
   liftIO $ T.putStrLn $ "http://bot.generals.io/games/" <> gameId
 
   -- set the game to force start after all players have joined
