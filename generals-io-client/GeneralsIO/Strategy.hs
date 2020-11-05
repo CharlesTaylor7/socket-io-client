@@ -6,6 +6,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds #-}
 module GeneralsIO.Strategy where
 
 import Prelude hiding (print, putStrLn)
@@ -32,9 +33,9 @@ import GeneralsIO.Events
 import GeneralsIO.Commands
 import GeneralsIO.State
 
+type StrategyConstraints m = (MonadIO m, MonadState GameState m, MonadFail m)
 
-
-type Strategy m = Pipe Event SomeCommand m ()
+type Strategy m = StrategyConstraints m => Pipe Event SomeCommand m ()
 
 
 sendCommand :: (Show cmd, Command cmd, Functor m) => cmd -> Producer' SomeCommand m ()
@@ -58,7 +59,7 @@ data Bot = Bot
   deriving (Generic)
 
 
-playPrivateGame :: MonadState GameState m => GameConfig -> Bot -> Strategy m
+playPrivateGame :: forall m. GameConfig -> Bot -> Strategy m
 playPrivateGame gameConfig bot = do
   let gameId = gameConfig ^. #gameId . to UUID.toText
   let gameSize = gameConfig ^. #gameSize
@@ -66,14 +67,26 @@ playPrivateGame gameConfig bot = do
   sendCommand $ JoinPrivate {..}
   liftIO $ T.putStrLn $ "http://bot.generals.io/games/" <> gameId
 
-  let startGame q = (not $ q ^. #isForcing) && q ^. #numPlayers == gameSize
-  _ <- matchFirst (#_QueueUpdate . filtered startGame)
+  Pipes.for cat $ \event -> do
+    -- sendCommand $ Message { chatRoomId = "hey" , text = "hey"}
+    pure ()
 
+
+{--
+  -- set the game to force start after all players have joined
+  let startGame q = (not $ q ^. #isForcing) && q ^. #numPlayers == gameSize
+  _ <- matchFirst $ #_QueueUpdate . filtered startGame
   sendCommand $ SetForceStart {force = True, queueId = gameId }
 
-  Pipes.for $ cat >-> match #_GameUpdate $ \game ->
+  gameStart <- matchFirst #_GameStart
 
-    pure ()
+  applyGameStart gameStart
+
+  let
+    applyUpdates :: Pipe Event GameUpdate m ()
+    applyUpdates = match #_GameUpdate >-> Pipes.chain applyGameUpdate
+--}
+
 
 -- | match all
 match :: Monad m => Getting (First a) s a -> Pipe s a m r

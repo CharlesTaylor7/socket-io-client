@@ -77,12 +77,12 @@ library generals-io-client
   exposed-modules:
       GeneralsIO.Protocol
     , GeneralsIO.Strategy
+    , GeneralsIO.State
 
   other-modules:
       GeneralsIO.Protocol.Phases
     , GeneralsIO.Protocol.Events
     , GeneralsIO.Protocol.Commands
-    , GeneralsIO.State
 
 executable demo
   import: common
@@ -100,3 +100,4 @@ executable demo
     , aeson
     , bytestring
     , pipes
+    , mtl

@@ -11,8 +11,8 @@ import GeneralsIO.Protocol.Phases
 
 
 data Command (phase :: Phase)  where
-  SetUsername   ::   {- ?? -}                   Cmd.SetUsername   -> Command phase
-  StarsAndRank  ::   {- ?? -}                   Cmd.StarsAndRank  -> Command phase
+  SetUsername   ::                              Cmd.SetUsername   -> Command phase
+  StarsAndRank  ::                              Cmd.StarsAndRank  -> Command phase
   Play          ::                              Cmd.Play          -> Command Connected
   Join1v1       ::                              Cmd.Join1v1       -> Command Connected
   Join2v2       ::                              Cmd.Join1v1       -> Command Connected
@@ -24,8 +24,8 @@ data Command (phase :: Phase)  where
   SetForceStart :: CanSetForceStart gameType => Cmd.SetForceStart -> Command (InQueue   gameType)
   Attack        ::                              Cmd.Attack        -> Command (InGame    gameType)
   ClearMoves    ::                              Cmd.ClearMoves    -> Command (InGame    gameType)
-  PingTile      :: CanPingTile gameType       => Cmd.PingTile      -> Command (InGame    gameType)
-  ChatMessageC  :: CanChat phase             => Cmd.ChatMessage   -> Command phase
+  PingTile      :: CanPingTile gameType       => Cmd.PingTile     -> Command (InGame    gameType)
+  ChatMessageC  :: CanChat phase             => Cmd.Message       -> Command phase
   LeaveGame     :: CanLeaveGame phase        => Cmd.LeaveGame     -> Command phase
 
 class CanLeaveGame (phase :: Phase)

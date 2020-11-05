@@ -186,14 +186,14 @@ instance Command PingTile where
 
 -- | chat_message
 -- Send a message to chat
-data ChatMessage = ChatMessage
+data Message = Message
   { chatRoomId :: Text
   , text       :: Text
   }
   deriving (Show, Generic)
 
-instance Command ChatMessage where
-  toArgs ChatMessage{..} =
+instance Command Message where
+  toArgs Message{..} =
     [ toJSON "chat_message"
     , toJSON chatRoomId
     , toJSON text

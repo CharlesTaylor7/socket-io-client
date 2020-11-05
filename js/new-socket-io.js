@@ -4,6 +4,7 @@ const socket = Socket(url)
 
 function sendEvent(data) {
   process.stdout.write(JSON.stringify(data))
+  process.stderr.write(JSON.stringify(data))
 }
 
 // forward socket.io events to parent process
@@ -30,5 +31,6 @@ const readline = require('readline').createInterface({input: process.stdin})
 readline.on('line', data => {
   const string = data.toString()
   const args = JSON.parse(string)
+
   socket.emit(...args)
 })

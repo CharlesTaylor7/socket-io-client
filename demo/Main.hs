@@ -3,10 +3,13 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Main where
 
 import Prelude hiding (print)
 
+import Data.Function ((&))
+import Control.Monad.State
 import Control.Arrow ((|||))
 import Control.Concurrent (ThreadId, forkIO)
 
@@ -20,16 +23,20 @@ import qualified SocketIO as Socket
 
 import GeneralsIO.Commands (SomeCommand(..), Command(..))
 import GeneralsIO.Strategy
+import GeneralsIO.State
+import GeneralsIO.Events (Event)
 
 
 main :: IO ()
 main = do
   let bot = Bot  "4321687" "[Bot] Vorhees"
   gameConfig <- mkGameConfig 2
-  botClient $ playPrivateGame gameConfig bot
+  playPrivateGame gameConfig bot
+    & botClient
+    & flip evalStateT (GameState (-1) mempty)
 
 
-botClient :: forall m. (MonadFail m, MonadIO m) => Strategy m -> m ()
+botClient :: forall m. StrategyConstraints m => Strategy m -> m ()
 botClient strategy = do
   -- connect to the bot server
   (socketEmit, output) <- Socket.connect generalsBotServer
@@ -46,6 +53,7 @@ botClient strategy = do
 
   -- write game events
   let
+    events :: Producer Event m ()
     events =
       output >->
       Pipes.map parseJson >->
