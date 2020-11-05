@@ -33,9 +33,6 @@ import GeneralsIO.Events
 import GeneralsIO.Commands
 import GeneralsIO.State
 
-type StrategyConstraints m = (MonadIO m, MonadState GameState m, MonadFail m)
-
-type Strategy m = StrategyConstraints m => Pipe Event SomeCommand m ()
 
 
 sendCommand :: (Show cmd, Command cmd, Functor m) => cmd -> Producer' SomeCommand m ()
@@ -58,9 +55,21 @@ data Bot = Bot
   }
   deriving (Generic)
 
+type Behavior m =
+  (MonadIO m, MonadFail m) =>
+  Pipe Event SomeCommand m ()
 
-playPrivateGame :: forall m. GameConfig -> Bot -> Strategy m
-playPrivateGame gameConfig bot = do
+strat :: Behavior m
+strat = do
+  joinPrivateGame
+  playGame
+
+
+type StrategyConstraints m = (MonadIO m, MonadState GameState m, MonadFail m)
+type Strategy m = StrategyConstraints m => Pipe Event SomeCommand m ()
+
+joinPrivateGame :: forall m. GameConfig -> Bot -> Strategy m
+joinPrivateGame gameConfig bot = do
   -- let gameId = gameConfig ^. #gameId . to UUID.toText
   let gameId = "452"
   let gameSize = gameConfig ^. #gameSize
@@ -72,6 +81,7 @@ playPrivateGame gameConfig bot = do
   let startGame q = (not $ q ^. #isForcing) && q ^. #numPlayers == gameSize
   _ <- matchFirst $ #_QueueUpdate . filtered startGame
   sendCommand $ SetForceStart {force = True, queueId = gameId }
+
 
   gameStart <- matchFirst #_GameStart
   applyGameStart gameStart

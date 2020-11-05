@@ -5,6 +5,7 @@
 module GeneralsIO.Protocol.Events
   ( Event(..)
   ) where
+import Pipes
 import qualified GeneralsIO.Events as Evt
 import GeneralsIO.Protocol.Phases as Phase
 
