@@ -95,7 +95,7 @@ appendToFile path = do
     BS.hPutStr handle "\n"
 
 
-waitForConnect :: MonadIO m => Pipe BS.ByteString BS.ByteString m r
+waitForConnect :: MonadIO m => Pipe BS.ByteString BS.ByteString m ()
 waitForConnect = do
   connect <- await
   case connect of

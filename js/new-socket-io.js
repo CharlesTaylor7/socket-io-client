@@ -4,6 +4,7 @@ const socket = Socket(url)
 
 function sendEvent(data) {
   process.stdout.write(JSON.stringify(data))
+  process.stdout.write('\n')
 }
 
 // forward socket.io events to parent process
