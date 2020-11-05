@@ -21,9 +21,6 @@ import Control.Exception (Exception, throwIO)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Lazy as BSL
-
-import qualified Data.Aeson as Json
 
 import Pipes
 import qualified Pipes.Prelude as Pipes
@@ -34,7 +31,7 @@ import System.Exit (ExitCode(..))
 
 type Url = String
 type Stream m = Producer BS.ByteString m ()
-type SocketEmit m = Consumer Json.Array m ()
+type SocketEmit m = Consumer BS.ByteString m ()
 
 
 connect :: forall m. (MonadFail m, MonadIO m) => Url -> m (SocketEmit m, Stream m)
@@ -80,16 +77,14 @@ setBinaryLineBuffering handle =
     hSetBuffering  handle LineBuffering
 
 
-mkClient :: MonadIO m => Handle -> Consumer Json.Array m ()
+mkClient :: MonadIO m => Handle -> Consumer BS.ByteString m ()
 mkClient handle = do
   setBinaryLineBuffering handle
 
-  Pipes.for Pipes.cat $ \args -> liftIO $ do
-    let bs = Json.encode args
-
+  Pipes.for cat $ \bs -> liftIO $ do
     -- write bytes to handle
-    BSL.hPut handle bs
-    BSL.hPut handle "\n"
+    BS.hPut handle bs
+    BS.hPut handle "\n"
 
 
 appendToFile :: MonadIO m => FilePath -> Consumer BS.ByteString m ()

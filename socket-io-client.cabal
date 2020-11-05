@@ -33,7 +33,6 @@ library
   build-depends:
       base >= 4.13 && < 5.0
     , process
-    , aeson
     , bytestring
     , pipes
   exposed-modules:
