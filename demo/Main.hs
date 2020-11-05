@@ -22,6 +22,8 @@ import qualified Pipes.Prelude as Pipes
 import qualified SocketIO as Socket
 
 import GeneralsIO.Commands (SomeCommand(..), Command(..))
+import qualified GeneralsIO.Commands as Cmd
+
 import GeneralsIO.Strategy
 import GeneralsIO.State
 import GeneralsIO.Events (Event)
@@ -44,12 +46,7 @@ botClient strategy = do
   -- wrap socketEmit
   let
     emitCommands :: Consumer SomeCommand m ()
-    emitCommands = socketEmit <-< Pipes.mapM logAndConvert
-      where
-        logAndConvert :: SomeCommand -> m Json.Array
-        logAndConvert (SomeCommand cmd) = do
-          print cmd
-          pure $ toArgs cmd
+    emitCommands = Pipes.chain print >-> Pipes.map Cmd.encode >-> socketEmit
 
   -- write game events
   let

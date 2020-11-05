@@ -5,10 +5,11 @@
 {-# Language DeriveGeneric #-}
 {-# Language GADTs #-}
 {-# Language RankNTypes #-}
+{-# Language StandaloneDeriving #-}
 module GeneralsIO.Commands where
 
 import GHC.Generics (Generic)
-
+import Data.Function ((&))
 import Data.Text (Text)
 import Data.ByteString (ByteString)
 
@@ -22,8 +23,12 @@ data SomeCommand where
     => cmd
     -> SomeCommand
 
-encode :: Command cmd => cmd -> ByteString
-encode = Json.toByteString . Json.array . toArgs
+instance Show SomeCommand where
+  show (SomeCommand cmd) = show cmd
+
+encode :: SomeCommand -> ByteString
+encode (SomeCommand cmd) =
+  cmd & toArgs & Json.array & Json.toByteString
 
 
 class Command cmd where
