@@ -31,15 +31,11 @@ import GeneralsIO.Events (Event)
 
 main :: IO ()
 main = do
-  let bot = Bot  "4321687" "[Bot] Vorhees"
-  gameConfig <- mkGameConfig 2
-  playPrivateGame gameConfig bot
-    & botClient
-    & flip evalStateT initialGameState
+  botClient strat
 
 
-botClient :: forall m. StrategyConstraints m => Strategy m -> m ()
-botClient strategy = do
+botClient :: forall m. BehaviorConstraints m => Behavior m () -> m ()
+botClient behavior = do
   -- connect to the bot server
   (socketEmit, output) <- Socket.connect generalsBotServer
 
@@ -61,7 +57,7 @@ botClient strategy = do
 
 
   Pipes.runEffect $
-    events >-> strategy >-> emitCommands
+    events >-> behavior >-> emitCommands
 
 
 background :: Effect IO () -> IO ThreadId

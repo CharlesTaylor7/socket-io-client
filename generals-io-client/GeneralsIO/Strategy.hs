@@ -7,6 +7,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE NamedFieldPuns #-}
 module GeneralsIO.Strategy where
 
 import Prelude hiding (print, putStrLn)
@@ -44,8 +45,8 @@ data GameConfig = GameConfig
   }
   deriving (Generic)
 
-mkGameConfig :: Int -> IO GameConfig
-mkGameConfig gameSize = do
+mkGameConfig :: MonadIO m => Int -> m GameConfig
+mkGameConfig gameSize = liftIO $ do
   gameId <- UUID.nextRandom
   pure GameConfig {..}
 
@@ -55,20 +56,31 @@ data Bot = Bot
   }
   deriving (Generic)
 
-type Behavior m =
-  (MonadIO m, MonadFail m) =>
-  Pipe Event SomeCommand m ()
+type Behavior m a = Pipe Event SomeCommand m a
+type BehaviorConstraints m = (MonadIO m, MonadFail m)
+type StrategyConstraints m = (BehaviorConstraints m, MonadState GameState m)
 
-strat :: Behavior m
+
+strat :: BehaviorConstraints m => Behavior m ()
 strat = do
-  joinPrivateGame
-  playGame
+  let bot = Bot  "4321687" "[Bot] Vorhees"
+  gameConfig <- mkGameConfig 2
 
 
-type StrategyConstraints m = (MonadIO m, MonadState GameState m, MonadFail m)
-type Strategy m = StrategyConstraints m => Pipe Event SomeCommand m ()
+  gameStart <- joinPrivateGame gameConfig bot
+  let runState = flip evalStateT (mkGameState gameStart)
 
-joinPrivateGame :: forall m. GameConfig -> Bot -> Strategy m
+  playGame & hoist runState
+
+
+playGame :: forall m. StrategyConstraints m => Behavior m ()
+playGame = do
+  Pipes.for (match #_GameUpdate) $ \e -> do
+
+    chatRoomId <- use $ #gameStart . #chatRoomId
+    sendCommand $ Message { chatRoomId, text = "hello" }
+
+joinPrivateGame :: forall m. (BehaviorConstraints m) => GameConfig -> Bot -> Behavior m GameStart
 joinPrivateGame gameConfig bot = do
   -- let gameId = gameConfig ^. #gameId . to UUID.toText
   let gameId = "452"
@@ -82,13 +94,8 @@ joinPrivateGame gameConfig bot = do
   _ <- matchFirst $ #_QueueUpdate . filtered startGame
   sendCommand $ SetForceStart {force = True, queueId = gameId }
 
-
-  gameStart <- matchFirst #_GameStart
-  applyGameStart gameStart
-
-
-  Pipes.for (match #_GameUpdate >-> Pipes.chain applyGameUpdate) $ \e ->
-    pure ()
+  -- initial info
+  matchFirst #_GameStart
 
 
 -- | match all

@@ -8,19 +8,21 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
 module GeneralsIO.State
   ( GameState(..)
   , GridIndex
   , PlayerId
   , MonadState(..)
-  , initialGameState
-  , applyGameStart
   , applyGameUpdate
+  , mkGameState
+  , module X
   )
   where
 
 import GHC.Generics (Generic)
-import Control.Monad.State
+import Control.Monad.State as X
+import Control.Monad.Trans.Maybe as X
 import Control.Lens
 import Data.Generics.Labels ()
 import Data.Map (Map)
@@ -29,9 +31,9 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import Data.Traversable
 import Data.Foldable
-import GeneralsIO.Events
+import GeneralsIO.Events (GameStart, GameUpdate)
+import qualified GeneralsIO.Events as Evt
 import qualified Data.Aeson as Json
-import Control.Monad.Trans.Maybe
 
 
 data Owner where
@@ -58,7 +60,7 @@ data Tile where
 
 -- update to include inferences
 data GameState = GameState
-  { gameStart :: Maybe GameStart
+  { gameStart :: GameStart
   -- ^ readonly info
   , generals :: LookupByPlayerId GridIndex
   -- ^ updates when: general is revealed, or when a player dies
@@ -66,7 +68,7 @@ data GameState = GameState
   }
   deriving (Generic)
 
-initialGameState = GameState Nothing mempty mempty
+mkGameState gameStart = GameState { gameStart, generals = mempty, grid = mempty}
 
 newtype GridIndex = GridIndex Int
 newtype PlayerId = PlayerId Int
@@ -81,9 +83,6 @@ newtype Grid = Grid (IntMap Tile)
 newtype LookupByPlayerId a = LookupByPlayerId (Vector a)
   deriving (Monoid, Semigroup)
 
-applyGameStart :: MonadState GameState m => GameStart -> m ()
-applyGameStart event = do
-  #gameStart ?= event
 
 
 applyGameUpdate :: MonadState GameState m => GameUpdate -> m ()

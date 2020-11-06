@@ -53,8 +53,7 @@ connect server = do
       appendToFile "socket.io-client.error-log"
 
   let client = mkClient stdin
-  let print = liftIO . Prelude.print
-  let events = readLines stdout >-> Pipes.chain print >-> waitForConnect
+  let events = readLines stdout >-> waitForConnect
 
   pure $ (client, events)
 

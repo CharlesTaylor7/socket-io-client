@@ -109,9 +109,9 @@ data GameStart = MkGameStart
   , usernames   :: Vector Text
   , swamps      :: Json.Array
   , teams       :: Vector Int
-  , chat_room   :: Text
-  , game_type   :: Text
-  , replay_id   :: Text
+  , chatRoomId  :: Text
+  , gameType    :: Text
+  , replayId    :: Text
   }
   deriving (Generic, Show)
 
