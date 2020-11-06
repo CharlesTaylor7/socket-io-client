@@ -56,7 +56,7 @@ library generals-io-types
     , GeneralsIO.Replays
 
 
-library generals-io-client
+library generals-io-protocol
   import: common
   hs-source-dirs:
     generals-io-client/
@@ -77,13 +77,35 @@ library generals-io-client
     , transformers
   exposed-modules:
       GeneralsIO.Protocol
-    , GeneralsIO.Strategy
-    , GeneralsIO.State
-
   other-modules:
       GeneralsIO.Protocol.Phases
     , GeneralsIO.Protocol.Events
     , GeneralsIO.Protocol.Commands
+
+
+library generals-io-client
+  import: common
+  hs-source-dirs:
+    generals-io-client/
+  build-depends:
+      base >= 4.13 && < 5.0
+    , socket-io-client
+    , generals-io-types
+    , aeson
+    , bytestring
+    , vector
+    , text
+    , containers
+    , pipes
+    , generic-lens
+    , lens
+    , uuid
+    , mtl
+    , transformers
+  exposed-modules:
+      GeneralsIO.Strategy
+    , GeneralsIO.State
+
 
 executable demo
   import: common
