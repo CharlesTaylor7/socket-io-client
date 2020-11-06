@@ -76,6 +76,7 @@ strat = do
 playGame :: forall m. StrategyConstraints m => Behavior m ()
 playGame = do
   Pipes.for (match #_GameUpdate) $ \e -> do
+    applyGameUpdate e
 
     chatRoomId <- use $ #gameStart . #chatRoomId
     sendCommand $ Message { chatRoomId, text = "hello" }
