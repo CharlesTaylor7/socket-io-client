@@ -5,6 +5,10 @@ author:         Charles Taylor
 maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
 build-type:     Simple
+extra-source-files:
+  js/new-socket-io.js
+  package.json
+
 
 source-repository head
   type: git
