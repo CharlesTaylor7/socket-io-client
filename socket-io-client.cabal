@@ -11,8 +11,6 @@ extra-source-files:
   CHANGELOG.md
 data-files:
   js/*.js
-  js/package.json
-  js/yarn.lock
 
 custom-setup
   setup-depends:
