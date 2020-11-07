@@ -1,4 +1,4 @@
-const Socket = require('socket.io-client')
+const Socket = require('./socket.io.slim')
 const url = process.argv[2]
 const socket = Socket(url)
 
