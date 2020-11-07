@@ -4,17 +4,21 @@ version:        0.0.0.0
 author:         Charles Taylor
 maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
-build-type:     Simple
+build-type:     Custom
 extra-source-files:
   LICENSE
   README.md
   CHANGELOG.md
+
+custom-setup
+  setup-depends:
+    base  >= 4.5
+    Cabal >= 3.0 && < 3.3
+
 data-files:
   js/*.js
   js/package.json
   js/yarn.lock
-
-
 
 source-repository head
   type: git
@@ -46,3 +50,7 @@ library
     , pipes
   exposed-modules:
       SocketIO
+  other-modules:
+      Paths_socket_io_client
+  autogen-modules:
+      Paths_socket_io_client
