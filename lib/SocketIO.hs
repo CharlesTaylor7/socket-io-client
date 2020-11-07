@@ -91,8 +91,8 @@ appendToFile :: MonadIO m => FilePath -> Consumer BS.ByteString m ()
 appendToFile path = do
   handle <- liftIO $ openFile path AppendMode
   Pipes.for cat $ \line -> liftIO $ do
-    BS.hPutStr handle line
-    BS.hPutStr handle "\n"
+    BS.hPut handle line
+    BS.hPut handle "\n"
 
 
 waitForConnect :: MonadIO m => Pipe BS.ByteString BS.ByteString m ()
