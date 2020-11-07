@@ -41,7 +41,7 @@ errorLogFileName = "socket-io-client-errors.log"
 
 connect :: forall m. (MonadFail m, MonadIO m) => Url -> m (SocketEmit m, Stream m)
 connect server = do
-  nodeScriptName <- liftIO $ getDataFileName "js/new-socket-io.js"
+  nodeScriptName <- liftIO $ getDataFileName "js/dist/socket-io.js"
 
   -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, processHandle) <- liftIO $

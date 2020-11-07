@@ -10,7 +10,7 @@ extra-source-files:
   README.md
   CHANGELOG.md
 data-files:
-  js/*.js
+  js/dist/*.js
 
 
 source-repository head
