@@ -4,7 +4,7 @@ version:        0.0.0.0
 author:         Charles Taylor
 maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
-build-type:     Custom
+build-type:     Simple
 extra-source-files:
   LICENSE
   README.md
@@ -12,10 +12,6 @@ extra-source-files:
 data-files:
   js/*.js
 
-custom-setup
-  setup-depends:
-      base  >= 4.5
-    , Cabal >= 3.0 && < 3.3
 
 source-repository head
   type: git
