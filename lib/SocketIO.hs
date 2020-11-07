@@ -50,7 +50,7 @@ connect server = do
       ( readLines stderr >>
         readExitCode processHandle >-> Pipes.map exitCodeString
       ) >->
-      appendToFile "socket.io-client.error-log"
+      appendToFile "socket-io-client-errors.log"
 
   let client = mkClient stdin
   let events = readLines stdout >-> waitForConnect

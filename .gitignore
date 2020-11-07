@@ -11,16 +11,13 @@
 
 # node
 /.cache/
-/node_modules/
+/js/node_modules/
 
 # vim
 *.swp
 
 # error logs
-socket.io-client.error-log
-
-# stack
-*.stack-work
+socket-io-client.error-log
 
 # cabal
 /dist-newstyle
