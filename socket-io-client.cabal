@@ -6,8 +6,12 @@ maintainer:     charlestaylor95@gmail.com
 copyright:      2020 Charles Taylor
 build-type:     Simple
 extra-source-files:
-  js/new-socket-io.js
-  package.json
+  LICENSE
+data-files:
+  js/*.js
+  js/package.json
+  js/yarn.lock
+
 
 
 source-repository head
