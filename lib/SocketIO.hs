@@ -27,17 +27,25 @@ import Pipes (MonadIO, Consumer, Producer, Pipe, liftIO, (>->), yield, cat, awai
 import qualified Pipes
 import qualified Pipes.Prelude as Pipes
 
+import Paths_socket_io_client (getDataFileName)
+
 
 type Url = String
 type Stream m = Producer BS.ByteString m ()
 type SocketEmit m = Consumer BS.ByteString m ()
 
 
+errorLogFileName :: FilePath
+errorLogFileName = "socket-io-client-errors.log"
+
+
 connect :: forall m. (MonadFail m, MonadIO m) => Url -> m (SocketEmit m, Stream m)
 connect server = do
+  nodeScriptName <- liftIO $ getDataFileName "js/new-socket-io.js"
+
   -- start the node process running the socket.io client
   (Just stdin, Just stdout, Just stderr, processHandle) <- liftIO $
-    createProcess (proc "node" ["js/new-socket-io", server])
+    createProcess (proc "node" [nodeScriptName, server])
       { std_in = CreatePipe
       , std_out = CreatePipe
       , std_err = CreatePipe
@@ -56,8 +64,6 @@ connect server = do
 
   pure $ (client, events)
 
-errorLogFileName :: FilePath
-errorLogFileName = "socket-io-client-errors.log"
 
 exitCodeString :: ExitCode -> BS.ByteString
 exitCodeString (ExitFailure 125) = "Server disconnected"
