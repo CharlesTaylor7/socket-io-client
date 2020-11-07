@@ -13,20 +13,19 @@ module SocketIO
   where
 
 import Prelude hiding (until)
-import Data.Function ((&))
 import Control.Concurrent (forkIO)
-import System.IO (Handle, hSetBinaryMode, hSetBuffering, hIsEOF, BufferMode(..))
-import System.Process
+import System.Process (ProcessHandle, CreateProcess(..), StdStream(..), createProcess, proc, waitForProcess)
 import Control.Exception (Exception, throwIO)
+import System.IO (Handle, hSetBinaryMode, hSetBuffering, hIsEOF, BufferMode(..))
+import System.IO (IOMode(..), openFile)
+import System.Exit (ExitCode(..))
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as Char8
 
-import Pipes
+import Pipes (MonadIO, Consumer, Producer, Pipe, liftIO, (>->), yield, cat, await)
+import qualified Pipes
 import qualified Pipes.Prelude as Pipes
-
-import System.IO (IOMode(..), openFile)
-import System.Exit (ExitCode(..))
 
 
 type Url = String
@@ -50,13 +49,15 @@ connect server = do
       ( readLines stderr >>
         readExitCode processHandle >-> Pipes.map exitCodeString
       ) >->
-      appendToFile "socket-io-client-errors.log"
+      appendToFile errorLogFileName
 
   let client = mkClient stdin
   let events = readLines stdout >-> waitForConnect
 
   pure $ (client, events)
 
+errorLogFileName :: FilePath
+errorLogFileName = "socket-io-client-errors.log"
 
 exitCodeString :: ExitCode -> BS.ByteString
 exitCodeString (ExitFailure 125) = "Server disconnected"
